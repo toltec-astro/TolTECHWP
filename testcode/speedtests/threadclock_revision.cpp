@@ -3,7 +3,10 @@
     A program to experiment with the time a thread sleeps.
 
     to compile:
-        g++ -o threadclock threadclock.cpp
+        g++ -o ../../../threadclock threadclock.cpp
+
+    to run
+        ./threadclock duration_in_seconds
 
  */
 
@@ -25,10 +28,10 @@ int main(int argc, char** argv){
   ptm = gmtime ( &rawtime );
   printf("Start Time: %2d:%02d\n", (ptm->tm_hour-5)%24, ptm->tm_min);
   
-  int N; // Number of counts to do
+  long N; // Number of counts to do
   struct timeval tval;
   struct timespec treq;
-  int i,j,t0;
+  long i,j,t0;
   int n01=0, n03=0, n1=0, n3=0, n10=0, n30=0, n100=0;
   long tmin=100000,tmax=0,tdiff,tsum=0;
 
@@ -37,7 +40,8 @@ int main(int argc, char** argv){
   //  printf("%d %s\n", i, argv[i]);
   //}
   if(argc>1){
-    N = atoi(argv[1])*1000000/DUS;
+	N = atoi(argv[1]);
+    N = N*1000000/DUS;
   } else {
     printf("Usage: threadclock seconds\n  Where seconds is the duration the program should run\n");
     exit(1);
