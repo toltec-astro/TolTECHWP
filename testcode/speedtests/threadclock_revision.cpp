@@ -15,6 +15,7 @@
 #include<stdio.h>
 #include<sys/time.h>
 #include<time.h>
+#include<cstdlib>
 
 //#define N 30
 #define DUS 30
