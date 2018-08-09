@@ -23,3 +23,7 @@ int main() {
     }
   }
 }
+
+int S826_SystemOpen(void)  {
+    
+}
