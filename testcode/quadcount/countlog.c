@@ -1,3 +1,19 @@
+/*
+   Logs Quadrature Counter for Sensoray 826
+
+   This program is a draft for the TolTEC HWP program. It reads
+   the Quadrature signal into one counter (countquad) while using
+   a different counter for timing the snapshots in the quad
+   counter.
+
+   The program uses a third counter (countpps) to log pulses.
+
+   2DO:
+   - Set up countpps (snapshot on rising signal)
+   - Read out countpps, display on screen
+   - Put countpps into logfile
+ */
+
 // Logs counter for 826
 
 // Define Index Source from Counter Channel 0
@@ -17,13 +33,20 @@ int main(int argc, char **argv){
   int i;
   int board = 0;
   int countquad = 0; // quadrature counter
-  int countpulse = 2; // pulse clock counter
+  int countime = 2; // timer counter
   int countpps = 1; // pps counter
   struct timespec treq;
   time_t rawtime,startime;
   char s[2000000],t[100];
   char fname[100];
   FILE *outf;
+  // Variables to Read all snapshots while it's moving
+  int lastcount = 0; // last value which was read
+  int dcount = 1; // diff current - previous value
+  int loopcount = 0; // number of loops with delays
+  int errcount = 0; // number of overflow errors
+  int sampcount = 0; // number of samples in this readout session
+  uint counts[1000], tstamp[1000], reason[1000];
 
 
   //// Get inputs Arguments
@@ -49,28 +72,36 @@ int main(int argc, char **argv){
   if (flags < 0)
     printf("S826_SystemOpen returned error code %d", flags);
 
-  // Timer Counter Configuration in channel number "chan+1"
-  S826_CounterModeWrite(board, countpulse,       // Configure counter mode:
+  // Timer Counter Configuration
+  S826_CounterModeWrite(board, countime,       // Configure counter mode:
 			S826_CM_K_1MHZ |     // clock source = 1 MHz internal
 			S826_CM_PX_START | S826_CM_PX_ZERO | // preload @start and counts==0
 			S826_CM_UD_REVERSE | // count down
 			S826_CM_OM_NOTZERO); // ExtOut = (counts!=0)
-  S826_CounterPreloadWrite(board, countpulse, 0, datausec); // Set period in microseconds.
+  S826_CounterPreloadWrite(board, countime, 0, datausec); // Set period in microseconds.
   flags = S826_CounterStateWrite(board, countpulse, 1); // Start the timer running.
   if (flags < 0)
     printf("Timer Counter returned error code %d", flags);
-
-  // Data Counter Configuration in channel number "chan"
+  // Quadrature Counter Configuration
   S826_CounterModeWrite(board, countquad,      // Configure counter:
 			S826_CM_K_QUADX4 |  // Quadrature x1/x2/x4 multiplier
 			//S826_CM_K_ARISE |   // clock = ClkA (external digital signal)
 			//S826_XS_100HKZ |    // route tick generator to index input
-			(S826_CM_XS_CH0+countpulse) );   // route CH1 to Index input
+			(S826_CM_XS_CH0+countime) );   // route CH1 to Index input
   S826_CounterSnapshotConfigWrite(board, countquad,  // Acquire counts upon tick rising edge.
 				  S826_SSRMASK_IXRISE, S826_BITWRITE);
   flags = S826_CounterStateWrite(board, countquad, 1); // start the counter
   if (flags < 0)
-    printf("Data Counter returned error code %d", flags);
+    printf("Quad Counter returned error code %d", flags);
+  // Pulse Per Second Counter Configuration
+  S826_CounterModeWrite(board, countpps,      // Configure counter:
+			S826_CM_K_ARISE );   // clock = ClkA (external digital signal)
+  S826_CounterSnapshotConfigWrite(board, countpps,  // Acquire counts upon tick rising edge.
+				  S826_SSRMASK_EXTRISE, S826_BITWRITE);
+  flags = S826_CounterStateWrite(board, countpps, 1); // start the counter
+  if (flags < 0)
+    printf("PPS Counter returned error code %d", flags);
+
   // Get starting timesamp
   time(&rawtime);
   startime = rawtime;
@@ -80,13 +111,6 @@ int main(int argc, char **argv){
   printf("Opening File = %s\n", fname);
 
   //// Read snapshots loop
-  // Read all snapshots while it's moving
-  int lastcount = 0; // last value which was read
-  int dcount = 1; // diff current - previous value
-  int loopcount = 0; // number of loops with delays
-  int errcount = 0; // number of overflow errors
-  int sampcount = 0; // number of samples in this readout session
-  uint counts[1000], tstamp[1000], reason[1000];
   // Get start time
   uint tstart;
   S826_TimestampRead(board, &tstart);
@@ -94,6 +118,7 @@ int main(int argc, char **argv){
   //while( loopcount < 100000 || (dcount && loopcount < 100000 ) ){
   while( rawtime-startime < duration ){
     sampcount = 0;
+    //** Read from quadrature counter
     // Read first snapshot (also clears ERR_FIFOOVERFLOW)
     flags = S826_CounterSnapshotRead(board, countquad,
 				     counts+sampcount, tstamp+sampcount, reason+sampcount, 0);
@@ -109,12 +134,12 @@ int main(int argc, char **argv){
       if(printout) printf("%s\n" , t);
       // Check FIFO overflow
       if(flags == S826_ERR_FIFOOVERFLOW){
-	errcount++;
-	//sprintf(t,"  ####  FiFo Overflow samp=%d\n", sampcount);
-	//strcat(s,t);
-	fprintf(outf,"  ####  FiFo Overflow samp=%d\n", sampcount);
+	    errcount++;
+	    //sprintf(t,"  ####  FiFo Overflow samp=%d\n", sampcount);
+	    //strcat(s,t);
+	    fprintf(outf,"  ####  FiFo Overflow samp=%d\n", sampcount);
       } else {
-	fprintf(outf,"\n");
+	    fprintf(outf,"\n");
       }
       // Increase counter
       sampcount++;
@@ -132,12 +157,22 @@ int main(int argc, char **argv){
     //sprintf(t,"Number of samples = %d\n", sampcount);
     //strcat(s,t);
     //sprintf(t,"Got all Snapshots - waiting - flags = %d\n", flags);
+    //** Read from PPS counter
+    // Read one snapshot
+    flags = S826_CounterSnapshotRead(board, countquad,
+				     counts+sampcount, tstamp+sampcount, reason+sampcount, 0);
+    // If snapshot found, log it
+    if( flags == S826_ERR_OK ){
+    	sprintf(t,"PPS: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", counts[sampcount],
+			      (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
+    	printf(t);
+    }
     // Update time and counter
     time(&rawtime);
     loopcount ++;
     // Wait
     nanosleep(&treq,NULL);
-  }
+  } // while ( rawtime-startime < duration )
   //printf("%s", s);
   printf("Number of Loops = %d\n" , loopcount);
   printf("Number of Errors = %d\n", errcount);
