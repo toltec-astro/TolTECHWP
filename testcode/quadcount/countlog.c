@@ -16,7 +16,9 @@ int main(int argc, char **argv){
   // Variables
   int i;
   int board = 0;
-  int chan = 0;
+  int countquad = 0; // quadrature counter
+  int countpulse = 2; // pulse clock counter
+  int countpps = 1; // pps counter
   struct timespec treq;
   time_t rawtime,startime;
   char s[2000000],t[100];
@@ -48,25 +50,25 @@ int main(int argc, char **argv){
     printf("S826_SystemOpen returned error code %d", flags);
 
   // Timer Counter Configuration in channel number "chan+1"
-  S826_CounterModeWrite(board, chan+1,       // Configure counter mode:
+  S826_CounterModeWrite(board, countpulse,       // Configure counter mode:
 			S826_CM_K_1MHZ |     // clock source = 1 MHz internal
 			S826_CM_PX_START | S826_CM_PX_ZERO | // preload @start and counts==0
 			S826_CM_UD_REVERSE | // count down
 			S826_CM_OM_NOTZERO); // ExtOut = (counts!=0)
-  S826_CounterPreloadWrite(board, chan+1, 0, datausec); // Set period in microseconds.
-  flags = S826_CounterStateWrite(board, chan+1, 1); // Start the timer running.
+  S826_CounterPreloadWrite(board, countpulse, 0, datausec); // Set period in microseconds.
+  flags = S826_CounterStateWrite(board, countpulse, 1); // Start the timer running.
   if (flags < 0)
     printf("Timer Counter returned error code %d", flags);
 
   // Data Counter Configuration in channel number "chan"
-  S826_CounterModeWrite(board, chan,      // Configure counter:
+  S826_CounterModeWrite(board, countquad,      // Configure counter:
 			S826_CM_K_QUADX4 |  // Quadrature x1/x2/x4 multiplier
 			//S826_CM_K_ARISE |   // clock = ClkA (external digital signal)
 			//S826_XS_100HKZ |    // route tick generator to index input
-			(S826_CM_XS_CH0+1) );   // route CH1 to Index input
-  S826_CounterSnapshotConfigWrite(board, chan,  // Acquire counts upon tick rising edge.
+			(S826_CM_XS_CH0+countpulse) );   // route CH1 to Index input
+  S826_CounterSnapshotConfigWrite(board, countquad,  // Acquire counts upon tick rising edge.
 				  S826_SSRMASK_IXRISE, S826_BITWRITE);
-  flags = S826_CounterStateWrite(board, chan, 1); // start the counter
+  flags = S826_CounterStateWrite(board, countquad, 1); // start the counter
   if (flags < 0)
     printf("Data Counter returned error code %d", flags);
   // Get starting timesamp
@@ -93,7 +95,7 @@ int main(int argc, char **argv){
   while( rawtime-startime < duration ){
     sampcount = 0;
     // Read first snapshot (also clears ERR_FIFOOVERFLOW)
-    flags = S826_CounterSnapshotRead(board, chan,
+    flags = S826_CounterSnapshotRead(board, countquad,
 				     counts+sampcount, tstamp+sampcount, reason+sampcount, 0);
     // Read all snapshots
     while(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
@@ -117,7 +119,7 @@ int main(int argc, char **argv){
       // Increase counter
       sampcount++;
       // Read next snapshot
-      flags = S826_CounterSnapshotRead(board, chan,
+      flags = S826_CounterSnapshotRead(board, countquad,
 				       counts+sampcount, tstamp+sampcount, reason+sampcount, 0);
     }
     // Print out samples and statistics to  s
