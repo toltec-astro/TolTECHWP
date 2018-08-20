@@ -79,7 +79,7 @@ int main(int argc, char **argv){
 			S826_CM_UD_REVERSE | // count down
 			S826_CM_OM_NOTZERO); // ExtOut = (counts!=0)
   S826_CounterPreloadWrite(board, countime, 0, datausec); // Set period in microseconds.
-  flags = S826_CounterStateWrite(board, countpulse, 1); // Start the timer running.
+  flags = S826_CounterStateWrite(board, countime, 1); // Start the timer running.
   if (flags < 0)
     printf("Timer Counter returned error code %d", flags);
   // Quadrature Counter Configuration
