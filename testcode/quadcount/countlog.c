@@ -37,7 +37,7 @@ int main(int argc, char **argv){
   int countpps = 1; // pps counter
   struct timespec treq;
   time_t rawtime,startime;
-  char s[2000000],t[100];
+  char s[2000000],t[200];
   char fname[100];
   FILE *outf;
   // Variables to Read all snapshots while it's moving
@@ -94,10 +94,15 @@ int main(int argc, char **argv){
   if (flags < 0)
     printf("Quad Counter returned error code %d", flags);
   // Pulse Per Second Counter Configuration
+  // - Need filter when using arduino on breadboard
+  // - Need count on FALL and snap on RISE to avoid race condition
   S826_CounterModeWrite(board, countpps,      // Configure counter:
-			S826_CM_K_ARISE );   // clock = ClkA (external digital signal)
+			S826_CM_K_AFALL );   // clock = ClkA (external digital signal)
+  S826_CounterFilterWrite(board, countpps,  // Filer Configuration:
+			  (1 << 31) | (1 << 30) | // Apply to IX and clock
+			  100 );                  // 100x20ns = 2us filter constant
   S826_CounterSnapshotConfigWrite(board, countpps,  // Acquire counts upon tick rising edge.
-				  S826_SSRMASK_EXTRISE, S826_BITWRITE);
+				  S826_SSRMASK_IXRISE, S826_BITWRITE);
   flags = S826_CounterStateWrite(board, countpps, 1); // start the counter
   if (flags < 0)
     printf("PPS Counter returned error code %d", flags);
@@ -147,6 +152,7 @@ int main(int argc, char **argv){
       flags = S826_CounterSnapshotRead(board, countquad,
 				       counts+sampcount, tstamp+sampcount, reason+sampcount, 0);
     }
+    //printf("QUAD: flags=%d ok=%d fifooverflow=%d\n", flags, S826_ERR_OK, S826_ERR_FIFOOVERFLOW);
     // Print out samples and statistics to  s
     //for(i=0;i<1;i++){
     //sprintf(t,"Count = %d   Time = %.3fms   Reason = %x\n", counts[i],
@@ -159,13 +165,15 @@ int main(int argc, char **argv){
     //sprintf(t,"Got all Snapshots - waiting - flags = %d\n", flags);
     //** Read from PPS counter
     // Read one snapshot
-    flags = S826_CounterSnapshotRead(board, countquad,
+    flags = S826_CounterSnapshotRead(board, countpps,
 				     counts+sampcount, tstamp+sampcount, reason+sampcount, 0);
     // If snapshot found, log it
-    if( flags == S826_ERR_OK ){
-    	sprintf(t,"PPS: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", counts[sampcount],
+    //printf("PPS:  flags=%d ok=%d fifooverflow=%d\n", flags, S826_ERR_OK, S826_ERR_FIFOOVERFLOW);
+    if( flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW ){
+    	sprintf(t,"PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", counts[sampcount],
 			      (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
     	printf(t);
+	fprintf(outf, t);
     }
     // Update time and counter
     time(&rawtime);
