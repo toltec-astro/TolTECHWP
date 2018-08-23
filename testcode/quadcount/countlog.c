@@ -193,6 +193,6 @@ int main(int argc, char **argv){
   fclose(outf);
 }
 
-// gcc -D_LINUX -Wall -Wextra -DOSTYPE_LINUX -c  -I /home/polboss/toltec/sdk_826_linux_3.3.10/demo countlog.c
+// gcc -D_LINUX -Wall -Wextra -DOSTYPE_LINUX -c  -no-pie -I /home/poluser/toltec/sdk_826_linux_3.3.11/demo countlog.c
 
-// gcc -D_LINUX countlog.o -o countlog -lm -L /home/polboss/toltec/sdk_826_linux_3.3.10/demo -l826_64
+// gcc -D_LINUX countlog.o -no-pie -o countlog -lm -L /home/poluser/toltec/sdk_826_linux_3.3.11/demo -l826_64
