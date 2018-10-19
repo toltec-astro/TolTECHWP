@@ -19,7 +19,7 @@ void AdcHandler(void)
     int slotval[16]; // buffer must be sized for 16 slots
     while (1) {
         uint slotlist = 1; // only slot 0 is of interest in this example
-        errcode = S826_AdcRead(0, slotval, NULL, &0xE000, 1000); // wait for IRQ
+        errcode = S826_AdcRead(0, slotval, NULL, &slotlist, 1000); // wait for IRQ
         if (errcode != S826_ERR_OK)
             break;
         printf("Raw adc data = %d", slotval[0] & 0xE000);
