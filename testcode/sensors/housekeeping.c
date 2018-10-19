@@ -21,7 +21,7 @@ void AdcHandler(void)
     errcode = S826_AdcRead(0, slotval, NULL, &slotlist, 1000); // wait for IRQ
     if (errcode != S826_ERR_OK)
         printf("ADC Read Failed. %d", errcode);
-    
+
     fprintf(stdout, "Raw Channel 0 Data = %d \n", slotval[0]);
     fprintf(stdout, "Raw Channel 1 Data = %d \n", slotval[1]);
     fprintf(stdout, "Raw Channel 2 Data = %d \n", slotval[2]);
@@ -153,9 +153,7 @@ int main(int argc, char **argv){
     while (rawtime - startime < duration){
 
         AdcHandler();
-        fprintf(stdout, "read humidity \n");
-        fprintf(stdout, "read temperature \n");
-
+        
         // update time and sleep time
         time(&rawtime);
         nanosleep((const struct timespec[]){{0, 500000000L}}, NULL);
