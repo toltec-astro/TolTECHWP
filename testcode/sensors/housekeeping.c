@@ -150,6 +150,7 @@ int main(int argc, char **argv){
     
     while (rawtime - startime < duration){
 
+        AdcHandler();
         fprintf(stdout, "read humidity \n");
         fprintf(stdout, "read temperature \n");
 
