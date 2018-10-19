@@ -1,0 +1,99 @@
+LIBRARY		"s826.dll"
+
+EXPORTS
+    ; System
+    S826_VersionRead
+    S826_SystemClose
+    S826_SystemOpen
+    S826_TimestampRead
+    ; Safemode
+    S826_SafeControlRead
+    S826_SafeControlWrite
+    S826_SafeWrenRead
+    S826_SafeWrenWrite
+    ; ADC
+    S826_AdcCalRead
+    S826_AdcCalWrite    
+    S826_AdcEnableRead
+    S826_AdcEnableWrite
+    S826_AdcRawRead
+    S826_AdcRead
+    S826_AdcSlotConfigRead
+    S826_AdcSlotConfigWrite
+    S826_AdcSlotlistRead
+    S826_AdcSlotlistWrite
+    S826_AdcStatusRead
+    S826_AdcTrigModeWrite
+    S826_AdcTrigModeRead
+    S826_AdcWaitCancel
+    ; Counter
+    S826_CounterCompareRead
+    S826_CounterCompareWrite
+    S826_CounterExtInRoutingRead
+    S826_CounterExtInRoutingWrite
+    S826_CounterFilterWrite
+	S826_CounterFilterRead
+    S826_CounterModeRead
+    S826_CounterModeWrite
+    S826_CounterPreload
+    S826_CounterPreloadRead
+    S826_CounterPreloadWrite
+    S826_CounterRead
+    S826_CounterSnapshot
+    S826_CounterSnapshotConfigRead
+    S826_CounterSnapshotConfigWrite
+    S826_CounterSnapshotRead
+    S826_CounterStateWrite
+    S826_CounterStatusRead
+    S826_CounterWaitCancel
+    ; DAC
+    S826_DacCalRead
+    S826_DacCalWrite
+    S826_DacDataWrite
+    S826_DacRangeWrite
+    S826_DacRead
+    S826_DacRawRead
+    S826_DacRawWrite
+    ; DIO
+    S826_DioCapEnablesRead
+    S826_DioCapEnablesWrite
+    S826_DioCapRead
+	S826_DioFilterRead
+	S826_DioFilterWrite
+    S826_DioOutputRead
+    S826_DioOutputSourceRead
+    S826_DioOutputSourceWrite
+    S826_DioInputRead
+    S826_DioSafeEnablesRead
+    S826_DioSafeEnablesWrite
+    S826_DioSafeRead
+    S826_DioSafeWrite
+    S826_DioOutputWrite
+    S826_DioWaitCancel
+    ; Virtual I/O
+    S826_VirtualRead
+    S826_VirtualWrite
+    S826_VirtualSafeRead
+    S826_VirtualSafeWrite
+    S826_VirtualSafeEnablesRead
+    S826_VirtualSafeEnablesWrite
+    ; Watchdog
+    S826_WatchdogConfigRead
+    S826_WatchdogConfigWrite
+    S826_WatchdogEnableRead
+    S826_WatchdogEnableWrite
+    S826_WatchdogStatusRead
+    S826_WatchdogKick
+    S826_WatchdogEventWait
+    S826_WatchdogWaitCancel
+    ; Reserved for use by Sensoray
+    S826_EepromReadByte
+    S826_EepromReadQuadlet
+    S826_EepromWriteByte
+    S826_EepromWriteQuadlet
+    S826_RamRead
+    S826_RamWrite
+    S826_WriteReg
+    S826_ReadReg
+    S826_WriteBridge
+    S826_ReadBridge

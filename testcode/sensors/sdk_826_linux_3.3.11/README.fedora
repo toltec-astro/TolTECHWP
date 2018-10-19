@@ -1,0 +1,11 @@
+Prerequisites.  Kernel development headers must be installed for current version.
+
+For Fedora 21:
+
+"uname -r"
+
+Use result of uname -r to install correct kernel headers
+
+Example:
+"yum install kernel-devel-3.17.4-301.fc21.x86_64"  where 3.17.4-301.fc21.x86_64 is result of "uname -r".
+
