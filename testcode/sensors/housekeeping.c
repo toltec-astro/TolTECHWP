@@ -21,9 +21,9 @@ void AdcHandler(void)
     errcode = S826_AdcRead(0, slotval, NULL, &slotlist, 1000); // wait for IRQ
     if (errcode != S826_ERR_OK)
         break;
-    fprintf(stdout, "Raw Channel 0 Data = %ls", slotval[0]);
-    fprintf(stdout, "Raw Channel 1 Data = %ls", slotval[1]);
-    fprintf(stdout, "Raw Channel 2 Data = %ls", slotval[2]);
+    fprintf(stdout, "Raw Channel 0 Data = %d \n", slotval[0]);
+    fprintf(stdout, "Raw Channel 1 Data = %d \n", slotval[1]);
+    fprintf(stdout, "Raw Channel 2 Data = %d \n", slotval[2]);
 
 }
 
