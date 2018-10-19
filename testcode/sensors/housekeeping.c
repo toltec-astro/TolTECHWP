@@ -20,7 +20,8 @@ void AdcHandler(void)
     uint slotlist = 0xE000; 
     errcode = S826_AdcRead(0, slotval, NULL, &slotlist, 1000); // wait for IRQ
     if (errcode != S826_ERR_OK)
-        break;
+        printf("ADC Read Failed. %d", errcode);
+    
     fprintf(stdout, "Raw Channel 0 Data = %d \n", slotval[0]);
     fprintf(stdout, "Raw Channel 1 Data = %d \n", slotval[1]);
     fprintf(stdout, "Raw Channel 2 Data = %d \n", slotval[2]);
