@@ -25,6 +25,7 @@ void AdcHandler(void)
     fprintf(stdout, "Raw Channel 0 Data = %d \n", slotval[0]);
     fprintf(stdout, "Raw Channel 1 Data = %d \n", slotval[1]);
     fprintf(stdout, "Raw Channel 2 Data = %d \n", slotval[2]);
+    fprintf(stdout, "Raw Channel 3 Data = %d \n", slotval[3]);
 
 }
 
@@ -153,7 +154,7 @@ int main(int argc, char **argv){
     while (rawtime - startime < duration){
 
         AdcHandler();
-        
+
         // update time and sleep time
         time(&rawtime);
         nanosleep((const struct timespec[]){{0, 500000000L}}, NULL);
