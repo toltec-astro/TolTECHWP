@@ -22,7 +22,7 @@ void AdcHandler(void)
         errcode = S826_AdcRead(0, slotval, NULL, &slotlist, 1000); // wait for IRQ
         if (errcode != S826_ERR_OK)
             break;
-        fprintf(stdout, "Raw adc data = %d", slotval);
+        fprintf(stdout, "Raw adc data = %ls", slotval);
     }
 }
 
