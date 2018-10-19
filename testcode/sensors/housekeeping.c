@@ -11,13 +11,21 @@
 #include <stdlib.h> 
 
 // TODO: convert individual configurations into a struct
-//       that allows looping over
 
-struct sensor_config { int channel; int range; int timeslot;}; 
+void AdcHandler(void)
+{
+    int errcode;
+    int slotval[16]; // buffer must be sized for 16 slots
+    while (1) {
+        uint slotlist = 1; // only slot 0 is of interest in this example
+        errcode = S826_AdcRead(0, adcdata, NULL, &slotlist, S826_WAIT_INFINITE); // wait for IRQ
+        if (errcode != S826_ERR_OK)
+            break;
+        printf("Raw adc data = %d", slotval[0] & 0xFFFF);
+    }
+}
 
 char t[200];
-
-
 int main(int argc, char **argv){
 
     if( argc < 2 ) {
@@ -26,11 +34,6 @@ int main(int argc, char **argv){
         exit(0);
     }
 
-    struct sensor_config temp_1_config = {
-        .channel = 0,
-        .range = 0,
-        .timeslot = 1 
-    };
     //// Preparation
     // Set timer counter interval: 
     // Determines how often count data is stored.
@@ -104,6 +107,8 @@ int main(int argc, char **argv){
     if (pwr < 0)
         printf("Configure power error code %d", pwr);
 
+    // TODO: LOOP OVER TO SET SETTINGS
+
     // configure power input for temperature 1 sensor
     int temp_1 = S826_AdcSlotConfigWrite(board, 
         temp_1_timeslot, 
@@ -128,28 +133,22 @@ int main(int argc, char **argv){
         hum_1_range
     );
 
-
     // enable the slots in the slot list
     // 0xE000 = is the first three 
-    S826_AdcSlotlistWrite(board, 0xE000, S826_BITWRITE);
-
     // trigger mode = continuous
-    S826_AdcTrigModeWrite(board, 0); 
-
     // enable the board 
+    S826_AdcSlotlistWrite(board, 0xE000, S826_BITWRITE);
+    S826_AdcTrigModeWrite(board, 0); 
     S826_AdcEnableWrite(board, 1);  
     
+    // time keeping
     time_t rawtime, startime;
     time(&rawtime);
     startime = rawtime;
     
+    
     while (rawtime - startime < duration){
 
-        /* 
-         *   
-         *  TODO: BEGIN READ IN!
-         * 
-         */
         fprintf(stdout, "read humidity \n");
         fprintf(stdout, "read temperature \n");
 
