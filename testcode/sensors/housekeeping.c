@@ -60,9 +60,9 @@ void AdcHandler(void)
     fprintf(stdout, "Raw Channel 2 Data = %d; ", slotval[2]);    
     fprintf(stdout, "Raw Channel 3 Data = %d; \n", slotval[3]);
 
-    int slotdata_individual;
-    AdcReadSlot(0, slot, &slotdata_individual);
-    printf('%d', slotdata_individual);
+    // int slotdata_individual;
+    // AdcReadSlot(0, slot, &slotdata_individual);
+    // printf('%d', slotdata_individual);
 
     S826_AdcStatusRead(0, &conversion_status);
     fprintf(stdout, "post conversion_status = 0x%04x; \n\n", conversion_status);
