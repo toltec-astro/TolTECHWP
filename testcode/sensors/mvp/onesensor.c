@@ -1,7 +1,7 @@
 #define S826_CM_XS_CH0     2
 #define printout 0
 #define SAMPLING_PERIOD 50000         // Sampling period in microseconds (50000 = 20 samples/s).
-#define TSETTLE SAMPLING_PERIOD - 3;  // Compensate for nominal ADC conversion time.
+#define TSETTLE SAMPLING_PERIOD - 3  // Compensate for nominal ADC conversion time.
 
 
 #include "826api.h"
@@ -38,6 +38,7 @@ int main(int argc, char **argv){
     }    
     int board = 0;
     int runmode = 0; // use runmode
+    int duration = atoi(argv[1]); // seconds
 
     /* 
      * Power Output for Sensors
