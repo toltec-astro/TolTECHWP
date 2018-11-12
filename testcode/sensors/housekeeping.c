@@ -92,7 +92,7 @@ int main(int argc, char **argv){
      */
     int temp_1_channel = 0;
     int temp_1_settling = TSETTLE;
-    int temp_1_range = S826_ADC_GAIN_1;
+    int temp_1_range = 0;
     int temp_1_timeslot = 0;
 
     /* 
@@ -106,7 +106,7 @@ int main(int argc, char **argv){
      */
     int temp_2_channel = 1;
     int temp_2_settling = TSETTLE;
-    int temp_2_range = S826_ADC_GAIN_1;//0;
+    int temp_2_range = 0;//0;
     int temp_2_timeslot = 1;
 
     /* 
@@ -120,7 +120,7 @@ int main(int argc, char **argv){
      */
     int hum_1_channel = 2;
     int hum_1_settling = TSETTLE;
-    int hum_1_range = S826_ADC_GAIN_10;//0;
+    int hum_1_range = 0;//0;
     int hum_1_timeslot = 2;
 
     // ------ End Configurations for Housekeeping Sensors
