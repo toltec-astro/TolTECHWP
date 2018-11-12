@@ -16,6 +16,7 @@
 void AdcHandler(void)
 {
   int errcode;
+  int adcdata[16]; 
   int slotval[16];  // buffer must be sized for 16 slots
   while (1) {
     uint slotlist = 1;  // only slot 0 is of interest in this example
@@ -36,6 +37,8 @@ int main(int argc, char **argv){
         exit(0);
     }    
     int board = 0;
+    int runmode = 0; // use runmode
+
     /* 
      * Power Output for Sensors
      *  Function: Analog output channel 1
@@ -61,27 +64,12 @@ int main(int argc, char **argv){
     if (pwr_set < 0)
         printf("Configure power data error code %d", pwr);
 
-    int temp_1 = S826_AdcSlotConfigWrite(board, 0, 0, TSETTLE, 0);
-    if (temp_1 < 0)
-        printf("Configure error %d", temp_1);
-
     // Configure the ADC subsystem and start it running
     S826_AdcSlotConfigWrite(board, 0, 0, TSETTLE, S826_ADC_GAIN_1); // measuring ain 0 on slot 0
     S826_AdcSlotlistWrite(board, 1, S826_BITWRITE);                 // enable slot 0
     S826_AdcTrigModeWrite(board, 0);                                // trigger mode = continuous
     S826_AdcEnableWrite(board, 1);                                  // start adc conversions
 
-    int err_AdcSlotlistWrite = S826_AdcSlotlistWrite(board, 0xE000, S826_BITWRITE);
-    if (err_AdcSlotlistWrite < 0)
-        printf("S826_AdcSlotlistWrite error code %d", err_AdcSlotlistWrite);
-
-    int err_AdcTrigModeWrite = S826_AdcTrigModeWrite(board, 0); 
-    if (err_AdcTrigModeWrite < 0)
-        printf("S826_AdcTrigModeWrite error code %d", err_AdcTrigModeWrite);
-
-    int err_AdcEnableWrite = S826_AdcEnableWrite(board, 1);  
-    if (err_AdcEnableWrite < 0)
-        printf("S826_AdcEnableWrite error code %d", err_AdcEnableWrite);    
 
     // time keeping
     time_t rawtime, startime;
