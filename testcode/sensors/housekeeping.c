@@ -56,7 +56,7 @@ void AdcHandler(void)
         adcdata = (int)((slotval[slot] & 0xFFFF));
         burstnum = ((unsigned int)slotval[slot] >> 24);
 
-        printf("%d ; %d", adcdata, burstnum);
+        printf("-->Slot %d: %d ; %d \n", slot, adcdata, burstnum);
         //printf("Slot %d sample value = %d or   0x%08x \n", slot, slotval[slot], slotval[slot]);
     };
 
