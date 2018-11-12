@@ -46,16 +46,11 @@ void AdcHandler(void)
         burstnum = ((unsigned int)slotval[slot] >> 24);
 
         printf("-->Slot %d: %d ; %d \n", slot, adcdata, burstnum);
-        //printf("Slot %d sample value = %d or   0x%08x \n", slot, slotval[slot], slotval[slot]);
+        fprintf(stdout, "Raw Channel %d Data = %d; ", slot, slotval[0]);
     };
 
-    fprintf(stdout, "Raw Channel 0 Data = %d; ", slotval[0]);
-    fprintf(stdout, "Raw Channel 1 Data = %d; ", slotval[1]);
-    fprintf(stdout, "Raw Channel 2 Data = %d; ", slotval[2]);    
-    fprintf(stdout, "Raw Channel 3 Data = %d; \n", slotval[3]);
-
     S826_AdcStatusRead(0, &conversion_status);
-    fprintf(stdout, "post conversion_status = 0x%04x; \n\n", conversion_status);
+    fprintf(stdout, "ADC conversion status = 0x%04x; \n\n", conversion_status);
 
 }
 
