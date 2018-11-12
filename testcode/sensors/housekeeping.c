@@ -49,10 +49,15 @@ void AdcHandler(void)
     int slot;
     for (slot = 0; slot < 3; slot++)    // Display all samples.
     {
-        int testval;
-        testval = (short)(slotval[slot] & 0xFFFF);
-        printf("TESTVAL = %d \n", testval);
-        printf("Slot %d sample value = %d or   0x%08x \n", slot, slotval[slot], slotval[slot]);
+        int adcdata;
+        unsigned int burstnum;
+
+        // extract adcdata, burstnum, and bufoverflowflag from buf
+        adcdata = (int)((slotval[slot] & 0xFFFF));
+        burstnum = ((unsigned int)slotval[slot] >> 24);
+
+        printf("%d ; %d", adcdata, burstnum);
+        //printf("Slot %d sample value = %d or   0x%08x \n", slot, slotval[slot], slotval[slot]);
     };
 
     fprintf(stdout, "Raw Channel 0 Data = %d; ", slotval[0]);
