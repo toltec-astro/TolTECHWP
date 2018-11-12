@@ -46,7 +46,7 @@ void AdcHandler(void)
         // extract adcdata, burstnum, and bufoverflowflag from buf
         adcdata = (int)((slotval[slot] & 0xFFFF));
         burstnum = ((unsigned int)slotval[slot] >> 24);
-        printf("-ADCData %d: -BurstNum %d ; %d \n", adcdata, burstnum);
+        printf("-ADCData %d:  , BurstNum %d \n", adcdata, burstnum);
     };
 
     S826_AdcStatusRead(0, &conversion_status);
