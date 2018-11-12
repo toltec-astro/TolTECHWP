@@ -45,7 +45,7 @@ void AdcHandler(void)
         adcdata = (int)((slotval[slot] & 0xFFFF));
         burstnum = ((unsigned int)slotval[slot] >> 24);
 
-        printf("-->Slot %d: %d ; %d \n", slot, adcdata, burstnum);
+        printf("-ADCData %d: -BurstNum %d ; %d \n", adcdata, burstnum);
         fprintf(stdout, "Raw Channel %d Data = %d; ", slot, slotval[0]);
     };
 
