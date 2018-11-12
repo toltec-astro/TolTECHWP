@@ -36,9 +36,11 @@ void AdcHandler(void)
     int slot;
     for (slot = 0; slot < 3; slot++)    // Display all samples.
     {
+        int testval;
+        testval = (short)(slotval[slot] & 0xFFFF);
         printf("Slot %d sample value = %d or   0x%08x \n", slot, slotval[slot], slotval[slot]);
     };
-
+    adcDatas[i] = (int16_t)((_adBuf[i] & 0xFFFF));
     fprintf(stdout, "Raw Channel 0 Data = %d; ", slotval[0]);
     fprintf(stdout, "Raw Channel 1 Data = %d; ", slotval[1]);
     fprintf(stdout, "Raw Channel 2 Data = %d; ", slotval[2]);    
