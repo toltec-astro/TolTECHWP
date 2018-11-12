@@ -50,7 +50,7 @@ void AdcHandler(void)
     };
 
     S826_AdcStatusRead(0, &conversion_status);
-    fprintf(stdout, "ADC conversion status = 0x%04x; \n\n", conversion_status);
+    fprintf(stdout, "\nADC conversion status = 0x%04x; \n\n", conversion_status);
 
 }
 
