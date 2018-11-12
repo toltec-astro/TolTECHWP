@@ -1,7 +1,6 @@
 #define S826_CM_XS_CH0     2
 #define printout 0
-#define SAMPLING_PERIOD 500000
-#define TSETTLE SAMPLING_PERIOD - 5
+#define TSETTLE 100000;
 
 #include "826api.h"
 #include <stdio.h>
@@ -14,18 +13,41 @@
 
 void AdcHandler(void)
 {
+    // reads in the data.
+
     int errcode;
     int slotval[16]; // buffer must be sized for 16 slots
 
     uint slotlist = 0xE000; 
-    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, 1000); // wait for IRQ
+    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
     if (errcode != S826_ERR_OK)
         printf("ADC Read Failed. %d", errcode);
 
-    fprintf(stdout, "Raw Channel 0 Data = %d \n", slotval[0]);
-    fprintf(stdout, "Raw Channel 1 Data = %d \n", slotval[1]);
-    fprintf(stdout, "Raw Channel 2 Data = %d \n", slotval[2]);
-    fprintf(stdout, "Raw Channel 3 Data = %d \n", slotval[3]);
+    uint read_status;
+    S826_AdcEnableRead(0, &read_status);
+    fprintf(stdout, "read_status = %d; \n", read_status);
+
+    uint conversion_status;
+    S826_AdcStatusRead(0, &conversion_status);
+    fprintf(stdout, "conversion_status = 0x%04x; \n", conversion_status);
+
+    fprintf(stdout, "slotlist = 0x%04x; \n", slotlist);
+
+    int slot;
+    for (slot = 0; slot < 3; slot++)    // Display all samples.
+    {
+        printf("Slot %d sample value = %d or   0x%08x \n", slot, slotval[slot], slotval[slot]);
+    };
+
+    fprintf(stdout, "Raw Channel 0 Data = %d; ", slotval[0]);
+    fprintf(stdout, "Raw Channel 1 Data = %d; ", slotval[1]);
+    fprintf(stdout, "Raw Channel 2 Data = %d; ", slotval[2]);    
+    fprintf(stdout, "Raw Channel 3 Data = %d; \n", slotval[3]);
+
+    fprintf(stdout, "%i \n", slotval);
+
+    S826_AdcStatusRead(0, &conversion_status);
+    fprintf(stdout, "post conversion_status = 0x%04x; \n\n", conversion_status);
 
 }
 
@@ -56,6 +78,7 @@ int main(int argc, char **argv){
      */
     int pwr_output_channel = 1; 
     int pwr_output_range = 0;
+    int pwr_output_setpoint = 0xFFFF;
 
     /* 
      * Temperature Sensor 1 Input
@@ -68,36 +91,36 @@ int main(int argc, char **argv){
      */
     int temp_1_channel = 0;
     int temp_1_settling = TSETTLE;
-    int temp_1_range = 0;
-    int temp_1_timeslot = 1;
+    int temp_1_range = S826_ADC_GAIN_1;
+    int temp_1_timeslot = 0;
 
     /* 
      * Temperature Sensor 2 Input
      *  Function: Analog input (+) channel 1
-     *    - Pin = 
+     *    - Pin = 6
      *    - Name: +AIN1
      *  Function: Analog input (-) channel 1
-     *    - Pin = 
+     *    - Pin = 5
      *    - Name: -AIN1
      */
     int temp_2_channel = 1;
     int temp_2_settling = TSETTLE;
-    int temp_2_range = 0;
-    int temp_2_timeslot = 2;
+    int temp_2_range = S826_ADC_GAIN_1;//0;
+    int temp_2_timeslot = 1;
 
     /* 
      * Humidity Sensor Input 1
      *  Function: Analog input (+) channel 2
-     *    - Pin = 
+     *    - Pin = 8
      *    - Name: +AIN2
      *  Function: Analog input (-) channel 2
-     *    - Pin = 
+     *    - Pin = 7
      *    - Name: -AIN2
      */
     int hum_1_channel = 2;
     int hum_1_settling = TSETTLE;
-    int hum_1_range = 0;
-    int hum_1_timeslot = 3;
+    int hum_1_range = S826_ADC_GAIN_10;//0;
+    int hum_1_timeslot = 2;
 
     // ------ End Configurations for Housekeeping Sensors
 
@@ -111,7 +134,10 @@ int main(int argc, char **argv){
     if (pwr < 0)
         printf("Configure power error code %d", pwr);
 
-    // TODO: LOOP OVER TO SET SETTINGS
+    int pwr_set = S826_DacDataWrite(board, pwr_output_channel, pwr_output_setpoint, runmode);
+    if (pwr_set < 0)
+        printf("Configure power data error code %d", pwr);
+
 
     // configure power input for temperature 1 sensor
     int temp_1 = S826_AdcSlotConfigWrite(board, 
@@ -120,6 +146,8 @@ int main(int argc, char **argv){
         temp_1_settling,
         temp_1_range
     );
+    if (temp_1 < 0)
+        printf("Configure error %d", temp_1);
 
     // configure power input for temperature 2 sensor
     int temp_2 = S826_AdcSlotConfigWrite(board, 
@@ -141,10 +169,19 @@ int main(int argc, char **argv){
     // 0xE000 = is the first three 
     // trigger mode = continuous
     // enable the board 
-    S826_AdcSlotlistWrite(board, 0xE000, S826_BITWRITE);
-    S826_AdcTrigModeWrite(board, 0); 
-    S826_AdcEnableWrite(board, 1);  
-    
+
+    int err_AdcSlotlistWrite = S826_AdcSlotlistWrite(board, 0xE000, S826_BITWRITE);
+    if (err_AdcSlotlistWrite < 0)
+        printf("S826_AdcSlotlistWrite error code %d", err_AdcSlotlistWrite);
+
+    int err_AdcTrigModeWrite = S826_AdcTrigModeWrite(board, 0); 
+    if (err_AdcTrigModeWrite < 0)
+        printf("S826_AdcTrigModeWrite error code %d", err_AdcTrigModeWrite);
+
+    int err_AdcEnableWrite = S826_AdcEnableWrite(board, 1);  
+    if (err_AdcEnableWrite < 0)
+        printf("S826_AdcEnableWrite error code %d", err_AdcEnableWrite);    
+
     // time keeping
     time_t rawtime, startime;
     time(&rawtime);
@@ -159,6 +196,11 @@ int main(int argc, char **argv){
         time(&rawtime);
         nanosleep((const struct timespec[]){{0, 500000000L}}, NULL);
     }
+
+    // explicitly set power to zero
+    int pwr_set_off = S826_DacDataWrite(board, pwr_output_channel, 0x0000, runmode);
+    if (pwr_set_off < 0)
+        printf("Configure power data off code %d", pwr);
 
     // ------ Close S826 API ------
     S826_SystemClose();
