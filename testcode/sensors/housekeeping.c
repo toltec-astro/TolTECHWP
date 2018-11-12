@@ -23,8 +23,6 @@ void AdcHandler(void)
     if (errcode != S826_ERR_OK)
         printf("ADC Read Failed. %d", errcode);
 
-    printf("Raw adc data = %d", slotval[0] & 0xFFFF);
-
     uint read_status;
     S826_AdcEnableRead(0, &read_status);
     fprintf(stdout, "read_status = %d; \n", read_status);
