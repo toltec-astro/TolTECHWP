@@ -22,35 +22,37 @@ void AdcHandler(void)
     int errcode;
     int slotval[16]; // buffer must be sized for 16 slots
 
-    uint slotlist = 0xE000; 
+    uint slotlist = 0x0007; //0007;//
     errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
     if (errcode != S826_ERR_OK)
         printf("ADC Read Failed. %d", errcode);
 
-    uint read_status;
-    S826_AdcEnableRead(0, &read_status);
-    fprintf(stdout, "Check that read status is on: %d; \n", read_status);
+    //uint read_status;
+    //S826_AdcEnableRead(0, &read_status);
+    //fprintf(stdout, "Check that read status is on: %d; \n", read_status);
 
-    uint conversion_status;
-    S826_AdcStatusRead(0, &conversion_status);
-    fprintf(stdout, "What is ready to be converted: 0x%04x; \n", conversion_status);
+    //uint conversion_status;
+    //S826_AdcStatusRead(0, &conversion_status);
+    //fprintf(stdout, "What is ready to be converted: 0x%04x; \n", conversion_status);
 
     int slot;
     for (slot = 0; slot < 3; slot++)    // Display all samples.
     {
         int adcdata;
         unsigned int burstnum;
+    float voltage;
         
-        fprintf(stdout, "Raw Channel %d Data = %d; ", slot, slotval[0]);
+        //fprintf(stdout, "Raw Channel %d Data = %d; \t", slot, slotval[slot]);
         
         // extract adcdata, burstnum, and bufoverflowflag from buf
         adcdata = (int)((slotval[slot] & 0xFFFF));
         burstnum = ((unsigned int)slotval[slot] >> 24);
-        printf("-ADCData %d:  , BurstNum %d \n", adcdata, burstnum);
+    voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
+        printf("Slot: %d \t Voltage: %f \t ADCData: %d \t BurstNum %d \n", slot, voltage, adcdata, burstnum);   
     };
-
-    S826_AdcStatusRead(0, &conversion_status);
-    fprintf(stdout, "\nADC conversion status = 0x%04x; \n\n", conversion_status);
+    printf("\n");   
+//    S826_AdcStatusRead(0, &conversion_status);
+//    fprintf(stdout, "\nADC conversion status = 0x%04x; \n\n", conversion_status);
 
 }
 
@@ -63,6 +65,7 @@ int main(int argc, char **argv){
         printf("     duration = how long experiment is (seconds)\n");
         exit(0);
     }
+    printf("%d %d %d \n", (short)0x7FFF - (short)0x8000, (short)0x7FFF, (short)0x8000);
 
     //// Preparation
     // Set timer counter interval: 
@@ -84,6 +87,12 @@ int main(int argc, char **argv){
     int pwr_output_range = 0;
     int pwr_output_setpoint = 0xFFFF;
 
+    /*
+    S826_ADC_GAIN_1         0           // -10V to +10V
+    S826_ADC_GAIN_2         1           // -5V to +5V
+    S826_ADC_GAIN_5         2           // -2V to +2V
+    S826_ADC_GAIN_10    3       // -1V to +1V
+     */
     /* 
      * Temperature Sensor 1 Input
      *  Function: Analog input (+) channel 0
@@ -95,7 +104,7 @@ int main(int argc, char **argv){
      */
     int temp_1_channel = 0;
     int temp_1_settling = TSETTLE;
-    int temp_1_range = 0;
+    int temp_1_range = S826_ADC_GAIN_1;
     int temp_1_timeslot = 0;
 
     /* 
@@ -109,7 +118,7 @@ int main(int argc, char **argv){
      */
     int temp_2_channel = 1;
     int temp_2_settling = TSETTLE;
-    int temp_2_range = 0;//0;
+    int temp_2_range = S826_ADC_GAIN_1;
     int temp_2_timeslot = 1;
 
     /* 
@@ -123,7 +132,7 @@ int main(int argc, char **argv){
      */
     int hum_1_channel = 2;
     int hum_1_settling = TSETTLE;
-    int hum_1_range = 0;//0;
+    int hum_1_range = S826_ADC_GAIN_1;//0;
     int hum_1_timeslot = 2;
 
     // ------ End Configurations for Housekeeping Sensors
@@ -174,7 +183,7 @@ int main(int argc, char **argv){
     // trigger mode = continuous
     // enable the board 
 
-    int err_AdcSlotlistWrite = S826_AdcSlotlistWrite(board, 0xE000, S826_BITWRITE);
+    int err_AdcSlotlistWrite = S826_AdcSlotlistWrite(board, 0x0007, S826_BITWRITE);
     if (err_AdcSlotlistWrite < 0)
         printf("S826_AdcSlotlistWrite error code %d", err_AdcSlotlistWrite);
 
@@ -186,14 +195,15 @@ int main(int argc, char **argv){
     if (err_AdcEnableWrite < 0)
         printf("S826_AdcEnableWrite error code %d", err_AdcEnableWrite);    
 
+    nanosleep((const struct timespec[]){{0, 10000000000L}}, NULL);
+
     // time keeping
     time_t rawtime, startime;
     time(&rawtime);
     startime = rawtime;
     
-    
     while (rawtime - startime < duration){
-
+    
         AdcHandler();
 
         // update time and sleep time
