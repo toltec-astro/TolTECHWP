@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdlib.h> 
 
-// TODO: convert individual configurations into a struct
+// TODO: individual configurations to .h file
 
 
 /*
