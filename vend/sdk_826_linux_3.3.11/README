@@ -1,0 +1,72 @@
+Sensoray 826 Linux SDK
+
+Linux driver and demo programs.
+
+Quick-start Instructions
+
+Make and install driver
+
+1) "make modules"
+2) "sudo make install"
+3) "modprobe s826"
+
+Driver Installation Check:
+1) "dmesg"
+2) At the bottom of the log, you should see
+   s826_probe
+   s826 interrupt X installed (where X is any number)
+   Sensoray 826 driver, version 1.0.4 successfully loaded.
+3) Type "ls -al /dev/s826*".  You should see at least one entry for the 826. Eg:
+   crw-rw-rw-. 1 root root 246, 0 Aug 17 09:09 /dev/s826_0
+
+Make and run example console demo program
+
+1) From this directory, type "make" or "make s826demo"
+2) To run the demo, 
+   "cd demo"
+   "./s826demo"
+
+  If the board has been changed to a different index (SW1), enter
+  the board index as a parameter to ./s826demo.
+  "./s826demo 1" for board index 1.
+
+  If board not detected, please check the jumpers for the board index.
+  Some earlier boards shipped with board index 15.  Please try board index
+  15 if board not detected.
+
+GUI demo
+1) First make the libraries.   The source code for the libraries is provided,
+   but needs installed.
+   From this directory:
+
+   "make lib"
+   "sudo make lib_install"
+
+to get the mono libraries
+   "sudo apt-get install mono-complete"
+
+to get the mono development environment
+   "sudo apt-get install monodevelop"
+
+to run the GUI (requires linux "mono" package)
+   "cd demo_gui/app-826-csharp/app-826-csharp/bin/release"
+   "mono app-826-csharp.exe"
+
+
+
+Creating a custom program
+
+All commands are in the file 826api.h
+
+Please note. The source code for the libraries is provided, but it is not recommended to modify the library code (middleware directory).
+
+Please see the programming manual for more details.
+
+The demo program demo/s826_example.c provides several examples
+of using the 826 API.
+
+
+
+
+
+
