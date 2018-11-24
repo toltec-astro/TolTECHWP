@@ -1,6 +1,6 @@
 #define S826_CM_XS_CH0     2
 #define printout 0
-#define TSETTLE 100000;
+#define TSETTLE 5;
 
 #include "826api.h"
 #include <stdio.h>
@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdlib.h> 
 
-// TODO: individual configurations to .h file
+// TODO: convert individual configurations into a struct
 
 
 /*
@@ -34,6 +34,8 @@ void AdcHandler(void)
     //uint conversion_status;
     //S826_AdcStatusRead(0, &conversion_status);
     //fprintf(stdout, "What is ready to be converted: 0x%04x; \n", conversion_status);
+
+// add logging - level, sender, message  
 
     int slot;
     for (slot = 0; slot < 3; slot++)    // Display all samples.
