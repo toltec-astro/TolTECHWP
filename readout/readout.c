@@ -106,7 +106,11 @@ int main(int argc, char **argv){
         printf("     sleepdtime = how long computer sleeps between reads (us)\n");
         printf("     duration = how long experiment is (seconds)\n");
         exit(0);
-    }    
+    }
+    int datausec  = atoi(argv[1]); // Set timer counter interval: Determines how often count data is stored.
+    int sleepusec = atoi(argv[2]); // Set computer sleep interval (microseconds)
+    int duration  = atoi(argv[3]); // seconds
+        
     // Variables
     int i;
     int board = 0;
