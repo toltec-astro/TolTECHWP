@@ -144,7 +144,7 @@ int main(int argc, char **argv){
     SystemOpenHandler();
     
     time(&rawtime);
-    startime = rawtime;
+    starttime = rawtime;
     while(rawtime - starttime < duration){
         
         // update time/counter & loop
