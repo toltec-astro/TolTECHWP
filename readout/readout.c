@@ -62,7 +62,7 @@ void LoadConfig(void)
     }   
 }
 
-void ConfigureQuadCounter(int board, int countquad)
+void ConfigureQuadCounter(int board, int countquad, int countime)
 {
     S826_CounterModeWrite(
         board, 
@@ -82,7 +82,7 @@ void ConfigureQuadCounter(int board, int countquad)
         printf("Quad Counter returned error code %d", flags);
 }
 
-void ConfigureTimerCounter(int board, int countime)
+void ConfigureTimerCounter(int board, int countime, int datausec)
 {
     S826_CounterModeWrite(board, countime,       // Configure counter mode:
             S826_CM_K_1MHZ |                     // clock source = 1 MHz internal
