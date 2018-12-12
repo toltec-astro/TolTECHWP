@@ -141,7 +141,7 @@ int main(int argc, char **argv){
     SystemOpenHandler();
 
     // close the 826 API
-    SystemCloseHandler();
+    S826_SystemClose();
 }
 
 
