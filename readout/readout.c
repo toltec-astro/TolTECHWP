@@ -62,7 +62,7 @@ void LoadConfig(void)
     }   
 }
 
-void ConfigureQuadCounter(void)
+void ConfigureQuadCounter(int board, int countquad)
 {
     S826_CounterModeWrite(
         board, 
@@ -70,7 +70,7 @@ void ConfigureQuadCounter(void)
         S826_CM_K_QUADX4 |        // Quadrature x1/x2/x4 multiplier
         //S826_CM_K_ARISE |       // clock = ClkA (external digital signal)
         //S826_XS_100HKZ |        // route tick generator to index input
-        (S826_CM_XS_CH0+countime) // route CH1 to Index input
+        (S826_CM_XS_CH0 + countime) // route CH1 to Index input
     );   
     S826_CounterSnapshotConfigWrite(
         board, countquad,  // Acquire counts upon tick rising edge.
@@ -82,21 +82,21 @@ void ConfigureQuadCounter(void)
         printf("Quad Counter returned error code %d", flags);
 }
 
-void ConfigureTimerCounter(void)
+void ConfigureTimerCounter(int board, int countime)
 {
     S826_CounterModeWrite(board, countime,       // Configure counter mode:
             S826_CM_K_1MHZ |                     // clock source = 1 MHz internal
             S826_CM_PX_START | S826_CM_PX_ZERO | // preload @start and counts==0
             S826_CM_UD_REVERSE |                 // count down
             S826_CM_OM_NOTZERO
-    ); // ExtOut = (counts!=0)
+    );
     S826_CounterPreloadWrite(board, countime, 0, datausec); // Set period in microseconds.
     flags = S826_CounterStateWrite(board, countime, 1);      // Start the timer running.
     if (flags < 0)
         printf("Timer Counter returned error code %d", flags);
 }
 
-void ConfigurePulsePerSecondCounter(void)
+void ConfigurePulsePerSecondCounter(int board, int countpps)
 {
     S826_CounterModeWrite(board, countpps,      // Configure counter:
                             S826_CM_K_AFALL );   // clock = ClkA (external digital signal)
