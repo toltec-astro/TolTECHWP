@@ -7,11 +7,15 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h> 
+#include <signal.h>
 
 //ini_free(config);
 
 int main(int argc, char **argv){
+    // signal handler
+    signal(SIGINT, SystemCloseHandler);
 
+    // load config file
     LoadConfig();
     
     if( argc < 3 ) {
@@ -55,17 +59,26 @@ int main(int argc, char **argv){
     SystemOpenHandler();
 
     // close the 826 API
+    SystemCloseHandler();
+}
+
+void SystemCloseHandler(int sig)
+{
+    signal(sig, SIG_IGN);
+    printf("Signal Caught!");
     S826_SystemClose();
+    exit(0);
+    printf("System Closed!");
 }
 
 void SystemOpenHandler(void)
 {
-    int id; // board ID (determined by switch settings on board)
+    int id;
     int flags = S826_SystemOpen();
     if (flags < 0)
-        printf("S826_SystemOpen returned error code %d", flags);
+        printf("S826_SystemOpen returned error code %d\n", flags);
     else if (flags == 0)
-        printf("No boards were detected");
+        printf("No boards were detected\n");
     else {
         printf("Boards were detected with these IDs:");
         for (id = 0; id < 16; id++) {
@@ -102,7 +115,7 @@ void ConfigureQuadCounter(int board, int countquad, int countime)
   
     int flags = S826_CounterStateWrite(board, countquad, 1); // start the counter
     if (flags < 0)
-        printf("Quad Counter returned error code %d", flags);
+        printf("Quad Counter returned error code %d\n", flags);
 }
 
 void ConfigureTimerCounter(int board, int countime, int datausec)
@@ -116,7 +129,7 @@ void ConfigureTimerCounter(int board, int countime, int datausec)
     S826_CounterPreloadWrite(board, countime, 0, datausec); // Set period in microseconds.
     int flags = S826_CounterStateWrite(board, countime, 1);      // Start the timer running.
     if (flags < 0)
-        printf("Timer Counter returned error code %d", flags);
+        printf("Timer Counter returned error code %d\n", flags);
 }
 
 void ConfigurePulsePerSecondCounter(int board, int countpps)
@@ -130,5 +143,5 @@ void ConfigurePulsePerSecondCounter(int board, int countpps)
                   S826_SSRMASK_IXRISE, S826_BITWRITE);
     int flags = S826_CounterStateWrite(board, countpps, 1); // start the counter
     if (flags < 0)
-        printf("PPS Counter returned error code %d", flags);   
+        printf("PPS Counter returned error code %d\n", flags);   
 }
