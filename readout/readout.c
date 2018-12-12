@@ -1,3 +1,5 @@
+#define S826_CM_XS_CH0     2
+
 #include "../vend/ini/ini.h"
 #include "../vend/sdk_826_linux_3.3.11/driver/826api.h"
 #include <stdio.h>
