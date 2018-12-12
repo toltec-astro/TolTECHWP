@@ -41,9 +41,9 @@ int GetDebugStatus(char configname[1000])
 {
     ini_t *config = ini_load(configname); 
     const char *debug = ini_get(config, "debug", "debug");
-    if (&debug == 1) {
+    if (debug) {
         printf("name: %s\n", debug);
-        return 1;
+        return debug;
     }   
     else {
         return 0;
