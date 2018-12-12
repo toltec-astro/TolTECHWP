@@ -107,10 +107,7 @@ int main(int argc, char **argv){
         printf("     duration = how long experiment is (seconds)\n");
         exit(0);
     }
-    int datausec  = atoi(argv[1]); // Set timer counter interval: Determines how often count data is stored.
-    int sleepusec = atoi(argv[2]); // Set computer sleep interval (microseconds)
-    int duration  = atoi(argv[3]); // seconds
-        
+
     // Variables
     int i;
     int board = 0;
@@ -129,6 +126,8 @@ int main(int argc, char **argv){
     int errcount = 0; // number of overflow errors
     int sampcount = 0; // number of samples in this readout session
     uint counts[1000], tstamp[1000], reason[1000];
+    
+
     //// Preparation
     // Set timer counter interval: Determines how often count data is stored.
     int datausec = atoi(argv[1]); // Micro seconds
@@ -143,8 +142,11 @@ int main(int argc, char **argv){
     // int flags = S826_SystemOpen();
     // printf("S826_SystemOpen returned error code %d\n", flags);
     SystemOpenHandler();
-
+    
+    time(&rawtime);
+    startime = rawtime;
     while(rawtime - starttime < duration){
+        
         // update time/counter & loop
         time(&rawtime);
         loopcount++;
