@@ -83,16 +83,20 @@ int main(int argc, char **argv){
   if (flags < 0)
     printf("Timer Counter returned error code %d", flags);
   // Quadrature Counter Configuration
+  
   S826_CounterModeWrite(board, countquad,      // Configure counter:
 			S826_CM_K_QUADX4 |  // Quadrature x1/x2/x4 multiplier
 			//S826_CM_K_ARISE |   // clock = ClkA (external digital signal)
 			//S826_XS_100HKZ |    // route tick generator to index input
 			(S826_CM_XS_CH0+countime) );   // route CH1 to Index input
+  
   S826_CounterSnapshotConfigWrite(board, countquad,  // Acquire counts upon tick rising edge.
 				  S826_SSRMASK_IXRISE, S826_BITWRITE);
+  
   flags = S826_CounterStateWrite(board, countquad, 1); // start the counter
   if (flags < 0)
     printf("Quad Counter returned error code %d", flags);
+  
   // Pulse Per Second Counter Configuration
   // - Need filter when using arduino on breadboard
   // - Need count on FALL and snap on RISE to avoid race condition

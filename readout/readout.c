@@ -1,4 +1,5 @@
-#include "826api.h"
+#include "../vend/ini/ini.h"
+#include "../vend/ini/sdk_826_linux_3.3.11/826api.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
