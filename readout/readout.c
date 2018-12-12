@@ -6,6 +6,15 @@
 #include <string.h>
 #include <stdlib.h> 
 
+void LoadConfig(void)
+{
+    ini_t *config = ini_load("../config/masterconfig.ini"); 
+    const char *logging_port = ini_get(config, "ports", "logging_port");
+    if (logging_port) {
+      printf("name: %s\n", logging_port);
+    }   
+}
+
 int main(int argc, char **argv){
     
     if( argc < 3 ) {
@@ -15,4 +24,7 @@ int main(int argc, char **argv){
         printf("     duration = how long experiment is (seconds)\n");
         exit(0);
     }    
+
+    LoadConfig();
+
 }
