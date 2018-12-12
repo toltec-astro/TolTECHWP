@@ -13,10 +13,12 @@
 void SystemCloseHandler(int sig)
 {
     signal(sig, SIG_IGN);
-    printf("Signal Caught!");
+    printf("\nSignal Caught!\n");
+    // add power shut off here
     S826_SystemClose();
+    ini_free(config);
+    printf("System Closed!\n");
     exit(0);
-    printf("System Closed!");
 }
 
 void SystemOpenHandler(void)
