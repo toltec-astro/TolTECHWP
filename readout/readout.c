@@ -51,8 +51,7 @@ int main(int argc, char **argv){
 
     // Open the 826 API ---------------
     int flags = S826_SystemOpen();
-    if (flags < 0)
-        printf("S826_SystemOpen returned error code %d", flags);
+    printf("S826_SystemOpen returned error code %d", flags);
 }
 
 
