@@ -125,7 +125,7 @@ int main(int argc, char **argv){
     int debug = 0;
     char* filename = atoi(argv[1]);
     printf(filename);
-    debug = GetDebugStatus();
+    debug = GetDebugStatus(filename);
 
     // Variables
     int i;
