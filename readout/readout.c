@@ -37,23 +37,33 @@ void SystemOpenHandler(void)
 }
 
 
-void LoadConfig(void)
+int GetDebugStatus(char configname[1000])
 {
-    ini_t *config = ini_load("../config/masterconfig.ini"); 
-    const char *logging_port = ini_get(config, "ports", "logging_port");
-    if (logging_port) {
-      printf("name: %s\n", logging_port);
+    ini_t *config = ini_load(configname); 
+    const char *logging_port = ini_get(config, "debug", "debug");
+    if (debug == True) {
+        printf("name: %s\n", debug);
+        return 1
     }   
+    else {
+        return 0
+    }
+    
 }
 
+/*
+ * Configures the Quad Counter
+ * 
+ *
+ */
 void ConfigureQuadCounter(int board, int countquad, int countime)
 {
     S826_CounterModeWrite(
         board, 
-        countquad,                // Configure counter:
-        S826_CM_K_QUADX4 |        // Quadrature x1/x2/x4 multiplier
-        //S826_CM_K_ARISE |       // clock = ClkA (external digital signal)
-        //S826_XS_100HKZ |        // route tick generator to index input
+        countquad,                  // Configure counter:
+        S826_CM_K_QUADX4 |          // Quadrature x1/x2/x4 multiplier
+        //S826_CM_K_ARISE |         // clock = ClkA (external digital signal)
+        //S826_XS_100HKZ |          // route tick generator to index input
         (S826_CM_XS_CH0 + countime) // route CH1 to Index input
     );   
     S826_CounterSnapshotConfigWrite(
@@ -66,6 +76,11 @@ void ConfigureQuadCounter(int board, int countquad, int countime)
         printf("Quad Counter returned error code %d\n", flags);
 }
 
+/*
+ * Configures the Timer Counter
+ * 
+ *
+ */
 void ConfigureTimerCounter(int board, int countime, int datausec)
 {
     S826_CounterModeWrite(board, countime,       // Configure counter mode:
@@ -80,6 +95,11 @@ void ConfigureTimerCounter(int board, int countime, int datausec)
         printf("Timer Counter returned error code %d\n", flags);
 }
 
+/*
+ * Configures the PPS Counter
+ * 
+ *
+ */
 void ConfigurePulsePerSecondCounter(int board, int countpps)
 {
     S826_CounterModeWrite(board, countpps,      // Configure counter:
@@ -97,8 +117,8 @@ int main(int argc, char **argv){
     // signal handler
     signal(SIGINT, SystemCloseHandler);
 
-    // load config file
-    LoadConfig();
+    int debug = 0;
+    debug = GetDebugStatus();
     
     if( argc < 3 ) {
         printf("Use: readout datadtime sleepdtime duration\n");
