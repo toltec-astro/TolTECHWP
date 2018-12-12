@@ -50,8 +50,29 @@ int main(int argc, char **argv){
     int duration = atoi(argv[3]); // Seconds
 
     // Open the 826 API ---------------
+    // int flags = S826_SystemOpen();
+    // printf("S826_SystemOpen returned error code %d\n", flags);
+    SystemOpenHandler();
+
+    // close the 826 API
+    S826_SystemClose();
+}
+
+void SystemOpenHandler(void)
+{
+    int id; // board ID (determined by switch settings on board)
     int flags = S826_SystemOpen();
-    printf("S826_SystemOpen returned error code %d", flags);
+    if (flags < 0)
+        printf("S826_SystemOpen returned error code %d", flags);
+    else if (flags == 0)
+        printf("No boards were detected");
+    else {
+        printf("Boards were detected with these IDs:");
+        for (id = 0; id < 16; id++) {
+            if (flags & (1 << id))
+                printf(" %d", id);
+        }
+    }
 }
 
 
