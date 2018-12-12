@@ -114,7 +114,7 @@ int main(int argc, char **argv){
     int countime = 2; // timer counter
     int countpps = 1; // pps counter
     struct timespec treq;
-    time_t rawtime,startime;
+    time_t rawtime, starttime;
     char s[2000000],t[200];
     char fname[100];
     FILE *outf;
@@ -146,7 +146,7 @@ int main(int argc, char **argv){
         loopcount++;
         nanosleep(&treq, NULL);
     }
-        
+
     // close the 826 API
     S826_SystemClose();
 }
