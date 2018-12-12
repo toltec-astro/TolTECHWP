@@ -140,6 +140,13 @@ int main(int argc, char **argv){
     // printf("S826_SystemOpen returned error code %d\n", flags);
     SystemOpenHandler();
 
+    while(rawtime - starttime < duration){
+        // update time/counter & loop
+        time(&rawtime);
+        loopcount++;
+        nanosleep(&treq, NULL);
+    }
+        
     // close the 826 API
     S826_SystemClose();
 }
