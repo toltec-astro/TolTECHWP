@@ -9,14 +9,12 @@
 #include <stdlib.h> 
 #include <signal.h>
 
-//ini_free(config);
 void SystemCloseHandler(int sig)
 {
     signal(sig, SIG_IGN);
     printf("\nSignal Caught!\n");
     // add power shut off here
     S826_SystemClose();
-    ini_free(config);
     printf("System Closed!\n");
     exit(0);
 }
@@ -144,6 +142,8 @@ int main(int argc, char **argv){
     // int flags = S826_SystemOpen();
     // printf("S826_SystemOpen returned error code %d\n", flags);
     SystemOpenHandler();
+
+    ConfigureTimerCounter(board, countime, datausec);
     
     time(&rawtime);
     starttime = rawtime;
