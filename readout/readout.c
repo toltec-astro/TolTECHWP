@@ -40,7 +40,7 @@ void SystemOpenHandler(void)
 int GetDebugStatus(char configname[1000])
 {
     ini_t *config = ini_load(configname); 
-    const char *debug = ini_get(config, "debug", "debug");
+    const int *debug = ini_get(config, "debug", "debug");
     if (debug) {
         printf("name: %s\n", debug);
         return debug;
@@ -123,7 +123,9 @@ int main(int argc, char **argv){
     }
 
     int debug = 0;
-    debug = GetDebugStatus(atoi(argv[1]));
+    char* filename = atoi(argv[1]);
+    printf(filename);
+    debug = GetDebugStatus();
 
     // Variables
     int i;
