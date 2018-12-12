@@ -116,17 +116,15 @@ void ConfigurePulsePerSecondCounter(int board, int countpps)
 int main(int argc, char **argv){
     // signal handler
     signal(SIGINT, SystemCloseHandler);
-
-    int debug = 0;
-    debug = GetDebugStatus();
     
-    if( argc < 3 ) {
-        printf("Use: readout datadtime sleepdtime duration\n");
-        printf("     datadtime = intervals how often data is read (us)\n");
-        printf("     sleepdtime = how long computer sleeps between reads (us)\n");
-        printf("     duration = how long experiment is (seconds)\n");
+    if( argc < 1 ) {
+        printf("Use: readout \n");
+        printf("     configfilename \n");
         exit(0);
     }
+
+    int debug = 0;
+    debug = GetDebugStatus(atoi(argv[1]));
 
     // Variables
     int i;
@@ -147,7 +145,6 @@ int main(int argc, char **argv){
     int sampcount = 0; // number of samples in this readout session
     uint counts[1000], tstamp[1000], reason[1000];
     
-
     //// Preparation
     // Set timer counter interval: Determines how often count data is stored.
     int datausec = atoi(argv[1]); // Micro seconds
