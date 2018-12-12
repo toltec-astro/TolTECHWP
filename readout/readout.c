@@ -77,7 +77,7 @@ void ConfigureQuadCounter(int board, int countquad)
         S826_SSRMASK_IXRISE, S826_BITWRITE
     );
   
-    flags = S826_CounterStateWrite(board, countquad, 1); // start the counter
+    int flags = S826_CounterStateWrite(board, countquad, 1); // start the counter
     if (flags < 0)
         printf("Quad Counter returned error code %d", flags);
 }
@@ -91,7 +91,7 @@ void ConfigureTimerCounter(int board, int countime)
             S826_CM_OM_NOTZERO
     );
     S826_CounterPreloadWrite(board, countime, 0, datausec); // Set period in microseconds.
-    flags = S826_CounterStateWrite(board, countime, 1);      // Start the timer running.
+    int flags = S826_CounterStateWrite(board, countime, 1);      // Start the timer running.
     if (flags < 0)
         printf("Timer Counter returned error code %d", flags);
 }
@@ -105,7 +105,7 @@ void ConfigurePulsePerSecondCounter(int board, int countpps)
               100 );                  // 100x20ns = 2us filter constant
     S826_CounterSnapshotConfigWrite(board, countpps,  // Acquire counts upon tick rising edge.
                   S826_SSRMASK_IXRISE, S826_BITWRITE);
-    flags = S826_CounterStateWrite(board, countpps, 1); // start the counter
+    int flags = S826_CounterStateWrite(board, countpps, 1); // start the counter
     if (flags < 0)
         printf("PPS Counter returned error code %d", flags);   
 }
