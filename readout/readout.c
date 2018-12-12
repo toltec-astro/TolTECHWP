@@ -1,7 +1,7 @@
 #define S826_CM_XS_CH0     2
 
 #include "../vend/ini/ini.h"
-#include "../vend/sdk_826_linux_3.3.11/driver/826api.h"
+#include "../vend/sdk_826_linux_3.3.11/demo/826api.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
@@ -48,6 +48,7 @@ int main(int argc, char **argv){
     treq.tv_nsec = sleepusec * 1000;
     // Set duration
     int duration = atoi(argv[3]); // Seconds
+
     // Open the 826 API ---------------
     int flags = S826_SystemOpen();
     if (flags < 0)
