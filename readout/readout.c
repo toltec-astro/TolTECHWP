@@ -43,12 +43,11 @@ int GetDebugStatus(char configname[1000])
     const char *logging_port = ini_get(config, "debug", "debug");
     if (debug == 1) {
         printf("name: %s\n", debug);
-        return 1
+        return 1;
     }   
     else {
-        return 0
+        return 0;
     }
-    
 }
 
 /*
