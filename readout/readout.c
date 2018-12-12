@@ -76,7 +76,24 @@ int main(int argc, char **argv){
         printf("     duration = how long experiment is (seconds)\n");
         exit(0);
     }    
-
+    // Variables
+    int i;
+    int board = 0;
+    int countquad = 0; // quadrature counter
+    int countime = 2; // timer counter
+    int countpps = 1; // pps counter
+    struct timespec treq;
+    time_t rawtime,startime;
+    char s[2000000],t[200];
+    char fname[100];
+    FILE *outf;
+    // Variables to Read all snapshots while it's moving
+    int lastcount = 0; // last value which was read
+    int dcount = 1; // diff current - previous value
+    int loopcount = 0; // number of loops with delays
+    int errcount = 0; // number of overflow errors
+    int sampcount = 0; // number of samples in this readout session
+    uint counts[1000], tstamp[1000], reason[1000];
     //// Preparation
     // Set timer counter interval: Determines how often count data is stored.
     int datausec = atoi(argv[1]); // Micro seconds
