@@ -76,10 +76,6 @@ void ConfigureSensors(char* configname)
     ini_free(config);
 }
 
-/*
- *  Handles the closing of the S826 API
- *  
- */
 void SystemCloseHandler(int sig)
 {
     signal(sig, SIG_IGN);
@@ -90,9 +86,7 @@ void SystemCloseHandler(int sig)
     exit(0);
 }
 
-/*
- *  Opens the S826 API
- */
+
 void SystemOpenHandler(void)
 {
     int id;
@@ -112,10 +106,6 @@ void SystemOpenHandler(void)
 
 
 /*
- * Configures the Quad Counter
- * 
- *
- */
 void ConfigureQuadCounter(int board, int countquad, int counttime)
 {
     S826_CounterModeWrite(
@@ -137,11 +127,7 @@ void ConfigureQuadCounter(int board, int countquad, int counttime)
         printf("Quad Counter returned error code %d\n", flags);
 }
 
-/*
- * Configures the Timer Counter
- * 
- *
- */
+
 void ConfigureTimerCounter(int board, int countime, int datausec)
 {
     S826_CounterModeWrite(board, countime,       // Configure counter mode:
@@ -156,11 +142,7 @@ void ConfigureTimerCounter(int board, int countime, int datausec)
         printf("Timer Counter returned error code %d\n", flags);
 }
 
-/*
- * Configures the PPS Counter
- * 
- *
- */
+
 void ConfigurePulsePerSecondCounter(int board, int countpps)
 {
     S826_CounterModeWrite(board, countpps,      // Configure counter:
@@ -174,6 +156,7 @@ void ConfigurePulsePerSecondCounter(int board, int countpps)
     if (flags < 0)
         printf("PPS Counter returned error code %d\n", flags);   
 }
+*/
 
 /*
  * Main Program Loop!
