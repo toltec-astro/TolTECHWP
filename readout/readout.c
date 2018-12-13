@@ -183,58 +183,58 @@ int main(int argc, char **argv){
     // if (debug) {
     //     printf("name: %s\n", debug);
 
-    // Variables
-    int board = 0;
-    int countquad = 0;  // quadrature counter
-    int countpps = 1;   // pps counter
-    int counttime = 2;  // timer counter
+    // // Variables
+    // int board = 0;
+    // int countquad = 0;  // quadrature counter
+    // int countpps = 1;   // pps counter
+    // int counttime = 2;  // timer counter
 
-    int i;
-    struct timespec treq;
-    time_t rawtime, starttime;
-    char s[2000000], t[200];
-    char fname[100];
-    FILE *outf;
+    // int i;
+    // struct timespec treq;
+    // time_t rawtime, starttime;
+    // char s[2000000], t[200];
+    // char fname[100];
+    // FILE *outf;
 
-    // Variables to read all snapshots while it's moving
-    int lastcount = 0;   // last value which was read
-    int dcount = 1;      // diff current - previous value
-    int loopcount = 0;   // number of loops with delays
-    int errcount = 0;    // number of overflow errors
-    int sampcount = 0;   // number of samples in this readout session
-    uint counts[1000], tstamp[1000], reason[1000];
+    // // Variables to read all snapshots while it's moving
+    // int lastcount = 0;   // last value which was read
+    // int dcount = 1;      // diff current - previous value
+    // int loopcount = 0;   // number of loops with delays
+    // int errcount = 0;    // number of overflow errors
+    // int sampcount = 0;   // number of samples in this readout session
+    // uint counts[1000], tstamp[1000], reason[1000];
     
-    //// Preparation
-    // Set timer counter interval: Determines how often count data is stored.
-    int datausec = atoi(argv[1]); // Micro seconds
-    int sleepusec = atoi(argv[2]); // Set computer sleep interval
-    int duration = atoi(argv[3]); // Set duration seconds
+    // //// Preparation
+    // // Set timer counter interval: Determines how often count data is stored.
+    // int datausec = atoi(argv[1]); // Micro seconds
+    // int sleepusec = atoi(argv[2]); // Set computer sleep interval
+    // int duration = atoi(argv[3]); // Set duration seconds
 
-    treq.tv_sec = 0;
-    treq.tv_nsec = sleepusec * 1000;
+    // treq.tv_sec = 0;
+    // treq.tv_nsec = sleepusec * 1000;
 
-    // Open the 826 API ---------------
-    // int flags = S826_SystemOpen();
-    // printf("S826_SystemOpen returned error code %d\n", flags);
-    SystemOpenHandler();
+    // // Open the 826 API ---------------
+    // // int flags = S826_SystemOpen();
+    // // printf("S826_SystemOpen returned error code %d\n", flags);
+    // SystemOpenHandler();
 
-    // // Configure all the Things!
-    // ConfigureTimerCounter(board, counttime, datausec);
-    // ConfigurePulsePerSecondCounter(board, countpps);
-    // ConfigureQuadCounter(board, countquad, countime);
-    // ConfigureSensors();
+    // // // Configure all the Things!
+    // // ConfigureTimerCounter(board, counttime, datausec);
+    // // ConfigurePulsePerSecondCounter(board, countpps);
+    // // ConfigureQuadCounter(board, countquad, countime);
+    // // ConfigureSensors();
     
 
-    time(&rawtime);
-    starttime = rawtime;
-    while(rawtime - starttime < duration){
+    // time(&rawtime);
+    // starttime = rawtime;
+    // while(rawtime - starttime < duration){
         
-        // Update Time/Counter & Loop
-        time(&rawtime);
-        loopcount++;
-        nanosleep(&treq, NULL);
-    }
+    //     // Update Time/Counter & Loop
+    //     time(&rawtime);
+    //     loopcount++;
+    //     nanosleep(&treq, NULL);
+    // }
 
-    // Close the 826 API
-    S826_SystemClose();
+    // // Close the 826 API
+    // S826_SystemClose();
 }
