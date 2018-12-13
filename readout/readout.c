@@ -42,6 +42,7 @@ void ConfigureSensorPower(int board, char* configname)
 
     // free config file.
     ini_free(config);
+    printf("Freed!\n");
     printf("range: %d\n", atoi(range));
 }
 
