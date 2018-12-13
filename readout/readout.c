@@ -29,6 +29,7 @@ void ConfigureSensorPower(char* configname)
     ini_free(config);
 }
 
+/*
 void ConfigureSensors(char* configname)
 {
     // load config file
@@ -75,7 +76,7 @@ void ConfigureSensors(char* configname)
     // free config file.
     ini_free(config);
 }
-
+*/
 void SystemCloseHandler(int sig)
 {
     signal(sig, SIG_IGN);
@@ -175,6 +176,7 @@ int main(int argc, char **argv){
     // get reference to configuration file
     // int debug = 0;
     char* filename = atoi(argv[1]);
+    printf("%s", filename);
     ConfigureSensorPower(filename);
     // ini_t *config = ini_load(configname); 
     // const int *debug = ini_get(config, "debug", "debug");
