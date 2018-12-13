@@ -22,8 +22,8 @@ void ConfigureSensorPower(char* configname)
     ini_t *config = ini_load(configname); 
 
     // get number of sensors
-    const int output_range = ini_get(config, "sensors.power", "output_voltage_range");
-    printf("output_range: %d\n", &output_range);
+    const int *output_range = ini_get(config, "sensors.power", "output_voltage_range");
+    printf("output_range: %d\n", output_range);
 
     // free config file.
     ini_free(config);
