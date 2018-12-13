@@ -177,7 +177,7 @@ int main(int argc, char **argv){
     // int debug = 0;
     char* filename = argv[1];
     printf("%s", filename);
-    ConfigureSensorPower(filename);
+    //ConfigureSensorPower(filename);
     // ini_t *config = ini_load(configname); 
     // const int *debug = ini_get(config, "debug", "debug");
     // if (debug) {
