@@ -175,7 +175,7 @@ int main(int argc, char **argv){
 
     // get reference to configuration file
     // int debug = 0;
-    char* filename = "../config/masterconfig.ini" //argv[1];
+    char* filename = "../config/masterconfig.ini"; //argv[1];
     printf("%s", filename);
     //ConfigureSensorPower(filename);
     // ini_t *config = ini_load(configname); 
