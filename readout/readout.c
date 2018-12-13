@@ -36,7 +36,7 @@ void ConfigureSensorPower(int board, char* configname)
     if (pwr < 0)
         printf("Configure power error code %d", pwr);
 
-    int pwr_set = S826_DacDataWrite(board, atoi(channel), atoi(voltage_setpoint), runmode);
+    int pwr_set = S826_DacDataWrite(board, atoi(channel), 0xFFFF, runmode);
     if (pwr_set < 0)
         printf("Configure power data error code %d", pwr);
 
