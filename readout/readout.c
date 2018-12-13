@@ -35,8 +35,8 @@ void ConfigureSensors(char* configname)
     ini_t *config = ini_load(configname); 
 
     // get number of sensors
-    // const int *sens_count = ini_get(config, "sensors", "sensor_num");
-    // printf("sensor count: %d\n", sens_count);
+    const int *sens_count = ini_get(config, "sensors", "sensor_num");
+    printf("sensor count: %d\n", sens_count);
 
     // loop over and set all the sensors
     for(int sens = 0; sens <= sens_count; ++sens)
