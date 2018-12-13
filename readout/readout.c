@@ -195,17 +195,20 @@ int main(int argc, char **argv){
     printf("%s\n", filename);
     printf("%s\n", argv[1]);
 
-    ConfigureSensorPower(board, filename);
-    // ini_t *config = ini_load(configname); 
-    // const int *debug = ini_get(config, "debug", "debug");
-    // if (debug) {
-    //     printf("name: %s\n", debug);
 
     // Variables
     int board = 0;
     int countquad = 0;  // quadrature counter
     int countpps = 1;   // pps counter
     int counttime = 2;  // timer counter
+
+    ConfigureSensorPower(board, filename);
+    // ini_t *config = ini_load(configname); 
+    // const int *debug = ini_get(config, "debug", "debug");
+    // if (debug) {
+    //     printf("name: %s\n", debug);
+
+    
 
     int i;
     struct timespec treq;
