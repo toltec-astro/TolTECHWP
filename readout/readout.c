@@ -16,7 +16,7 @@
 //         printf(message\n");
 // }
 
-void ConfigureSensorPower(char* configname)
+void ConfigureSensorPower(int board, char* configname)
 {
     // load config file
     ini_t *config = ini_load(configname); 
@@ -195,7 +195,7 @@ int main(int argc, char **argv){
     printf("%s\n", filename);
     printf("%s\n", argv[1]);
 
-    ConfigureSensorPower(filename);
+    ConfigureSensorPower(board, filename);
     // ini_t *config = ini_load(configname); 
     // const int *debug = ini_get(config, "debug", "debug");
     // if (debug) {
