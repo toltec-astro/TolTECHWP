@@ -26,13 +26,13 @@ void ConfigureSensorPower(char* configname)
     char *voltage_setpoint = ini_get(config, "sensors.power", "output_voltage_setpoint");
     char *channel = ini_get(config, "sensors.power", "output_channel");
 
-    printf("range: %d\n", atoi(output_range));
+    printf("range: %d\n", atoi(range));
     printf("voltage_setpoint: %d\n", atoi(voltage_setpoint));
     printf("channel: %d\n", atoi(channel));
 
     int runmode = 0;
-    
-    int pwr = S826_DacRangeWrite(board, atoi(channel), atoi(output_range), runmode);
+
+    int pwr = S826_DacRangeWrite(board, atoi(channel), atoi(range), runmode);
     if (pwr < 0)
         printf("Configure power error code %d", pwr);
 
@@ -42,7 +42,7 @@ void ConfigureSensorPower(char* configname)
 
     // free config file.
     ini_free(config);
-    printf("output_range: %d\n", atoi(output_range));
+    printf("range: %d\n", atoi(range));
 }
 
 /*
