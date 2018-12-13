@@ -16,18 +16,18 @@
 //         printf(message\n");
 // }
 
-// void ConfigureSensorPower(char* configname)
-// {
-//     // load config file
-//     ini_t *config = ini_load(configname); 
+void ConfigureSensorPower(char* configname)
+{
+    // load config file
+    ini_t *config = ini_load(configname); 
 
-//     // get number of sensors
-//     const int *output_range = ini_get(config, "sensors.power", "output_voltage_range");
-//     printf("output_range: %d\n", output_range);
+    // get number of sensors
+    const int *output_range = ini_get(config, "sensors.power", "output_voltage_range");
+    printf("output_range: %d\n", output_range);
 
-//     // free config file.
-//     ini_free(config);
-// }
+    // free config file.
+    ini_free(config);
+}
 
 /*
 void ConfigureSensors(char* configname)
@@ -179,7 +179,7 @@ int main(int argc, char **argv){
     printf("%s\n", filename);
     printf("%s\n", argv[1]);
 
-    //ConfigureSensorPower(filename);
+    ConfigureSensorPower(filename);
     // ini_t *config = ini_load(configname); 
     // const int *debug = ini_get(config, "debug", "debug");
     // if (debug) {
