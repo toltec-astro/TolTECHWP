@@ -23,7 +23,7 @@ void ConfigureSensorPower(char* configname)
 
     // get number of sensors
     const int *output_range = ini_get(config, "sensors.power", "output_voltage_range");
-    printf("output_range: %d\n", output_range);
+    printf("output_range: %d\n", &output_range);
 
     // free config file.
     ini_free(config);
@@ -35,8 +35,8 @@ void ConfigureSensors(char* configname)
     ini_t *config = ini_load(configname); 
 
     // get number of sensors
-    const int *sens_count = ini_get(config, "sensors", "sensor_num");
-    printf("sensor count: %d\n", sens_count);
+    // const int *sens_count = ini_get(config, "sensors", "sensor_num");
+    // printf("sensor count: %d\n", sens_count);
 
     // loop over and set all the sensors
     for(int sens = 0; sens <= sens_count; ++sens)
@@ -56,10 +56,10 @@ void ConfigureSensors(char* configname)
         const int *settling = ini_get(config, sensor_id, "sensor_num");
         const int *range = ini_get(config, sensor_id, "sensor_num");
         
-        printf("timeslot: %d\n", timeslot);
-        printf("channel: %d\n", channel);
-        printf("settling: %d\n", settling);
-        printf("range: %d\n", range);
+        printf("timeslot: %d\n", &timeslot);
+        printf("channel: %d\n", &channel);
+        printf("settling: %d\n", &settling);
+        printf("range: %d\n", &range);
 
         // int sensor_config_write = S826_AdcSlotConfigWrite(
         //     board, 
