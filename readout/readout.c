@@ -43,8 +43,8 @@ void ConfigureSensors(char* configname)
     {
         // construct the string
         char sensor_id[256];
-        snprintf(sensor_id, sizeof sensor_id, "%s%s", str1, str2);
-        printf("%s", sensor_id);
+        // snprintf(sensor_id, sizeof sensor_id, "%s%s", str1, str2);
+        // printf("%s", sensor_id);
 
         // print out ancillary information
         const int *debug = ini_get(config, sensor_id, "sensor_name");
