@@ -17,7 +17,7 @@ void ConfigureSensorPower(int board, ini_t *config)
     char *channel = ini_get(config, "sensors.power", "output_channel");
 
     printf("range: %d\n", atoi(range));
-    printf("voltage_setpoint: %d\n", (int)strtol(voltage_setpoint, NULL, 0);
+    printf("voltage_setpoint: %d\n", (int)strtol(voltage_setpoint, NULL, 0));
     printf("channel: %d\n", atoi(channel));
 
 
