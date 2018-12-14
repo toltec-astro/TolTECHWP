@@ -9,75 +9,59 @@
 #include <stdlib.h> 
 #include <signal.h>
 
-// void log(char* message)
-// {
-//     sendmessage(message)
-//     if (debug == 1)
-//         printf(message\n");
-// }
-
-void ConfigureSensorPower(int board, char* configname)
+void ConfigureSensorPower(int board, ini_t *config)
 {
-    // load config file
-    ini_t *config = ini_load(configname); 
-
-    // get 
+    // get voltage information
     char *range = ini_get(config, "sensors.power", "output_voltage_range");
     char *voltage_setpoint = ini_get(config, "sensors.power", "output_voltage_setpoint");
     char *channel = ini_get(config, "sensors.power", "output_channel");
 
     printf("range: %d\n", atoi(range));
-    printf("voltage_setpoint: %d\n", atoi(voltage_setpoint));
+    printf("voltage_setpoint: %d\n", int(voltage_setpoint, 16));
     printf("channel: %d\n", atoi(channel));
 
-    int runmode = 0;
 
-    int pwr = S826_DacRangeWrite(board, atoi(channel), atoi(range), runmode);
-    if (pwr < 0)
-        printf("Configure power error code %d", pwr);
+    //// Only Read Sensor Power Params for now.
 
-    int pwr_set = S826_DacDataWrite(board, atoi(channel), 0xFFFF, runmode);
-    if (pwr_set < 0)
-        printf("Configure power data error code %d", pwr);
+    // int pwr = S826_DacRangeWrite(board, atoi(channel), atoi(range), runmode);
+    // if (pwr < 0)
+    //     printf("Configure power error code %d", pwr);
 
-    // free config file.
-    ini_free(config);
-    printf("Freed!\n");
-    printf("range: %d\n", atoi(range));
+    // int pwr_set = S826_DacDataWrite(board, atoi(channel), 0xFFFF, runmode);
+    // if (pwr_set < 0)
+    //     printf("Configure power data error code %d", pwr);
 }
 
-/*
-void ConfigureSensors(char* configname)
-{
-    // load config file
-    ini_t *config = ini_load(configname); 
 
+void ConfigureSensors(int board, ini_t *config)
+{
     // get number of sensors
-    const int *sens_count = ini_get(config, "sensors", "sensor_num");
+    int *sens_count = ini_get(config, "sensors", "sensor_num");
     printf("sensor count: %d\n", sens_count);
 
     // loop over and set all the sensors
-    for(int sens = 0; sens <= sens_count; ++sens)
+    for(int sens = 0; sens <= atoi(sens_count); ++sens)
     {
+        printf("sensor count: %d\n", sens);
         // construct the string
-        char sensor_id[256];
+        // char sensor_id[256];
         // snprintf(sensor_id, sizeof sensor_id, "%s%s", str1, str2);
         // printf("%s", sensor_id);
 
         // print out ancillary information
-        const int *debug = ini_get(config, sensor_id, "sensor_name");
-        printf("name: %s\n", debug);
+        // const int *debug = ini_get(config, sensor_id, "sensor_name");
+        // printf("name: %s\n", debug);
 
         // get the configuration settings
-        const int *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
-        const int *channel = ini_get(config, sensor_id, "sensor_chan");
-        const int *settling = ini_get(config, sensor_id, "sensor_num");
-        const int *range = ini_get(config, sensor_id, "sensor_num");
+        // const int *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
+        // const int *channel = ini_get(config, sensor_id, "sensor_chan");
+        // const int *settling = ini_get(config, sensor_id, "sensor_num");
+        // const int *range = ini_get(config, sensor_id, "sensor_num");
         
-        printf("timeslot: %d\n", &timeslot);
-        printf("channel: %d\n", &channel);
-        printf("settling: %d\n", &settling);
-        printf("range: %d\n", &range);
+        // printf("timeslot: %d\n", &timeslot);
+        // printf("channel: %d\n", &channel);
+        // printf("settling: %d\n", &settling);
+        // printf("range: %d\n", &range);
 
         // int sensor_config_write = S826_AdcSlotConfigWrite(
         //     board, 
@@ -89,11 +73,8 @@ void ConfigureSensors(char* configname)
         // if (sensor_config_write < 0)
         //     printf("Configure error %d\n", temp_1);
     }
-
-    // free config file.
-    ini_free(config);
 }
-*/
+
 void SystemCloseHandler(int sig)
 {
     signal(sig, SIG_IGN);
@@ -117,7 +98,7 @@ void SystemOpenHandler(void)
         printf("Boards were detected with these IDs:");
         for (id = 0; id < 16; id++) {
             if (flags & (1 << id))
-                printf(" %d", id);
+                printf(" %d \n", id);
         }
     }
 }
@@ -178,8 +159,10 @@ void ConfigurePulsePerSecondCounter(int board, int countpps)
 
 /*
  * Main Program Loop!
+ *
  */
 int main(int argc, char **argv){
+    
     // signal handler
     signal(SIGINT, SystemCloseHandler);
     
@@ -191,10 +174,10 @@ int main(int argc, char **argv){
     }
 
     // get reference to configuration file
-    // int debug = 0;
     char filename[] = "../config/masterconfig.ini"; //argv[1];
     printf("%s\n", filename);
     printf("%s\n", argv[1]);
+    ini_t *config = ini_load(filename);
 
 
     // Variables
@@ -203,12 +186,8 @@ int main(int argc, char **argv){
     int countpps = 1;   // pps counter
     int counttime = 2;  // timer counter
 
-    ConfigureSensorPower(board, filename);
-    // ini_t *config = ini_load(configname); 
-    // const int *debug = ini_get(config, "debug", "debug");
-    // if (debug) {
-    //     printf("name: %s\n", debug);
-
+    ConfigureSensorPower(board, config);
+    ConfigureSensors(board, config);
     
 
     int i;
@@ -226,8 +205,8 @@ int main(int argc, char **argv){
     int sampcount = 0;   // number of samples in this readout session
     uint counts[1000], tstamp[1000], reason[1000];
     
-    //// Preparation
-    // Set timer counter interval: Determines how often count data is stored.
+    ////// Preparation
+    // set timer counter interval: determines how often count data is stored.
     int datausec = 10; // Micro seconds
     int sleepusec = 200; // Set computer sleep interval
     int duration = 10; // Set duration seconds
@@ -240,7 +219,7 @@ int main(int argc, char **argv){
     // printf("S826_SystemOpen returned error code %d\n", flags);
     SystemOpenHandler();
 
-    // // Configure all the Things!
+    ////// Configure all the Things!
     // ConfigureTimerCounter(board, counttime, datausec);
     // ConfigurePulsePerSecondCounter(board, countpps);
     // ConfigureQuadCounter(board, countquad, countime);
