@@ -46,7 +46,7 @@ void ConfigureSensors(int board, ini_t *config)
         printf("sensor number: %d\n", sens);
         char buf[2];
         sprintf(buf, "%d", sens);
-        printf("sensor number: %s\n", buf);
+        printf("sensor number string: %s\n", buf);
 
         // construct the string
         // char sensor_id[256];
