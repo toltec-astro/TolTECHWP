@@ -23,9 +23,10 @@ void ConfigureSensorPower(int board, ini_t *config)
 
     //// Only Read Sensor Power Params for now.
 
-    // int pwr = S826_DacRangeWrite(board, atoi(channel), atoi(range), runmode);
-    // if (pwr < 0)
-    //     printf("Configure power error code %d", pwr);
+    int rumode = 0;
+    int pwr = S826_DacRangeWrite(board, atoi(channel), atoi(range), runmode);
+    if (pwr < 0)
+        printf("Configure power error code %d", pwr);
 
     // int pwr_set = S826_DacDataWrite(board, atoi(channel), 0xFFFF, runmode);
     // if (pwr_set < 0)
@@ -40,9 +41,13 @@ void ConfigureSensors(int board, ini_t *config)
     printf("sensor count: %d\n", atoi(sens_count));
 
     // loop over and set all the sensors
-    for(int sens = 0; sens <= atoi(sens_count); ++sens)
+    for(int sens = 0; sens <= atoi(sens_count) - 1; ++sens)
     {
-        printf("sensor: %d\n", sens);
+        printf("sensor number: %d\n", sens);
+        char buf[2];
+        sprintf(buf, "%d", sens);
+        printf("sensor number: %s\n", string);
+
         // construct the string
         // char sensor_id[256];
         // snprintf(sensor_id, sizeof sensor_id, "%s%s", str1, str2);
