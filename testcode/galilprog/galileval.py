@@ -9,11 +9,16 @@
 """
 
 ### Compiler commands
+import sys
 import numpy
 from pylab import *
 
 ### Setup
-filename = 'ANoutput.txt'
+print(sys.argv)
+if len(sys.argv) > 1:
+    filename = sys.argv[1]
+else:
+    filename = 'ANoutput.txt'
 
 ### Read file
 inf = file(filename, 'rt')
@@ -30,7 +35,7 @@ for i in range(1,len(lines)):
 times = rawdata[:,0]
 
 ### Smooth data (number of points)
-nsmth = 5
+nsmth = 1
 nold = len(times)
 nnew = nold//nsmth
 rawnew = numpy.zeros([nnew,len(labels)])
@@ -40,6 +45,18 @@ for i in range(nnew):
 
 rawdata = rawnew
 times = rawdata[:,0]
+
+### Plot each trace in it's own graph
+for i in range(len(labels)-1):
+    subplot((len(labels)-1+0.5)//2,2,i+1)
+    plot(times,rawdata[:,i+1])
+    #plot(times,rawdata[:,i+1],'rd')
+    grid()
+    xlabel('Time (s)')
+    ylabel(labels[i+1])
+show()
+
+exit()
 
 ### Analog Voltages and motor positions
 #   from _MOB _DEB @AN[4] @AN[7] @AN[6] @AN[8] @AN[2] @AN[1]

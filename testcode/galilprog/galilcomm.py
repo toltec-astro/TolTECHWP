@@ -41,23 +41,23 @@ params['start_commands'] = 'SHA;BGA\n\r' #'BGA\n\r'
 params['stop_commands'] = 'TP;MOA\n\r' # 'TP;MOA\n\r'
 #params['stop_commands'] = 'MG @AN[5]'
 # -- Data Recording
-params['data_vals'] = '_TPA _TEA _TTA'
+params['data_vals'] = '_TPA _TEA _TTA _TVA'
 params['logfile'] = 'ANoutput.txt'
 # -- Sequence
 #    pause - start - step - stop - pause - step - pause - step - pause till end
-params['duration'] = '20' # '100' Seconds of total time
-params['stepn'] = '1' # '10' # number of steps
-params['steptime'] = '15' # '9' # Duration of each step in seconds
-params['pausetime'] = '1' # '1' # Seconds to pause between steps
+params['duration'] = '150' # '100' # Seconds of total time
+params['stepn'] = '1'     # '10'  # number of steps
+params['steptime'] = '145' # '9'   # Duration of each step in seconds
+params['pausetime'] = '2' # '1'   # Seconds to pause between steps
 
-com = Null
+com = None
 
 ### Function definition
 def galread():
     """ Function to read (depends on readout method
     """
     if params['comtype'] in ['serial']:
-        return com.read()
+        return com.read(1000)
     else:
         return com.read_eager()
 
@@ -90,19 +90,21 @@ while len(rsp) > 0:
 ### Start Communication
 if params['comtype'] in ['serial']:
     # Open serial
-    com = serial.Serial(params['device'],int(params['baud']),timeout=0.01)
+    com = serial.Serial(params['device'],int(params['baud']),timeout=0.02)
+    print('Serial set up with %s' % params['device'])
 else:
     # Open telnet
     com = telnetlib.Telnet(params['host'], params['port'])
+    print('Telnet set up to %s' % params['host'])
 # Print CRLF twice - print result
 time.sleep(0.1)
 com.write('\n\r\n\r')
 print( galread() )
 
 ### Sent and receive test
-com.write('MG @AN[5]\n\r')
+com.write('MG @IN[1]\n\r')
 time.sleep(0.1)
-print('Response to MG @AN[5] is = <%s>' % galread())
+print('Response to MG @IN[1] is = <%s>' % galread())
 response = raw_input("Press Enter to continue (Ctrl-c to abort)")
 
 ### Send setup commands
@@ -142,9 +144,9 @@ while time.time() < time1:
     for s in vlist[1:]:
         stext += ',' + s
     stext += '\n\r'
-    tn.write(stext)
+    com.write(stext)
     # Wait
-    time.sleep(0.1)
+    time.sleep(0.02)
     # Collect response
     rtext = galread()
     rfull = ''
