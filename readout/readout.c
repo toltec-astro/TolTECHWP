@@ -72,8 +72,8 @@ void ConfigureSensors(int board, ini_t *config)
         int *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
         int *channel = ini_get(config, sensor_id, "sensor_chan");
         
-        printf("timeslot: %d\n", &timeslot);
-        printf("channel: %d\n", &channel);
+        printf("timeslot: %d\n", atoi(timeslot));
+        printf("channel: %d\n", atoi(channel));
 
         // int sensor_config_write = S826_AdcSlotConfigWrite(
         //     board, 
