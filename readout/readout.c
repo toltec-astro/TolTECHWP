@@ -40,7 +40,7 @@ void ConfigureSensors(int board, ini_t *config)
     int *sens_count = ini_get(config, "sensors", "sensor_num");
     printf("sensor count: %d\n", atoi(sens_count));    
     //char buf[2];
-    
+
     // loop over and set all the sensors
     char sensor_id[30];
     for(int sens = 1; sens <= atoi(sens_count) + 1; ++sens)
@@ -54,7 +54,7 @@ void ConfigureSensors(int board, ini_t *config)
         //// construct the string
         sprintf(sensor_id, "sensors.details.%02d", sens);
 
-        printf("-------------");
+        printf("-------------\n");
         printf("id: %s\n", sensor_id);
 
         // construct the string
