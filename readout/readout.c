@@ -51,10 +51,12 @@ void ConfigureSensors(int board, ini_t *config)
         
         // sprintf(buf, "%02d", sens);
         // printf("sensors string %s\n", buf);
+        //char sensor_id[18];
 
         //// construct the string
-        //char sensor_id[18];
         sprintf(sensor_id, "sensors.details.%02d", sens);
+
+        printf("-------------");
         printf("id: %s\n", sensor_id);
 
         // construct the string
@@ -67,15 +69,11 @@ void ConfigureSensors(int board, ini_t *config)
         // printf("name: %s\n", debug);
 
         // get the configuration settings
-        // const int *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
-        // const int *channel = ini_get(config, sensor_id, "sensor_chan");
-        // const int *settling = ini_get(config, sensor_id, "sensor_num");
-        // const int *range = ini_get(config, sensor_id, "sensor_num");
+        int *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
+        int *channel = ini_get(config, sensor_id, "sensor_chan");
         
-        // printf("timeslot: %d\n", &timeslot);
-        // printf("channel: %d\n", &channel);
-        // printf("settling: %d\n", &settling);
-        // printf("range: %d\n", &range);
+        printf("timeslot: %d\n", &timeslot);
+        printf("channel: %d\n", &channel);
 
         // int sensor_config_write = S826_AdcSlotConfigWrite(
         //     board, 
