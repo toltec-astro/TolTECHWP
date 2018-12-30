@@ -20,11 +20,10 @@ void ConfigureSensorPower(int board, ini_t *config)
     printf("voltage_setpoint: %d\n", (int)strtol(voltage_setpoint, NULL, 0));
     printf("channel: %d\n", atoi(channel));
 
-
-    //// only Read Sensor Power Params for now.
-
+    // normal runmode / not safemode.
     int runmode = 0;
 
+    //// only Read Sensor Power Params for now.
     // int pwr = S826_DacRangeWrite(board, atoi(channel), atoi(range), runmode);
     // if (pwr < 0)
     //     printf("Configure power error code %d", pwr);
@@ -39,11 +38,10 @@ void ConfigureSensors(int board, ini_t *config)
 {
     // get number of sensors
     int *sens_count = ini_get(config, "sensors", "sensor_num");
-    printf("sensor count: %d\n", atoi(sens_count));
-
-    // loop over and set all the sensors
+    printf("sensor count: %d\n", atoi(sens_count));    
     //char buf[2];
-
+    
+    // loop over and set all the sensors
     char sensor_id[30];
     for(int sens = 1; sens <= atoi(sens_count) + 1; ++sens)
     {
@@ -77,8 +75,8 @@ void ConfigureSensors(int board, ini_t *config)
 
         // int sensor_config_write = S826_AdcSlotConfigWrite(
         //     board, 
-        //     temp_1_timeslot, 
-        //     temp_1_channel, 
+        //     atoi(timeslot), 
+        //     atoi(channel), 
         //     temp_1_settling,
         //     temp_1_range
         // );
@@ -248,6 +246,6 @@ int main(int argc, char **argv){
         nanosleep(&treq, NULL);
     }
 
-    // Close the 826 API
+    // close the 826 API
     S826_SystemClose();
 }
