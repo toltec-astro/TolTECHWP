@@ -221,7 +221,7 @@ void ReadPPSSnapshot(void)
 
 void ReadQuadSnapshot(void)
 {
-    print('read from quadsnapshot.');
+    printf('read from quadsnapshot.');
     // flags = S826_CounterSnapshotRead(
     //     board, countquad,
     //     counts+sampcount, 
