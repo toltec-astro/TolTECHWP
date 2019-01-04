@@ -205,7 +205,7 @@ void ConfigurePulsePerSecondCounter(int board, int countpps)
 
 void ReadPPSSnapshot(void)
 {
-    printf('read from pps.');
+    printf("read from pps.");
     // flags = S826_CounterSnapshotRead(
     //     board, countpps,
     //     counts+sampcount, tstamp+sampcount, reason+sampcount, 0
@@ -221,7 +221,7 @@ void ReadPPSSnapshot(void)
 
 void ReadQuadSnapshot(void)
 {
-    printf('read from quadsnapshot.');
+    printf("read from quadsnapshot.");
     // flags = S826_CounterSnapshotRead(
     //     board, countquad,
     //     counts+sampcount, 
