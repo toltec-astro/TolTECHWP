@@ -325,15 +325,23 @@ int main(int argc, char **argv){
     // ConfigureQuadCounter();
     // ConfigureTimerCounter();
 
+    int *quad_intervals   = ini_get(config, "intervals", "quad_intervals");
+    int *pps_intervals    = ini_get(config, "intervals", "pps_intervals");
+    int *sensor_intervals = ini_get(config, "intervals", "sensor_intervals");
+        
+    printf("quad_intervals: %d\n", atoi(quad_intervals));
+    printf("pps_intervals: %d\n", atoi(pps_intervals));
+    printf("sensor_intervals: %d\n", atoi(sensor_intervals));
+
     // BEGIN MAIN LOOP
     time(&rawtime);
     starttime = rawtime;
     while(rawtime - starttime < duration){
         
         // check last time something was read
-        ReadQuadSnapshot();
-        ReadPPSSnapshot();
-        ReadSensorSnapshot();
+        // ReadQuadSnapshot();
+        // ReadPPSSnapshot();
+        // ReadSensorSnapshot();
 
         // update time and loop
         time(&rawtime);
