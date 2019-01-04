@@ -330,23 +330,40 @@ int main(int argc, char **argv){
     int *sensor_intervals = ini_get(config, "intervals", "sensor_intervals");
         
     printf("quad_intervals: %.3f\n", atof(quad_intervals));
-    printf("pps_intervals: %d\n", atoi(pps_intervals));
-    printf("sensor_intervals: %d\n", atoi(sensor_intervals));
+    printf("pps_intervals: %.3f\n", atof(pps_intervals));
+    printf("sensor_intervals: %.3f\n", atof(sensor_intervals));
 
     // BEGIN MAIN LOOP
     time(&rawtime);
     starttime = rawtime;
+
+    time_t cur_time, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
     while(rawtime - starttime < duration){
         
-        // check last time something was read
-        // ReadQuadSnapshot();
-        // ReadPPSSnapshot();
-        // ReadSensorSnapshot();
+
+        time(&cur_time);
+        if (quadlastreadtime - cur_time < quad_intervals){
+            ReadQuadSnapshot();
+            time(&cur_time);
+            quadlastreadtime = cur_time;
+        }
+
+        if (ppslastreadtime - cur_time < pps_intervals){
+            ReadPPSSnapshot();
+            time(&cur_time);
+            ppslastreadtime = cur_time;
+        }
+
+        if (sensorlastreadtime - cur_time < sensor_intervals){
+            ReadSensorSnapshot();
+            time(&cur_time);
+            sensorlastreadtime = cur_time;
+        }
 
         // update time and loop
         time(&rawtime);
         loopcount++;
-        nanosleep(&treq, NULL);
+        // nanosleep(&treq, NULL);
     }
 
     // close the s826 api
