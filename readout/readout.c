@@ -329,7 +329,7 @@ int main(int argc, char **argv){
     int *pps_intervals    = ini_get(config, "intervals", "pps_intervals");
     int *sensor_intervals = ini_get(config, "intervals", "sensor_intervals");
         
-    printf("quad_intervals: %d\n", atof(quad_intervals));
+    printf("quad_intervals: %.3f\n", atof(quad_intervals));
     printf("pps_intervals: %d\n", atoi(pps_intervals));
     printf("sensor_intervals: %d\n", atoi(sensor_intervals));
 
