@@ -12,7 +12,7 @@
 
 void ReadSensorSnapshot(void)
 {
-    printf("ReadSensorSnapshot");
+    printf("Sensor. \n");
     // //////////// configurations 
     // uint slotlist = 0x0007; // i don't know bytes well enough for this.
     // int numberofsensors = 3; // grab this from config
@@ -205,7 +205,7 @@ void ConfigurePulsePerSecondCounter(int board, int countpps)
 
 void ReadPPSSnapshot(void)
 {
-    printf("read from pps.");
+    printf("PPS. \n");
     // flags = S826_CounterSnapshotRead(
     //     board, countpps,
     //     counts+sampcount, tstamp+sampcount, reason+sampcount, 0
@@ -221,7 +221,7 @@ void ReadPPSSnapshot(void)
 
 void ReadQuadSnapshot(void)
 {
-    printf("read from quadsnapshot.");
+    printf("Quad. \n");
     // flags = S826_CounterSnapshotRead(
     //     board, countquad,
     //     counts+sampcount, 
@@ -343,7 +343,7 @@ int main(int argc, char **argv){
     quadlastreadtime = rawtime;
     ppslastreadtime = rawtime;
     sensorlastreadtime = rawtime;
-    
+
     while(rawtime - starttime < duration){
         
         time(&cur_time);
