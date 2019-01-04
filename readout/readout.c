@@ -342,19 +342,19 @@ int main(int argc, char **argv){
         
 
         time(&cur_time);
-        if (quadlastreadtime - cur_time < quad_intervals){
+        if (quadlastreadtime - cur_time < atof(quad_intervals)){
             ReadQuadSnapshot();
             time(&cur_time);
             quadlastreadtime = cur_time;
         }
 
-        if (ppslastreadtime - cur_time < pps_intervals){
+        if (ppslastreadtime - cur_time < atof(pps_intervals)){
             ReadPPSSnapshot();
             time(&cur_time);
             ppslastreadtime = cur_time;
         }
 
-        if (sensorlastreadtime - cur_time < sensor_intervals){
+        if (sensorlastreadtime - cur_time < atof(sensor_intervals)){
             ReadSensorSnapshot();
             time(&cur_time);
             sensorlastreadtime = cur_time;
