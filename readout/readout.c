@@ -338,23 +338,28 @@ int main(int argc, char **argv){
     starttime = rawtime;
 
     time_t cur_time, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
+    
+
+    quadlastreadtime = rawtime;
+    ppslastreadtime = rawtime;
+    sensorlastreadtime = rawtime;
+    
     while(rawtime - starttime < duration){
         
-
         time(&cur_time);
-        if (quadlastreadtime - cur_time < atof(quad_intervals)){
+        if (cur_time - quadlastreadtime > atof(quad_intervals)){
             ReadQuadSnapshot();
             time(&cur_time);
             quadlastreadtime = cur_time;
         }
 
-        if (ppslastreadtime - cur_time < atof(pps_intervals)){
+        if (cur_time - ppslastreadtime > atof(pps_intervals)){
             ReadPPSSnapshot();
             time(&cur_time);
             ppslastreadtime = cur_time;
         }
 
-        if (sensorlastreadtime - cur_time < atof(sensor_intervals)){
+        if (cur_time - sensorlastreadtime > atof(sensor_intervals)){
             ReadSensorSnapshot();
             time(&cur_time);
             sensorlastreadtime = cur_time;
