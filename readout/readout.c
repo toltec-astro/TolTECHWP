@@ -351,7 +351,6 @@ int main(int argc, char **argv){
             ReadQuadSnapshot();
             time(&cur_time);
             quadlastreadtime = cur_time;
-            printf("\n");
         }
 
         if (cur_time - ppslastreadtime > atof(pps_intervals)){
