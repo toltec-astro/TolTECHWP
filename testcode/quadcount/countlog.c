@@ -82,8 +82,9 @@ int main(int argc, char **argv){
   flags = S826_CounterStateWrite(board, countime, 1); // Start the timer running.
   if (flags < 0)
     printf("Timer Counter returned error code %d", flags);
-  // Quadrature Counter Configuration
   
+
+  // Quadrature Counter Configuration
   S826_CounterModeWrite(board, countquad,      // Configure counter:
 			S826_CM_K_QUADX4 |  // Quadrature x1/x2/x4 multiplier
 			//S826_CM_K_ARISE |   // clock = ClkA (external digital signal)
@@ -167,6 +168,8 @@ int main(int argc, char **argv){
     //sprintf(t,"Number of samples = %d\n", sampcount);
     //strcat(s,t);
     //sprintf(t,"Got all Snapshots - waiting - flags = %d\n", flags);
+    
+
     //** Read from PPS counter
     // Read one snapshot
     flags = S826_CounterSnapshotRead(board, countpps,
