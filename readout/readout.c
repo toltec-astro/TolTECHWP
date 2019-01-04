@@ -10,33 +10,34 @@
 #include <stdlib.h> 
 #include <signal.h>
 
-void ADCHandler(void)
+void ReadSensorSnapshot(void)
 {
-    //////////// configurations 
-    uint slotlist = 0x0007; // i don't know bytes well enough for this.
-    int numberofsensors = 3; // grab this from config
-    ////////////
+    printf("ReadSensorSnapshot");
+    // //////////// configurations 
+    // uint slotlist = 0x0007; // i don't know bytes well enough for this.
+    // int numberofsensors = 3; // grab this from config
+    // ////////////
 
-    int errcode;     // errcode 
-    int slotval[16]; // buffer must be sized for 16 slots
+    // int errcode;     // errcode 
+    // int slotval[16]; // buffer must be sized for 16 slots
     
-    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
-    if (errcode != S826_ERR_OK)
-        printf("ADC Read Failed. %d", errcode);
+    // errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
+    // if (errcode != S826_ERR_OK)
+    //     printf("ADC Read Failed. %d", errcode);
 
-    int slot;
-    for (slot = 0; slot < 3; slot++) 
-    {
-        int adcdata;
-        unsigned int burstnum;
-        float voltage;
+    // int slot;
+    // for (slot = 0; slot < 3; slot++) 
+    // {
+    //     int adcdata;
+    //     unsigned int burstnum;
+    //     float voltage;
         
-        adcdata = (int)((slotval[slot] & 0xFFFF));
-        burstnum = ((unsigned int)slotval[slot] >> 24);
-        voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
-        printf("Slot: %d \t Voltage: %f \t ADCData: %d \t BurstNum %d \n", slot, voltage, adcdata, burstnum);   
-    };
-    printf("\n");   
+    //     adcdata = (int)((slotval[slot] & 0xFFFF));
+    //     burstnum = ((unsigned int)slotval[slot] >> 24);
+    //     voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
+    //     printf("Slot: %d \t Voltage: %f \t ADCData: %d \t BurstNum %d \n", slot, voltage, adcdata, burstnum);   
+    // };
+    // printf("\n");   
 }
 
 void ConfigureSensorPower(int board, ini_t *config)
@@ -204,59 +205,61 @@ void ConfigurePulsePerSecondCounter(int board, int countpps)
 
 void ReadPPSSnapshot(void)
 {
-    flags = S826_CounterSnapshotRead(
-        board, countpps,
-        counts+sampcount, tstamp+sampcount, reason+sampcount, 0
-    );
+    print('read from pps.');
+    // flags = S826_CounterSnapshotRead(
+    //     board, countpps,
+    //     counts+sampcount, tstamp+sampcount, reason+sampcount, 0
+    // );
 
-    if(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
-        sprintf(t,"PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", counts[sampcount],
-                (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
-        printf(t);
-        fprintf(outf, t);
-    }
+    // if(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
+    //     sprintf(t,"PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", counts[sampcount],
+    //             (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
+    //     printf(t);
+    //     fprintf(outf, t);
+    // }
 }
 
 void ReadQuadSnapshot(void)
 {
-    flags = S826_CounterSnapshotRead(
-        board, countquad,
-        counts+sampcount, 
-        tstamp+sampcount, 
-        reason+sampcount, 
-    0);
-    while(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
+    print('read from quadsnapshot.');
+    // flags = S826_CounterSnapshotRead(
+    //     board, countquad,
+    //     counts+sampcount, 
+    //     tstamp+sampcount, 
+    //     reason+sampcount, 
+    // 0);
+    // while(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
       
-        // Keep track of counts
-        dcount = counts[sampcount] - lastcount;
-        lastcount = counts[sampcount];
+    //     // Keep track of counts
+    //     dcount = counts[sampcount] - lastcount;
+    //     lastcount = counts[sampcount];
           
-        // Print result
-        sprintf(t,"Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
-            (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
-        fprintf(outf,"%s", t);
-        if(printout) printf("%s\n" , t);
+    //     // Print result
+    //     sprintf(t,"Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
+    //         (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
+    //     fprintf(outf,"%s", t);
+    //     if(printout) printf("%s\n" , t);
           
-        // Check FIFO overflow
-        if(flags == S826_ERR_FIFOOVERFLOW){
-            errcount++;
-            //sprintf(t,"  ####  FiFo Overflow samp=%d\n", sampcount);
-            //strcat(s,t);
-        fprintf(outf,"  ####  FiFo Overflow samp=%d\n", sampcount);
-        } else {
-            fprintf(outf,"\n");
-        }
-        // Increase counter
-        sampcount++;
+    //     // Check FIFO overflow
+    //     if(flags == S826_ERR_FIFOOVERFLOW){
+    //         errcount++;
+    //         //sprintf(t,"  ####  FiFo Overflow samp=%d\n", sampcount);
+    //         //strcat(s,t);
+    //     fprintf(outf,"  ####  FiFo Overflow samp=%d\n", sampcount);
+    //     } else {
+    //         fprintf(outf,"\n");
+    //     }
+    //     // Increase counter
+    //     sampcount++;
 
-        // Read next snapshot
-        flags = S826_CounterSnapshotRead(
-            board, countquad,
-            counts+sampcount, 
-            tstamp+sampcount, 
-            reason+sampcount, 
-        0);
-    }
+    //     // Read next snapshot
+    //     flags = S826_CounterSnapshotRead(
+    //         board, countquad,
+    //         counts+sampcount, 
+    //         tstamp+sampcount, 
+    //         reason+sampcount, 
+    //     0);
+    // }
 }
 
 /*
@@ -330,6 +333,7 @@ int main(int argc, char **argv){
         // check last time something was read
         ReadQuadSnapshot();
         ReadPPSSnapshot();
+        ReadSensorSnapshot();
 
         // update time and loop
         time(&rawtime);
