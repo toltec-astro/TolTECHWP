@@ -350,7 +350,7 @@ int main(int argc, char **argv){
     while(rawtime - starttime < duration){
         
         clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
-        delta_us = = (curtime.tv_sec - quadlastreadtime.tv_sec) * 1000000000 + (curtime.tv_usec - quadlastreadtime.tv_usec);
+        delta_us = = (curtime.tv_sec - quadlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - quadlastreadtime.tv_nsec);
         if (quadlastreadtime > (1000000000 * atof(quad_intervals))){
             ReadQuadSnapshot();
             clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
