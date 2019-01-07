@@ -357,17 +357,19 @@ int main(int argc, char **argv){
             clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
         }
 
-        // if (cur_time - ppslastreadtime > atof(pps_intervals)){
-        //     ReadPPSSnapshot();
-        //     time(&cur_time);
-        //     ppslastreadtime = cur_time;
-        // }
+        clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
+        delta_us = (curtime.tv_sec - ppslastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - ppslastreadtime.tv_nsec);
+        if (delta_us > (1000000000 * atof(pps_intervals))){
+            ReadPPSSnapshot();
+            clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
+        }
 
-        // if (cur_time - sensorlastreadtime > atof(sensor_intervals)){
-        //     ReadSensorSnapshot();
-        //     time(&cur_time);
-        //     sensorlastreadtime = cur_time;
-        // }
+        clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
+        delta_us = (curtime.tv_sec - sensorlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - sensorlastreadtime.tv_nsec);
+        if (delta_us > (1000000000 * atof(pps_intervals))){
+            ReadSensorSnapshot();
+            clock_gettime(CLOCK_MONOTONIC_RAW, &sensorlastreadtime);
+        }
 
         // update time and loop
         time(&rawtime);
