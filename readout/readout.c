@@ -12,7 +12,7 @@
 
 void ReadSensorSnapshot(void)
 {
-    printf("Sensor.");
+    fprintf(stdout, "Sensor. \n");
     // //////////// configurations 
     // uint slotlist = 0x0007; // i don't know bytes well enough for this.
     // int numberofsensors = 3; // grab this from config
@@ -188,7 +188,7 @@ void ConfigureTimerCounter(int board, int countime, int datausec)
 
 void ConfigurePulsePerSecondCounter(int board, int countpps)
 {
-    printf("\n Configure PPS Counter \n");
+    PPS
     // S826_CounterModeWrite(board, countpps,      // Configure counter:
     //                         S826_CM_K_AFALL );   // clock = ClkA (external digital signal)
     // S826_CounterFilterWrite(
@@ -205,7 +205,7 @@ void ConfigurePulsePerSecondCounter(int board, int countpps)
 
 void ReadPPSSnapshot(void)
 {
-    printf("PPS.");
+    fprintf(stdout, "PPS. \n");
     // flags = S826_CounterSnapshotRead(
     //     board, countpps,
     //     counts+sampcount, tstamp+sampcount, reason+sampcount, 0
@@ -221,7 +221,7 @@ void ReadPPSSnapshot(void)
 
 void ReadQuadSnapshot(void)
 {
-    printf("Quad.");
+    fprintf(stdout, "Quad. \n");
     // flags = S826_CounterSnapshotRead(
     //     board, countquad,
     //     counts+sampcount, 
