@@ -188,7 +188,6 @@ void ConfigureTimerCounter(int board, int countime, int datausec)
 
 void ConfigurePulsePerSecondCounter(int board, int countpps)
 {
-    PPS
     // S826_CounterModeWrite(board, countpps,      // Configure counter:
     //                         S826_CM_K_AFALL );   // clock = ClkA (external digital signal)
     // S826_CounterFilterWrite(
