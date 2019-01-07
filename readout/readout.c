@@ -338,7 +338,9 @@ int main(int argc, char **argv){
     starttime = rawtime;
 
 
-    time_t curtime, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
+    //time_t curtime, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
+
+    struct timespec curtime, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
 
     // set last read time as start. 
     clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
