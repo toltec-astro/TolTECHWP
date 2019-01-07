@@ -366,7 +366,7 @@ int main(int argc, char **argv){
 
         clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
         delta_us = (curtime.tv_sec - sensorlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - sensorlastreadtime.tv_nsec);
-        if (delta_us > (1000000000 * atof(sensorlastreadtime))){
+        if (delta_us > (1000000000 * atof(sensor_intervals))){
             ReadSensorSnapshot();
             clock_gettime(CLOCK_MONOTONIC_RAW, &sensorlastreadtime);
         }
