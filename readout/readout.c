@@ -337,33 +337,36 @@ int main(int argc, char **argv){
     time(&rawtime);
     starttime = rawtime;
 
-    time_t cur_time, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
-    
 
-    quadlastreadtime = rawtime;
-    ppslastreadtime = rawtime;
-    sensorlastreadtime = rawtime;
+    time_t curtime, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
+
+    // set last read time as start. 
+    clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
+    // ppslastreadtime = rawtime;
+    // sensorlastreadtime = rawtime;
+
+    uint64_t delta_us;
 
     while(rawtime - starttime < duration){
         
-        time(&cur_time);
-        if (cur_time - quadlastreadtime > atof(quad_intervals)){
+        clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
+        delta_us = = (curtime.tv_sec - quadlastreadtime.tv_sec) * 1000000 + (curtime.tv_nsec - quadlastreadtime.tv_nsec) / 1000;
+        if (quadlastreadtime > (1000000000 * atof(quad_intervals))){
             ReadQuadSnapshot();
-            time(&cur_time);
-            quadlastreadtime = cur_time;
+            clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
         }
 
-        if (cur_time - ppslastreadtime > atof(pps_intervals)){
-            ReadPPSSnapshot();
-            time(&cur_time);
-            ppslastreadtime = cur_time;
-        }
+        // if (cur_time - ppslastreadtime > atof(pps_intervals)){
+        //     ReadPPSSnapshot();
+        //     time(&cur_time);
+        //     ppslastreadtime = cur_time;
+        // }
 
-        if (cur_time - sensorlastreadtime > atof(sensor_intervals)){
-            ReadSensorSnapshot();
-            time(&cur_time);
-            sensorlastreadtime = cur_time;
-        }
+        // if (cur_time - sensorlastreadtime > atof(sensor_intervals)){
+        //     ReadSensorSnapshot();
+        //     time(&cur_time);
+        //     sensorlastreadtime = cur_time;
+        // }
 
         // update time and loop
         time(&rawtime);
