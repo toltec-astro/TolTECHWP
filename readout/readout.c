@@ -123,7 +123,9 @@ void ConfigureQuadCounter(int board, ini_t *config)
     int *counttime = ini_get(config, "counter.timer", "counter_num");
     printf("counttime (2): %d\n", atoi(counttime));    
     
-    int flags = S826_CounterModeWrite(
+    int quad_flags;
+
+    quad_flags = S826_CounterModeWrite(
         board, 
         atoi(countquad),                   // Configure counter:
         S826_CM_K_QUADX4 |           // Quadrature x1/x2/x4 multiplier
@@ -131,20 +133,20 @@ void ConfigureQuadCounter(int board, ini_t *config)
         //S826_XS_100HKZ |           // route tick generator to index input
         (S826_CM_XS_CH0 + counttime) // route CH1 to Index input
     );   
-    if (flags < 0)
-        printf("S826_CounterModeWrite returned error code %d\n", flags);
+    if (quad_flags < 0)
+        printf("S826_CounterModeWrite returned error code %d\n", quad_flags);
 
-    int flags = S826_CounterSnapshotConfigWrite(
+    int quad_flags = S826_CounterSnapshotConfigWrite(
         board, atoi(countquad),  // Acquire counts upon tick rising edge.
         S826_SSRMASK_IXRISE, 
         S826_BITWRITE
     );
-    if (flags < 0)
-        printf("S826_CounterSnapshotConfigWrite returned error code %d\n", flags);
+    if (quad_flags < 0)
+        printf("S826_CounterSnapshotConfigWrite returned error code %d\n", quad_flags);
   
-    int flags = S826_CounterStateWrite(board, atoi(countquad), 1); // start the counter
-    if (flags < 0)
-        printf("Quad Counter returned error code %d\n", flags);
+    int quad_flags = S826_CounterStateWrite(board, atoi(countquad), 1); // start the counter
+    if (quad_flags < 0)
+        printf("Quad Counter returned error code %d\n", quad_flags);
 }
 
 void ConfigureTimerCounter(int board, int countime, int datausec)
