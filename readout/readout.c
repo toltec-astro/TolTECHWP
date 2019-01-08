@@ -120,8 +120,13 @@ void SystemCloseHandler(int sig)
 {
     signal(sig, SIG_IGN);
     printf("\nSignal Caught!\n");
-    
-    // add power shut off here
+
+    char *channel = ini_get(config, "sensors.power", "output_channel");
+
+    int pwr_set_off = S826_DacDataWrite(board, atoi(channel), 0x0000, 0);
+    if (pwr_set_off < 0)
+        printf("Configure power data off code %d.", pwr_set_off);
+
     S826_SystemClose();
     printf("System Closed!\n");
     exit(0);
@@ -336,17 +341,14 @@ int main(int argc, char **argv){
     time(&rawtime);
     starttime = rawtime;
 
-
     //time_t curtime, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
-
+    uint64_t delta_us;
     struct timespec curtime, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
 
     // set last read time as start. 
     clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
-    // ppslastreadtime = rawtime;
-    // sensorlastreadtime = rawtime;
-
-    uint64_t delta_us;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &sensorlastreadtime);
 
     while(rawtime - starttime < duration){
         
@@ -374,7 +376,6 @@ int main(int argc, char **argv){
         // update time and loop
         time(&rawtime);
         loopcount++;
-        // nanosleep(&treq, NULL);
     }
 
     // close the s826 api
