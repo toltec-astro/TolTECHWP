@@ -30,7 +30,7 @@ void ConfigureSensorPower(int board, ini_t *config)
 
     int pwr_set = S826_DacDataWrite(board, atoi(channel), 0xFFFF, runmode);
     if (pwr_set < 0)
-        printf("Configure power data error code %d", pwr);
+        printf("Configure power data error code %d", pwr_set);
 }
 
 void ConfigureSensors(int board, ini_t *config)
@@ -96,7 +96,6 @@ void SystemCloseHandler(int sig)
     exit(0);
 }
 
-
 void SystemOpenHandler(void)
 {
     int id;
@@ -114,26 +113,38 @@ void SystemOpenHandler(void)
     }
 }
 
-void ConfigureQuadCounter(int board, int countquad, int counttime)
+void ConfigureQuadCounter(int board, ini_t *config)
 {
     printf("\n Configure QuadCounter \n");
-    // S826_CounterModeWrite(
-    //     board, 
-    //     countquad,                   // Configure counter:
-    //     S826_CM_K_QUADX4 |           // Quadrature x1/x2/x4 multiplier
-    //     //S826_CM_K_ARISE |          // clock = ClkA (external digital signal)
-    //     //S826_XS_100HKZ |           // route tick generator to index input
-    //     (S826_CM_XS_CH0 + counttime) // route CH1 to Index input
-    // );   
-    // S826_CounterSnapshotConfigWrite(
-    //     board, countquad,  // Acquire counts upon tick rising edge.
-    //     S826_SSRMASK_IXRISE, 
-    //     S826_BITWRITE
-    // );
+
+    int *countquad = ini_get(config, "counter.quad", "counter_num");
+    printf("countquad (0): %d\n", atoi(countquad));    
+
+    int *counttime = ini_get(config, "counter.timer", "counter_num");
+    printf("counttime (2): %d\n", atoi(counttime));    
+    
+    int flags = S826_CounterModeWrite(
+        board, 
+        atoi(countquad),                   // Configure counter:
+        S826_CM_K_QUADX4 |           // Quadrature x1/x2/x4 multiplier
+        //S826_CM_K_ARISE |          // clock = ClkA (external digital signal)
+        //S826_XS_100HKZ |           // route tick generator to index input
+        (S826_CM_XS_CH0 + counttime) // route CH1 to Index input
+    );   
+    if (flags < 0)
+        printf("S826_CounterModeWrite returned error code %d\n", flags);
+
+    int flags = S826_CounterSnapshotConfigWrite(
+        board, atoi(countquad),  // Acquire counts upon tick rising edge.
+        S826_SSRMASK_IXRISE, 
+        S826_BITWRITE
+    );
+    if (flags < 0)
+        printf("S826_CounterSnapshotConfigWrite returned error code %d\n", flags);
   
-    // int flags = S826_CounterStateWrite(board, countquad, 1); // start the counter
-    // if (flags < 0)
-    //     printf("Quad Counter returned error code %d\n", flags);
+    int flags = S826_CounterStateWrite(board, atoi(countquad), 1); // start the counter
+    if (flags < 0)
+        printf("Quad Counter returned error code %d\n", flags);
 }
 
 void ConfigureTimerCounter(int board, int countime, int datausec)
@@ -188,10 +199,11 @@ void ReadQuadSnapshot(void)
     fprintf(stdout, "Quad. \n");
     // flags = S826_CounterSnapshotRead(
     //     board, countquad,
-    //     counts+sampcount, 
-    //     tstamp+sampcount, 
-    //     reason+sampcount, 
+    //     counts + sampcount, 
+    //     tstamp + sampcount, 
+    //     reason + sampcount, 
     // 0);
+    
     // while(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
       
     //     // Keep track of counts
@@ -219,9 +231,9 @@ void ReadQuadSnapshot(void)
     //     // Read next snapshot
     //     flags = S826_CounterSnapshotRead(
     //         board, countquad,
-    //         counts+sampcount, 
-    //         tstamp+sampcount, 
-    //         reason+sampcount, 
+    //         counts + sampcount, 
+    //         tstamp + sampcount, 
+    //         reason + sampcount, 
     //     0);
     // }
 }
@@ -229,14 +241,10 @@ void ReadQuadSnapshot(void)
 void ReadSensorSnapshot(void)
 {
     fprintf(stdout, "Sensor. \n");
-    // //////////// configurations 
-    uint slotlist = 0x0007; // i don't know bytes well enough for this.
-    // int numberofsensors = 3; // grab this from config
-    // ////////////
+    uint slotlist = 0x0007;
 
     int errcode;     // errcode 
     int slotval[16]; // buffer must be sized for 16 slots
-    
     errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
     if (errcode != S826_ERR_OK)
         printf("ADC Read Failed. %d", errcode);
@@ -253,7 +261,6 @@ void ReadSensorSnapshot(void)
         voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
         printf("Slot: %d \t Voltage: %f \t ADCData: %d \t BurstNum %d \n", slot, voltage, adcdata, burstnum);   
     };
-    // printf("\n");   
 }
 
 /*
@@ -316,7 +323,7 @@ int main(int argc, char **argv){
     ConfigureSensorPower(board, config);
     ConfigureSensors(board, config);
     // ConfigurePulsePerSecondCounter();
-    // ConfigureQuadCounter();
+    ConfigureQuadCounter(board, config);
     // ConfigureTimerCounter();
 
     int *quad_intervals   = ini_get(config, "intervals", "quad_intervals");
@@ -373,6 +380,6 @@ int main(int argc, char **argv){
     if (pwr_set_off < 0)
         printf("Configure power data off code %d.", pwr_set_off);
 
-    // close the s826 api
+    // Close the API
     S826_SystemClose();
 }
