@@ -136,7 +136,7 @@ void ConfigureQuadCounter(int board, ini_t *config)
     if (quad_flags < 0)
         printf("S826_CounterModeWrite returned error code %d\n", quad_flags);
 
-    int quad_flags = S826_CounterSnapshotConfigWrite(
+    quad_flags = S826_CounterSnapshotConfigWrite(
         board, atoi(countquad),  // Acquire counts upon tick rising edge.
         S826_SSRMASK_IXRISE, 
         S826_BITWRITE
@@ -144,7 +144,7 @@ void ConfigureQuadCounter(int board, ini_t *config)
     if (quad_flags < 0)
         printf("S826_CounterSnapshotConfigWrite returned error code %d\n", quad_flags);
   
-    int quad_flags = S826_CounterStateWrite(board, atoi(countquad), 1); // start the counter
+    quad_flags = S826_CounterStateWrite(board, atoi(countquad), 1); // start the counter
     if (quad_flags < 0)
         printf("Quad Counter returned error code %d\n", quad_flags);
 }
