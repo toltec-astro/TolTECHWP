@@ -349,9 +349,11 @@ int main(int argc, char **argv){
     // Configurations
     ConfigureSensorPower(board, config);
     ConfigureSensors(board, config);
+
+    ConfigureTimerCounter(board, config);
+
     ConfigurePulsePerSecondCounter(board, config);
     ConfigureQuadCounter(board, config);
-    // ConfigureTimerCounter();
 
     int *quad_intervals   = ini_get(config, "intervals", "quad_intervals");
     int *pps_intervals    = ini_get(config, "intervals", "pps_intervals");
