@@ -54,14 +54,13 @@ void ConfigureSensorPower(int board, ini_t *config)
     // normal runmode / not safemode.
     int runmode = 0;
 
-    //// only Read Sensor Power Params for now.
-    // int pwr = S826_DacRangeWrite(board, atoi(channel), atoi(range), runmode);
-    // if (pwr < 0)
-    //     printf("Configure power error code %d", pwr);
+    int pwr = S826_DacRangeWrite(board, atoi(channel), atoi(range), runmode);
+    if (pwr < 0)
+        printf("Configure power error code %d", pwr);
 
-    // int pwr_set = S826_DacDataWrite(board, atoi(channel), 0xFFFF, runmode);
-    // if (pwr_set < 0)
-    //     printf("Configure power data error code %d", pwr);
+    int pwr_set = S826_DacDataWrite(board, atoi(channel), 0xFFFF, runmode);
+    if (pwr_set < 0)
+        printf("Configure power data error code %d", pwr);
 }
 
 void ConfigureSensors(int board, ini_t *config)
