@@ -64,7 +64,6 @@ void ConfigureSensorPower(int board, ini_t *config)
     //     printf("Configure power data error code %d", pwr);
 }
 
-
 void ConfigureSensors(int board, ini_t *config)
 {
     // get number of sensors
@@ -121,11 +120,7 @@ void SystemCloseHandler(int sig)
     signal(sig, SIG_IGN);
     printf("\nSignal Caught!\n");
 
-    char *channel = ini_get(config, "sensors.power", "output_channel");
-
-    int pwr_set_off = S826_DacDataWrite(board, atoi(channel), 0x0000, 0);
-    if (pwr_set_off < 0)
-        printf("Configure power data off code %d.", pwr_set_off);
+    // power shut off
 
     S826_SystemClose();
     printf("System Closed!\n");
@@ -377,6 +372,11 @@ int main(int argc, char **argv){
         time(&rawtime);
         loopcount++;
     }
+
+    char *channel = ini_get(config, "sensors.power", "output_channel");
+    int pwr_set_off = S826_DacDataWrite(board, atoi(channel), 0x0000, 0);
+    if (pwr_set_off < 0)
+        printf("Configure power data off code %d.", pwr_set_off);
 
     // close the s826 api
     S826_SystemClose();
