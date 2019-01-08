@@ -10,36 +10,6 @@
 #include <stdlib.h> 
 #include <signal.h>
 
-void ReadSensorSnapshot(void)
-{
-    fprintf(stdout, "Sensor. \n");
-    // //////////// configurations 
-    // uint slotlist = 0x0007; // i don't know bytes well enough for this.
-    // int numberofsensors = 3; // grab this from config
-    // ////////////
-
-    // int errcode;     // errcode 
-    // int slotval[16]; // buffer must be sized for 16 slots
-    
-    // errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
-    // if (errcode != S826_ERR_OK)
-    //     printf("ADC Read Failed. %d", errcode);
-
-    // int slot;
-    // for (slot = 0; slot < 3; slot++) 
-    // {
-    //     int adcdata;
-    //     unsigned int burstnum;
-    //     float voltage;
-        
-    //     adcdata = (int)((slotval[slot] & 0xFFFF));
-    //     burstnum = ((unsigned int)slotval[slot] >> 24);
-    //     voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
-    //     printf("Slot: %d \t Voltage: %f \t ADCData: %d \t BurstNum %d \n", slot, voltage, adcdata, burstnum);   
-    // };
-    // printf("\n");   
-}
-
 void ConfigureSensorPower(int board, ini_t *config)
 {
     // get voltage information
@@ -144,8 +114,6 @@ void SystemOpenHandler(void)
     }
 }
 
-
-
 void ConfigureQuadCounter(int board, int countquad, int counttime)
 {
     printf("\n Configure QuadCounter \n");
@@ -168,7 +136,6 @@ void ConfigureQuadCounter(int board, int countquad, int counttime)
     //     printf("Quad Counter returned error code %d\n", flags);
 }
 
-
 void ConfigureTimerCounter(int board, int countime, int datausec)
 {
     printf("\n Configure Timer Counter \n");
@@ -183,7 +150,6 @@ void ConfigureTimerCounter(int board, int countime, int datausec)
     // if (flags < 0)
     //     printf("Timer Counter returned error code %d\n", flags);
 }
-
 
 void ConfigurePulsePerSecondCounter(int board, int countpps)
 {
@@ -258,6 +224,36 @@ void ReadQuadSnapshot(void)
     //         reason+sampcount, 
     //     0);
     // }
+}
+
+void ReadSensorSnapshot(void)
+{
+    fprintf(stdout, "Sensor. \n");
+    // //////////// configurations 
+    uint slotlist = 0x0007; // i don't know bytes well enough for this.
+    // int numberofsensors = 3; // grab this from config
+    // ////////////
+
+    int errcode;     // errcode 
+    int slotval[16]; // buffer must be sized for 16 slots
+    
+    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
+    if (errcode != S826_ERR_OK)
+        printf("ADC Read Failed. %d", errcode);
+
+    // int slot;
+    // for (slot = 0; slot < 3; slot++) 
+    // {
+    //     int adcdata;
+    //     unsigned int burstnum;
+    //     float voltage;
+        
+    //     adcdata = (int)((slotval[slot] & 0xFFFF));
+    //     burstnum = ((unsigned int)slotval[slot] >> 24);
+    //     voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
+    //     printf("Slot: %d \t Voltage: %f \t ADCData: %d \t BurstNum %d \n", slot, voltage, adcdata, burstnum);   
+    // };
+    // printf("\n");   
 }
 
 /*
