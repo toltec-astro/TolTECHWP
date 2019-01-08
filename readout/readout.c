@@ -170,26 +170,40 @@ void ConfigureTimerCounter(int board, ini_t *config)
     if (timer_flags < 0)
         printf("S826_CounterPreloadWrite returned error code %d\n", timer_flags);
 
-    // Start the timer running.
+    // start the timer running.
     timer_flags = S826_CounterStateWrite(board, atoi(counttime), 1);    
     if (timer_flags < 0)
         printf("S826_CounterStateWrite returned error code %d\n", timer_flags);
 }
 
-void ConfigurePulsePerSecondCounter(int board, int countpps)
+void ConfigurePulsePerSecondCounter(int board, ini_t *config)
 {
-    // S826_CounterModeWrite(board, countpps,      // Configure counter:
-    //                         S826_CM_K_AFALL );   // clock = ClkA (external digital signal)
-    // S826_CounterFilterWrite(
-    //             board, countpps,  // Filer Configuration:
-    //             (1 << 31) | (1 << 30) | // Apply to IX and clock
-    //             100 
-    // );                  // 100x20ns = 2us filter constant
-    // S826_CounterSnapshotConfigWrite(board, countpps,  // Acquire counts upon tick rising edge.
-    //               S826_SSRMASK_IXRISE, S826_BITWRITE);
-    // int flags = S826_CounterStateWrite(board, countpps, 1); // start the counter
-    // if (flags < 0)
-    //     printf("PPS Counter returned error code %d\n", flags);   
+    int pps_flags;
+
+    int *countpps = ini_get(config, "counter.pps", "counter_num");
+    printf("countpps: %d\n", atoi(countpps));  
+
+    pps_flags = S826_CounterModeWrite(board, countpps,      // Configure counter:
+                            S826_CM_K_AFALL );   // clock = ClkA (external digital signal)
+    if (pps_flags < 0)
+        printf("S826_CounterModeWrite returned error code %d\n", pps_flags); 
+
+    pps_flags = S826_CounterFilterWrite(
+                board, countpps,  // Filer Configuration:
+                (1 << 31) | (1 << 30) | // Apply to IX and clock
+                100 
+    );                  // 100x20ns = 2us filter constant
+    if (pps_flags < 0)
+        printf("S826_CounterFilterWrite returned error code %d\n", pps_flags); 
+
+    pps_flags = S826_CounterSnapshotConfigWrite(board, countpps,  // Acquire counts upon tick rising edge.
+                  S826_SSRMASK_IXRISE, S826_BITWRITE);
+    if (pps_flags < 0)
+        printf("S826_CounterSnapshotConfigWrite returned error code %d\n", pps_flags); 
+
+    pps_flags = S826_CounterStateWrite(board, countpps, 1); // start the counter
+    if (pps_flags < 0)
+        printf("S826_CounterStateWrite returned error code %d\n", pps_flags);   
 }
 
 void ReadPPSSnapshot(void)
@@ -277,9 +291,6 @@ void ReadSensorSnapshot(void)
     };
 }
 
-/*
- * Main Program Loop!
- */
 int main(int argc, char **argv){
     
     // signal handler
@@ -296,6 +307,8 @@ int main(int argc, char **argv){
     char filename[] = "../config/masterconfig.ini"; //argv[1];
     printf("configfile: %s\n", filename);
     printf("runtime: %s\n", argv[1]);
+    
+    // load configuration
     ini_t *config = ini_load(filename);
 
     // Variables
@@ -336,7 +349,7 @@ int main(int argc, char **argv){
     // Configurations
     ConfigureSensorPower(board, config);
     ConfigureSensors(board, config);
-    // ConfigurePulsePerSecondCounter();
+    ConfigurePulsePerSecondCounter(board, config);
     ConfigureQuadCounter(board, config);
     // ConfigureTimerCounter();
 
