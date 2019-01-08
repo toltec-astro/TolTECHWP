@@ -131,7 +131,7 @@ void ConfigureQuadCounter(int board, ini_t *config)
         S826_CM_K_QUADX4 |           // Quadrature x1/x2/x4 multiplier
         //S826_CM_K_ARISE |          // clock = ClkA (external digital signal)
         //S826_XS_100HKZ |           // route tick generator to index input
-        (S826_CM_XS_CH0 + counttime) // route CH1 to Index input
+        (S826_CM_XS_CH0 + atoi(counttime)) // route CH1 to Index input
     );   
     if (quad_flags < 0)
         printf("S826_CounterModeWrite returned error code %d\n", quad_flags);
