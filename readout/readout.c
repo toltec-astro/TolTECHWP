@@ -150,8 +150,6 @@ void ConfigureQuadCounter(int board, ini_t *config)
 void ConfigureTimerCounter(int board, ini_t *config)
 {
     int timer_flags;
-    int datausec = 100;
-
 
     int *datausec = ini_get(config, "intervals", "carddata_intervals");
     printf("datausec: %d\n", atoi(datausec));  
