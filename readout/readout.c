@@ -183,25 +183,25 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
     int *countpps = ini_get(config, "counter.pps", "counter_num");
     printf("countpps: %d\n", atoi(countpps));  
 
-    pps_flags = S826_CounterModeWrite(board, countpps,      // Configure counter:
+    pps_flags = S826_CounterModeWrite(board, atoi(countpps),      // Configure counter:
                             S826_CM_K_AFALL );   // clock = ClkA (external digital signal)
     if (pps_flags < 0)
         printf("S826_CounterModeWrite returned error code %d\n", pps_flags); 
 
     pps_flags = S826_CounterFilterWrite(
-                board, countpps,  // Filer Configuration:
+                board, atoi(countpps),  // Filer Configuration:
                 (1 << 31) | (1 << 30) | // Apply to IX and clock
                 100 
     );                  // 100x20ns = 2us filter constant
     if (pps_flags < 0)
         printf("S826_CounterFilterWrite returned error code %d\n", pps_flags); 
 
-    pps_flags = S826_CounterSnapshotConfigWrite(board, countpps,  // Acquire counts upon tick rising edge.
+    pps_flags = S826_CounterSnapshotConfigWrite(board, atoi(countpps),  // Acquire counts upon tick rising edge.
                   S826_SSRMASK_IXRISE, S826_BITWRITE);
     if (pps_flags < 0)
         printf("S826_CounterSnapshotConfigWrite returned error code %d\n", pps_flags); 
 
-    pps_flags = S826_CounterStateWrite(board, countpps, 1); // start the counter
+    pps_flags = S826_CounterStateWrite(board, atoi(countpps), 1); // start the counter
     if (pps_flags < 0)
         printf("S826_CounterStateWrite returned error code %d\n", pps_flags);   
 }
