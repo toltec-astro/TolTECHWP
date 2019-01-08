@@ -241,18 +241,18 @@ void ReadSensorSnapshot(void)
     if (errcode != S826_ERR_OK)
         printf("ADC Read Failed. %d", errcode);
 
-    // int slot;
-    // for (slot = 0; slot < 3; slot++) 
-    // {
-    //     int adcdata;
-    //     unsigned int burstnum;
-    //     float voltage;
+    int slot;
+    for (slot = 0; slot < 3; slot++) 
+    {
+        int adcdata;
+        unsigned int burstnum;
+        float voltage;
         
-    //     adcdata = (int)((slotval[slot] & 0xFFFF));
-    //     burstnum = ((unsigned int)slotval[slot] >> 24);
-    //     voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
-    //     printf("Slot: %d \t Voltage: %f \t ADCData: %d \t BurstNum %d \n", slot, voltage, adcdata, burstnum);   
-    // };
+        adcdata = (int)((slotval[slot] & 0xFFFF));
+        burstnum = ((unsigned int)slotval[slot] >> 24);
+        voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
+        printf("Slot: %d \t Voltage: %f \t ADCData: %d \t BurstNum %d \n", slot, voltage, adcdata, burstnum);   
+    };
     // printf("\n");   
 }
 
