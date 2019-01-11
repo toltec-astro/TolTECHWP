@@ -209,61 +209,65 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
 void ReadPPSSnapshot(void)
 {
     fprintf(stdout, "PPS. \n");
-    // flags = S826_CounterSnapshotRead(
-    //     board, countpps,
-    //     counts+sampcount, tstamp+sampcount, reason+sampcount, 0
-    // );
+    int errcode;
 
-    // if(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
-    //     sprintf(t,"PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", counts[sampcount],
-    //             (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
-    //     printf(t);
-    //     fprintf(outf, t);
-    // }
+    errcode = S826_CounterSnapshotRead(
+        board, countpps,
+        counts + sampcount, 
+        tstamp + sampcount, 
+        reason + sampcount, 
+        0
+    );
+    if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
+        sprintf(t,"PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
+            counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
+        printf(t);
+        fprintf(outf, t);
+    }
 }
 
 void ReadQuadSnapshot(void)
 {
     fprintf(stdout, "Quad. \n");
-    // flags = S826_CounterSnapshotRead(
-    //     board, countquad,
-    //     counts + sampcount, 
-    //     tstamp + sampcount, 
-    //     reason + sampcount, 
-    // 0);
+    flags = S826_CounterSnapshotRead(
+        board, countquad,
+        counts + sampcount, 
+        tstamp + sampcount, 
+        reason + sampcount, 
+    0);
     
-    // while(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
+    while(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
       
-    //     // Keep track of counts
-    //     dcount = counts[sampcount] - lastcount;
-    //     lastcount = counts[sampcount];
+        // Keep track of counts
+        dcount = counts[sampcount] - lastcount;
+        lastcount = counts[sampcount];
           
-    //     // Print result
-    //     sprintf(t,"Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
-    //         (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
-    //     fprintf(outf,"%s", t);
-    //     if(printout) printf("%s\n" , t);
+        // Print result
+        sprintf(t,"Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
+            (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
+        fprintf(outf,"%s", t);
+        if(printout) printf("%s\n" , t);
           
-    //     // Check FIFO overflow
-    //     if(flags == S826_ERR_FIFOOVERFLOW){
-    //         errcount++;
-    //         //sprintf(t,"  ####  FiFo Overflow samp=%d\n", sampcount);
-    //         //strcat(s,t);
-    //     fprintf(outf,"  ####  FiFo Overflow samp=%d\n", sampcount);
-    //     } else {
-    //         fprintf(outf,"\n");
-    //     }
-    //     // Increase counter
-    //     sampcount++;
+        // Check FIFO overflow
+        if(flags == S826_ERR_FIFOOVERFLOW){
+            errcount++;
+            //sprintf(t,"  ####  FiFo Overflow samp=%d\n", sampcount);
+            //strcat(s,t);
+        fprintf(outf,"  ####  FiFo Overflow samp=%d\n", sampcount);
+        } else {
+            fprintf(outf,"\n");
+        }
+        // Increase counter
+        sampcount++;
 
-    //     // Read next snapshot
-    //     flags = S826_CounterSnapshotRead(
-    //         board, countquad,
-    //         counts + sampcount, 
-    //         tstamp + sampcount, 
-    //         reason + sampcount, 
-    //     0);
-    // }
+        // Read next snapshot
+        flags = S826_CounterSnapshotRead(
+            board, countquad,
+            counts + sampcount, 
+            tstamp + sampcount, 
+            reason + sampcount, 
+        0);
+    }
 }
 
 void ReadSensorSnapshot(void)
@@ -331,11 +335,7 @@ int main(int argc, char **argv){
     int errcount = 0;    // number of overflow errors
     int sampcount = 0;   // number of samples in this readout session
     uint counts[1000], tstamp[1000], reason[1000];
-    
-    ////// Preparation
-    // set timer counter interval: determines how often count data is stored.
-    int datausec = 10; // Micro seconds
-    int sleepusec = 200; // Set computer sleep interval
+
     int duration = 10; // Set duration seconds
 
     treq.tv_sec = 0;
@@ -349,9 +349,7 @@ int main(int argc, char **argv){
     // Configurations
     ConfigureSensorPower(board, config);
     ConfigureSensors(board, config);
-
     ConfigureTimerCounter(board, config);
-
     ConfigurePulsePerSecondCounter(board, config);
     ConfigureQuadCounter(board, config);
 
@@ -363,7 +361,6 @@ int main(int argc, char **argv){
     printf("pps_intervals: %.3f\n", atof(pps_intervals));
     printf("sensor_intervals: %.3f\n", atof(sensor_intervals));
 
-    // BEGIN MAIN LOOP
     time(&rawtime);
     starttime = rawtime;
 
@@ -376,26 +373,45 @@ int main(int argc, char **argv){
     clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
     clock_gettime(CLOCK_MONOTONIC_RAW, &sensorlastreadtime);
 
+    // priority flag
+    int priority_flag = 0;
+
+    //// begin reading loop
     while(rawtime - starttime < duration){
         
+        priority_flag = 0;
+        //// read from quadrature counter
+        // get elapsed time
         clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
         delta_us = (curtime.tv_sec - quadlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - quadlastreadtime.tv_nsec);
+        
+        // read if elapsed
         if (delta_us > (1000000000 * atof(quad_intervals))){
             ReadQuadSnapshot();
+            // update last read time
             clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
         }
 
+        //// read from pps counter
+        // get elapsed time
         clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
         delta_us = (curtime.tv_sec - ppslastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - ppslastreadtime.tv_nsec);
+        
+        // read if elapsed
         if (delta_us > (1000000000 * atof(pps_intervals))){
             ReadPPSSnapshot();
+            // update last read time
+            priority_flag = 1;
             clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
         }
 
+        //// read from sensors
         clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
         delta_us = (curtime.tv_sec - sensorlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - sensorlastreadtime.tv_nsec);
-        if (delta_us > (1000000000 * atof(sensor_intervals))){
+        if (delta_us > (1000000000 * atof(sensor_intervals)) && priority_flag == 0){
             ReadSensorSnapshot();
+            
+            // update last read time
             clock_gettime(CLOCK_MONOTONIC_RAW, &sensorlastreadtime);
         }
 
@@ -404,6 +420,7 @@ int main(int argc, char **argv){
         loopcount++;
     }
 
+    // power off the correct power channel
     char *channel = ini_get(config, "sensors.power", "output_channel");
     int pwr_set_off = S826_DacDataWrite(board, atoi(channel), 0x0000, 0);
     if (pwr_set_off < 0)
