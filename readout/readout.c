@@ -338,9 +338,6 @@ int main(int argc, char **argv){
 
     int duration = 10; // Set duration seconds
 
-    treq.tv_sec = 0;
-    treq.tv_nsec = sleepusec * 1000;
-
     // Open the 826 API ---------------
     // int flags = S826_SystemOpen();
     // printf("S826_SystemOpen returned error code %d\n", flags);
