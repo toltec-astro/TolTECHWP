@@ -373,6 +373,10 @@ int main(int argc, char **argv){
     // priority flag
     int priority_flag = 0;
 
+    // Get start time
+    uint tstart;
+    S826_TimestampRead(board, &tstart);
+
     //// begin reading loop
     while(rawtime - starttime < duration){
         
