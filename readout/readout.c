@@ -227,7 +227,7 @@ void ReadPPSSnapshot(int board, int countpps, uint tstart)
     }
 }
 
-void ReadQuadSnapshot(int board, int countquad)
+void ReadQuadSnapshot(int board, int countquad, uint tstart)
 {
     int errcode;
     int sampcount = 0;
@@ -242,7 +242,7 @@ void ReadQuadSnapshot(int board, int countquad)
         reason + sampcount, 
     0);
     
-    while(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
+    while(errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
       
         // Keep track of counts
         dcount = counts[sampcount] - lastcount;
@@ -382,7 +382,7 @@ int main(int argc, char **argv){
         
         // read if elapsed
         if (delta_us > (1000000000 * atof(quad_intervals))){
-            ReadQuadSnapshot(board, atoi(countquad));
+            ReadQuadSnapshot(board, atoi(countquad), tstart);
             // update last read time
             clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
         }
