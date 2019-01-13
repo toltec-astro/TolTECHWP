@@ -206,7 +206,7 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
         printf("S826_CounterStateWrite returned error code %d\n", pps_flags);   
 }
 
-void ReadPPSSnapshot(int board, int countpps)
+void ReadPPSSnapshot(int board, int countpps, uint tstart)
 {
     //fprintf(stdout, "PPS. \n");
     int errcode;
@@ -399,7 +399,7 @@ int main(int argc, char **argv){
         
         // read if elapsed
         if (delta_us > (1000000000 * atof(pps_intervals))){
-            ReadPPSSnapshot(board, atoi(countpps));
+            ReadPPSSnapshot(board, atoi(countpps), tstart);
             // update last read time
             priority_flag = 1;
             clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
