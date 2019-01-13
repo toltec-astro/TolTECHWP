@@ -348,6 +348,7 @@ int main(int argc, char **argv){
     printf("sensor_intervals: %.3f\n", atof(sensor_intervals));
 
     int *countpps = ini_get(config, "counter.pps", "counter_num");
+    int *countquad = ini_get(config, "counter.quad", "counter_num");
 
     time(&rawtime);
     starttime = rawtime;
@@ -379,7 +380,7 @@ int main(int argc, char **argv){
         
         // read if elapsed
         if (delta_us > (1000000000 * atof(quad_intervals))){
-            ReadQuadSnapshot();
+            ReadQuadSnapshot(board, atoi(countquad));
             // update last read time
             clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
         }
