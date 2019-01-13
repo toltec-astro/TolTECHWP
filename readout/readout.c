@@ -318,9 +318,6 @@ int main(int argc, char **argv){
 
     // Variables
     int board = 0;
-    int countquad = 0;   // quadrature counter
-    int countpps  = 1;   // pps counter
-    int counttime = 2;   // timer counter
 
     int i;
     struct timespec treq;
