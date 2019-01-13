@@ -229,11 +229,13 @@ void ReadPPSSnapshot(int board, int countpps, uint tstart)
 
 void ReadQuadSnapshot(int board, int countquad)
 {
+    int errcode;
     int sampcount = 0;
     int lastcount = 0;
     int dcount = 1;
+    uint counts[1000], tstamp[1000], reason[1000];
 
-    flags = S826_CounterSnapshotRead(
+    errcode = S826_CounterSnapshotRead(
         board, countquad,
         counts + sampcount, 
         tstamp + sampcount, 
@@ -253,7 +255,7 @@ void ReadQuadSnapshot(int board, int countquad)
         sampcount++;
 
         // Read next snapshot
-        flags = S826_CounterSnapshotRead(
+        errcode = S826_CounterSnapshotRead(
             board, countquad,
             counts + sampcount, 
             tstamp + sampcount, 
