@@ -251,7 +251,7 @@ void ReadQuadSnapshot(int board, int countquad, uint tstart)
         // Print result
         printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
             (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
-        printf("/n");
+        printf("\n");
         // Increase counter
         sampcount++;
 
