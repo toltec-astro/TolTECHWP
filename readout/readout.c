@@ -191,8 +191,8 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
     pps_flags = S826_CounterFilterWrite(
                 board, atoi(countpps),  // Filer Configuration:
                 (1 << 31) | (1 << 30) | // Apply to IX and clock
-                100 
-    );                  // 100x20ns = 2us filter constant
+                100                     // 100x20ns = 2us filter constant
+    );                 
     if (pps_flags < 0)
         printf("S826_CounterFilterWrite returned error code %d\n", pps_flags); 
 
@@ -227,48 +227,39 @@ void ReadPPSSnapshot(int board, int countpps, uint tstart)
     }
 }
 
-void ReadQuadSnapshot(void)
+void ReadQuadSnapshot(int board, int countquad)
 {
-    fprintf(stdout, "Quad. \n");
-    // flags = S826_CounterSnapshotRead(
-    //     board, countquad,
-    //     counts + sampcount, 
-    //     tstamp + sampcount, 
-    //     reason + sampcount, 
-    // 0);
-    
-    // while(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
-      
-    //     // Keep track of counts
-    //     dcount = counts[sampcount] - lastcount;
-    //     lastcount = counts[sampcount];
-          
-    //     // Print result
-    //     sprintf(t,"Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
-    //         (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
-    //     fprintf(outf,"%s", t);
-    //     if(printout) printf("%s\n" , t);
-          
-    //     // Check FIFO overflow
-    //     if(flags == S826_ERR_FIFOOVERFLOW){
-    //         errcount++;
-    //         //sprintf(t,"  ####  FiFo Overflow samp=%d\n", sampcount);
-    //         //strcat(s,t);
-    //     fprintf(outf,"  ####  FiFo Overflow samp=%d\n", sampcount);
-    //     } else {
-    //         fprintf(outf,"\n");
-    //     }
-    //     // Increase counter
-    //     sampcount++;
+    int sampcount = 0;
+    int lastcount = 0;
+    int dcount = 1;
 
-    //     // Read next snapshot
-    //     flags = S826_CounterSnapshotRead(
-    //         board, countquad,
-    //         counts + sampcount, 
-    //         tstamp + sampcount, 
-    //         reason + sampcount, 
-    //     0);
-    // }
+    flags = S826_CounterSnapshotRead(
+        board, countquad,
+        counts + sampcount, 
+        tstamp + sampcount, 
+        reason + sampcount, 
+    0);
+    
+    while(flags == S826_ERR_OK || flags == S826_ERR_FIFOOVERFLOW){
+      
+        // Keep track of counts
+        dcount = counts[sampcount] - lastcount;
+        lastcount = counts[sampcount];
+          
+        // Print result
+        printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
+            (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
+        // Increase counter
+        sampcount++;
+
+        // Read next snapshot
+        flags = S826_CounterSnapshotRead(
+            board, countquad,
+            counts + sampcount, 
+            tstamp + sampcount, 
+            reason + sampcount, 
+        0);
+    }
 }
 
 void ReadSensorSnapshot(void)
