@@ -291,7 +291,7 @@ void ReadSensorSnapshot(void)
         adcdata = (int)((slotval[slot] & 0xFFFF));
         burstnum = ((unsigned int)slotval[slot] >> 24);
         voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
-        printf("Slot: %d \t Voltage: %f \t ADCData: %d \t BurstNum %d \n", slot, voltage, adcdata, burstnum);   
+        printf("Slot: %d \t Voltage: %f \n", slot, voltage);   
     };
 }
 
