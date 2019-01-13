@@ -221,9 +221,8 @@ void ReadPPSSnapshot(int board, int countpps)
         0
     );
     if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
-        sprintf(t,"PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
+        printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
             counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
-        printf(t);
     }
 }
 
