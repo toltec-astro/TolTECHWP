@@ -206,24 +206,25 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
         printf("S826_CounterStateWrite returned error code %d\n", pps_flags);   
 }
 
-void ReadPPSSnapshot(void)
+void ReadPPSSnapshot(int board, int countpps)
 {
-    fprintf(stdout, "PPS. \n");
-    // int errcode;
+    //fprintf(stdout, "PPS. \n");
+    int errcode;
+    int sampcount = 0;
+    uint counts[1000], tstamp[1000], reason[1000];
 
-    // errcode = S826_CounterSnapshotRead(
-    //     board, countpps,
-    //     counts + sampcount, 
-    //     tstamp + sampcount, 
-    //     reason + sampcount, 
-    //     0
-    // );
-    // if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
-    //     sprintf(t,"PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
-    //         counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
-    //     printf(t);
-    //     fprintf(outf, t);
-    // }
+    errcode = S826_CounterSnapshotRead(
+        board, countpps,
+        counts + sampcount, 
+        tstamp + sampcount, 
+        reason + sampcount, 
+        0
+    );
+    if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
+        sprintf(t,"PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
+            counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
+        printf(t);
+    }
 }
 
 void ReadQuadSnapshot(void)
@@ -358,6 +359,8 @@ int main(int argc, char **argv){
     printf("pps_intervals: %.3f\n", atof(pps_intervals));
     printf("sensor_intervals: %.3f\n", atof(sensor_intervals));
 
+    int *countpps = ini_get(config, "counter.pps", "counter_num");
+
     time(&rawtime);
     starttime = rawtime;
 
@@ -396,7 +399,7 @@ int main(int argc, char **argv){
         
         // read if elapsed
         if (delta_us > (1000000000 * atof(pps_intervals))){
-            ReadPPSSnapshot();
+            ReadPPSSnapshot(board, atoi(countpps));
             // update last read time
             priority_flag = 1;
             clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
