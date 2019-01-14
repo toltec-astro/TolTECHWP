@@ -272,7 +272,7 @@ void ReadSensorSnapshot(void)
 
     int errcode;     // errcode 
     int slotval[16]; // buffer must be sized for 16 slots
-    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, 0); 
+    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
     if (errcode != S826_ERR_OK)
         printf("ADC Read Failed. %d", errcode);
 
