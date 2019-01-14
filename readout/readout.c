@@ -279,7 +279,6 @@ void ReadQuadSnapshot(int board, int countquad, uint tstart)
 
 void ReadSensorSnapshot(void)
 {
-    fprintf(stdout, "Sensor. \n");
     uint slotlist = 0x0007;
 
     int errcode;     // errcode 
