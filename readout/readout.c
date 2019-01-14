@@ -272,7 +272,7 @@ void ReadSensorSnapshot(void)
 
     int errcode;     // errcode 
     int slotval[16]; // buffer must be sized for 16 slots
-    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, 1); 
+    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, 0); 
     if (errcode != S826_ERR_OK)
         printf("ADC Read Failed. %d", errcode);
 
@@ -328,7 +328,7 @@ int main(int argc, char **argv){
     int sampcount = 0;   // number of samples in this readout session
     uint counts[1000], tstamp[1000], reason[1000];
 
-    int duration = 10; // Set duration seconds
+    int duration = 30; // Set duration seconds
 
     // Open the 826 API ---------------
     // int flags = S826_SystemOpen();
