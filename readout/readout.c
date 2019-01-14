@@ -82,7 +82,7 @@ void ConfigureSensors(int board, ini_t *config)
         if (sensor_config_write < 0)
             printf("Configure error %d\n", temp_1);
     }
-    
+
     int err_AdcSlotlistWrite = S826_AdcSlotlistWrite(board, 0x0007, S826_BITWRITE);
     if (err_AdcSlotlistWrite < 0)
         printf("S826_AdcSlotlistWrite error code %d", err_AdcSlotlistWrite);
@@ -284,7 +284,7 @@ void ReadSensorSnapshot(void)
 
     int errcode;     // errcode 
     int slotval[16]; // buffer must be sized for 16 slots
-    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, 0); //S826_WAIT_INFINITE); 
+    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
     if (errcode != S826_ERR_OK)
         printf("ADC Read Failed. %d \n", errcode);
 
