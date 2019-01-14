@@ -422,7 +422,7 @@ int main(int argc, char **argv){
             clock_gettime(CLOCK_MONOTONIC_RAW, &sensorlastreadtime);
         }
         else {
-            printf(" no\n");
+            //printf(" no\n");
         }
 
         // update time and loop
