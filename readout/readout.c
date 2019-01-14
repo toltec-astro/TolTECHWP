@@ -80,7 +80,7 @@ void ConfigureSensors(int board, ini_t *config)
             S826_ADC_GAIN_1
         );
         if (sensor_config_write < 0)
-            printf("Configure error %d\n", temp_1);
+            printf("Configure error %d\n", sensor_config_write);
     }
 
     int err_AdcSlotlistWrite = S826_AdcSlotlistWrite(board, 0x0007, S826_BITWRITE);
