@@ -382,7 +382,7 @@ int main(int argc, char **argv){
         delta_us = (curtime.tv_sec - quadlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - quadlastreadtime.tv_nsec);
         
         // read if elapsed
-        print("check if run quad \n");
+        printf("check if run quad \n");
         if (delta_us > (1000000000 * atof(quad_intervals))){
             ReadQuadSnapshot(board, atoi(countquad), tstart);
             // update last read time
@@ -395,7 +395,7 @@ int main(int argc, char **argv){
         delta_us = (curtime.tv_sec - ppslastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - ppslastreadtime.tv_nsec);
         
         // read if elapsed
-        print("check if run pps \n");
+        printf("check if run pps \n");
         if (delta_us > (1000000000 * atof(pps_intervals))){
             ReadPPSSnapshot(board, atoi(countpps), tstart);
             // update last read time
@@ -406,7 +406,7 @@ int main(int argc, char **argv){
         //// read from sensors
         clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
         delta_us = (curtime.tv_sec - sensorlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - sensorlastreadtime.tv_nsec);
-        print("check if run sensor \n");
+        printf("check if run sensor \n");
         if (delta_us > (1000000000 * atof(sensor_intervals)) && priority_flag == 0){
             ReadSensorSnapshot();
             
