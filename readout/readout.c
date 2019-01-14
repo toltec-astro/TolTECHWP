@@ -72,15 +72,15 @@ void ConfigureSensors(int board, ini_t *config)
         printf("timeslot: %d\n", atoi(timeslot));
         printf("channel: %d\n", atoi(channel));
 
-        // int sensor_config_write = S826_AdcSlotConfigWrite(
-        //     board, 
-        //     atoi(timeslot), 
-        //     atoi(channel), 
-        //     temp_1_settling,
-        //     temp_1_range
-        // );
-        // if (sensor_config_write < 0)
-        //     printf("Configure error %d\n", temp_1);
+        int sensor_config_write = S826_AdcSlotConfigWrite(
+            board, 
+            atoi(timeslot), 
+            atoi(channel), 
+            5,
+            S826_ADC_GAIN_1
+        );
+        if (sensor_config_write < 0)
+            printf("Configure error %d\n", temp_1);
     }
 }
 
