@@ -396,7 +396,7 @@ int main(int argc, char **argv){
         //printf("run quad:");
         if (delta_us > (1000000000 * atof(quad_intervals))){
             printf("quad yes\n");
-            //ReadQuadSnapshot(board, atoi(countquad), tstart);
+            ReadQuadSnapshot(board, atoi(countquad), tstart);
             // update last read time
             clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
         }
@@ -413,7 +413,7 @@ int main(int argc, char **argv){
         //printf("run pps:");
         if (delta_us > (1000000000 * atof(pps_intervals))){
             printf("pps yes\n");
-            //ReadPPSSnapshot(board, atoi(countpps), tstart);
+            ReadPPSSnapshot(board, atoi(countpps), tstart);
             // update last read time
             priority_flag = 1;
             clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
