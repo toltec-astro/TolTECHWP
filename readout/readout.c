@@ -195,8 +195,12 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
     int *countpps = ini_get(config, "counter.pps", "counter_num");
     printf("countpps: %d\n", atoi(countpps));  
 
-    pps_flags = S826_CounterModeWrite(board, atoi(countpps),      // Configure counter:
-                            S826_CM_K_AFALL );   // clock = ClkA (external digital signal)
+    pps_flags = S826_CounterModeWrite(
+        board, 
+        atoi(countpps),      // Configure counter:
+        826_CM_K_AFALL 
+    );   // clock = ClkA (external digital signal)
+    
     if (pps_flags < 0)
         printf("S826_CounterModeWrite returned error code %d\n", pps_flags); 
 
@@ -208,7 +212,9 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
     if (pps_flags < 0)
         printf("S826_CounterFilterWrite returned error code %d\n", pps_flags); 
 
-    pps_flags = S826_CounterSnapshotConfigWrite(board, atoi(countpps),  // Acquire counts upon tick rising edge.
+    pps_flags = S826_CounterSnapshotConfigWrite(
+        board, 
+        atoi(countpps),  // Acquire counts upon tick rising edge.
                   S826_SSRMASK_IXRISE, S826_BITWRITE);
     if (pps_flags < 0)
         printf("S826_CounterSnapshotConfigWrite returned error code %d\n", pps_flags); 
@@ -400,9 +406,6 @@ int main(int argc, char **argv){
             // update last read time
             clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
         }
-        else {
-            //printf(" no\n");
-        }
 
         //// read from pps counter
         // get elapsed time
@@ -418,10 +421,6 @@ int main(int argc, char **argv){
             priority_flag = 1;
             clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
         }
-        else {
-            //printf(" no\n");
-        }
-
         //// read from sensors
         clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
         delta_us = (curtime.tv_sec - sensorlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - sensorlastreadtime.tv_nsec);
@@ -431,9 +430,6 @@ int main(int argc, char **argv){
             ReadSensorSnapshot();
             // update last read time
             clock_gettime(CLOCK_MONOTONIC_RAW, &sensorlastreadtime);
-        }
-        else {
-            //printf(" no\n");
         }
 
         // update time and loop
