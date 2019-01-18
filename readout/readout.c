@@ -3,12 +3,13 @@
 #include "../vend/ini/ini.h"
 #include "../vend/sdk_826_linux_3.3.11/demo/826api.h"
 
+#include <time.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <time.h>
 #include <string.h>
 #include <stdlib.h> 
 #include <signal.h>
+#include <pthread.h>
 
 void ConfigureSensorPower(int board, ini_t *config)
 {
@@ -226,7 +227,6 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
 
 void ReadPPSSnapshot(int board, int countpps, uint tstart)
 {
-    //fprintf(stdout, "PPS. \n");
     int errcode;
     int sampcount = 0;
     uint counts[1000], tstamp[1000], reason[1000];
