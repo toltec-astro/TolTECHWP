@@ -12,7 +12,7 @@
 #include <string.h>
 #include <stdlib.h> 
 #include <signal.h>
-#include <pthreads.h>
+#include <pthread.h>
 
 void ConfigureSensorPower(int board, ini_t *config)
 {
