@@ -201,7 +201,7 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
     pps_flags = S826_CounterModeWrite(
         board, 
         atoi(countpps),      // Configure counter:
-        826_CM_K_AFALL 
+        S826_CM_K_AFALL 
     );   // clock = ClkA (external digital signal)
     
     if (pps_flags < 0)
