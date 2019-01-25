@@ -14,6 +14,7 @@
     incoming messages to the response queue.
 """
 
+import time
 import queue
 
 class AgentParent():
@@ -41,4 +42,6 @@ class AgentParent():
                 self.exit = True
             # Else just send task string back
             else:
-                respqueue.put("%s: %s is done" % (self.name, task))    
+                respqueue.put("%s: Doing %s" % (self.name, task))
+                time.sleep(1.0)
+                respqueue.put("%s: %s is done" % (self.name, task))

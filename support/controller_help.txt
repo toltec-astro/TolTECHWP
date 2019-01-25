@@ -1,0 +1,10 @@
+Help information for controller:
+
+Enter commands here: Format is recipient followed by space then
+    by the command to send.
+    
+Special Commands:
+    help: displays this message
+    exit: will quit the controller application
+    status: will list all available recipients (agents)
+    config: will print the current configuration

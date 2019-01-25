@@ -45,7 +45,7 @@ class InterParent():
         while not self.exit:
             # get response (try again every 10s)
             try:
-                resp = self.queue.get(timeout=2)
+                resp = self.queue.get(timeout=3)
             except queue.Empty:
                 print("Interface %s - Waiting" % self.name)
                 resp = ''
@@ -55,23 +55,28 @@ class InterParent():
             if random.random() < 0.3 and len(resp) == 0 :
                 for a in self.agents:
                     print('Interface %s - Telling %s to work' % (self.name,a))
-                    self.sendtask(a+': Work!')
+                    self.sendtask(a+' Work!')
             if random.random() < 0.1 and len(resp) == 0 :
-                self.sendtask('Noone: Do Something!')
+                self.sendtask('Noone Do Something!')
     
     def addagent(self, name, aqueue):
         """ AddAgent: registers an agent with the interface
         """
-        self.agents[name.strip()] = aqueue
+        self.agents[name.strip().lower()] = aqueue
         
     def sendtask(self, task):
         """ Forwards tasks in the format "Agent: Task"
         """
         # Get agent and task
-        agent, tsk = task.split(':',1)
+        try:
+            agent, tsk = task.split(' ',1)
+        except:
+            self.queue.put('Invalid Task: %s' % task)
+            return
         tsk = tsk.strip()
+        agent = agent.strip().lower()
         # Check if agent is registered else send error to queue
-        if not agent.strip() in self.agents:
+        if not agent in self.agents:
             self.queue.put('Invalid Agent: %s' % agent)
         else:
             # Send task to agent

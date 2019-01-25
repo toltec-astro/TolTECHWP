@@ -26,16 +26,21 @@
 
     2DO:
     ./ Make this text
-    * First version
+    ./ First version
       ./ Copy text from HAWC autoreduce (make a queue from sample interface to galil)
       ./ Make parent interface and parent agent test with queues and messages
       ./ Make main code with function for interface and for galil (just this file)
       ./ Make interface and agent parents own files - look at HAWC files first
-      * Make interface user child (make all die on it) - look at HAWC inter and blimp first
-        * Enter empty string -> query queue for all lost messages
-        * Status: lists names of registered agents
-      * Run tests with config file library
-      * Add loading config file use it for greeting in user interface
+      ./ Make interface user child (make all die on it) - look at HAWC inter and blimp first
+        ./ Make file and fill
+        ./ Add to master
+        ./ Enter empty string -> query queue for all lost messages
+        ./ Status: lists names of registered agents (and look for extra messages)
+        ./ Help function
+      ./ Run tests with config file library: how to open, access and print config
+      ./ Add loading config file use it for greeting in user interface
+      ./ Get help file text in config file
+      ./ Make conf command to list config file
     * Logging:
       * Look at HAWC log receiver for port
       * Make logging message receiver (with queue for stop? but no response)
@@ -60,36 +65,40 @@
 ### Preparation
 
 # Imports
+import os
 import sys
 import queue
 import time
 import logging
 import threading
+import configparser
 from distutils.command.config import config
 from agentparent import AgentParent
 from interparent import InterParent
+from userinterface import InterUser
 
-def hwpcontrol(config):
+def hwpcontrol(confilename):
     """ Run the HWP control
     """
+    # Load config file
+    config = configparser.ConfigParser()
+    config.read(confilename)
     # Make interfaces and agents
-    inboss = InterParent(config, 'Boss')
+    inusr = InterUser(config, 'User')
     agresp = AgentParent(config, 'Bee')
-    inboss.addagent('Bee',agresp.queue)
+    inusr.addagent('Bee',agresp.queue)
     # Run them as threads (both as daemons such that they shut down on exit)
-    inbth = threading.Thread(target = inboss)
-    inbth.daemon = True
     agrth = threading.Thread(target = agresp)
     agrth.daemon = True
-    inbth.start()
+    inuth = threading.Thread(target = inusr)
+    inuth.daemon = True
     agrth.start()
-    # Wait
-    time.sleep(5)
-    inboss.queue.put('Master: Hi')
+    inuth.start()
+    # Wait and do some stuff
     time.sleep(2)
-    agresp.queue.put(('Do It',inboss.queue))
-    time.sleep(5)
-    # Send Quit command
+    agresp.queue.put(('Do It',inusr.queue))
+    # Join with User Interface thread
+    inuth.join()
 
 if __name__ == '__main__':
     """ Main function for calling command line. Passes the configuration file
