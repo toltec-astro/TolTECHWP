@@ -11,7 +11,7 @@ import time
 ### This script generates Roach2 test packets. Use with TolTEC test firmware.
 ### author = Sam Gordon (sbgordo1@asu.edu)
 
-UDP_BUF_SIZE_TIMES = 60000
+UDP_BUF_SIZE_TIMES = 600
 DATA_LEN_DIVISOR = 1
 USE_NC = True
 
@@ -259,8 +259,8 @@ class Gbe():
 
   def open_nc(self, obsNum):
       self.nc_lock.acquire()
-      dataDir = "."
       dataDir = "/data_toltec/toltec"
+      dataDir = "."
       if USE_NC:
         zlib = False
         complevel = 1

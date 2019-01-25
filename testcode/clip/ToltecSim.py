@@ -28,7 +28,7 @@ class ToltecSim():
                 self.s = sock.socket(sock.AF_PACKET, sock.SOCK_RAW, 3)
                 self.s.bind(('eth0', 3))
             else:
-                self.beg = Gbe.header_len
+                self.beg = Gbe.header_len # will always be this way
                 self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             
             print 'sim socket created to', self.dest_host, self.dest_port
@@ -89,13 +89,14 @@ class ToltecSim():
             self.header[34:36] = struct.pack('!1H',self.dest_port)
             self.header[36:38] = struct.pack('!1H',self.dest_port)
             packet_data = self.header+self.data.tostring()
+            # Put time at the end of data (only important for KIDS)
             packet_data[-16:-12] = sec.tostring()
             packet_data[-12:-8] = msec.tostring()
             packet_data[-8:-4] = count.tostring()
             packet_data[-4:] = status.tostring()
-            if self.beg == 0:
+            if self.beg == 0: # is never true
                 self.s.send(packet_data[self.beg:])
-            else:
+            else: # only data is sent not header #######
                 self.s.sendto(packet_data[self.beg:], (self.dest_host, self.dest_port))
             count[0] += 1
             #print t, count, sec, msec

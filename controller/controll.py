@@ -12,23 +12,39 @@
     Usage: python controll.py conigfile.cfg
            configfile.cfg is the configuration file to be used
     
+    Process: The programs has interfaces (user, web, port) which send
+        tasks to agents (galil, reader). Each interface and agent has its
+        own thread. Each agent has a input task queue where it gets
+        a string for the task and a queue to respond to (optional).
+        Generally interfaces expect one response from an agent for each task.
+
     Author: Marc Berthoud - mgb11@cornell.edu
+
+    Questions:
+    * Should I handle agents which don't respond differently?
+    * Standard way to handle agents which take long time to respond?
 
     2DO:
     ./ Make this text
     * First version
-      * Copy text from HAWC autoreduce (make a queue from sample interface to galil)
-      * Make main code with function for interface and for galil (just this file)
-      * Make it work (with queue being passed with message)
-      * Make galil and interface parent own files
-      * Make interface user child (make all die on it)
-        * Enter empty string -> query queue for lost messages
+      ./ Copy text from HAWC autoreduce (make a queue from sample interface to galil)
+      ./ Make parent interface and parent agent test with queues and messages
+      ./ Make main code with function for interface and for galil (just this file)
+      ./ Make interface and agent parents own files - look at HAWC files first
+      * Make interface user child (make all die on it) - look at HAWC inter and blimp first
+        * Enter empty string -> query queue for all lost messages
+        * Status: lists names of registered agents
+      * Run tests with config file library
+      * Add loading config file use it for greeting in user interface
     * Logging:
+      * Look at HAWC log receiver for port
       * Make logging message receiver (with queue for stop? but no response)
       * Fill logging message receiver (listen to port) - make functions to use it
+      * Add logging messages from user interface (query and response)
     * Galil:
       * Make interface to talk to galil
       * Make full galil interface loop (look at code from Steve on HAWC)
+      * Add initialization and regular comcheck (with warning if lost signal)
     * Readout:
       * Make list of commands
       * Make command receiver which sends commands to the readout
@@ -36,6 +52,8 @@
       * Make list of commands
       * Add interface for telescope control system
     * Idea (optional but maybe useful for debug): webserver interface
+      * For one user only
+      * For multiple users (could also do slackbot)
 
 """
 
@@ -46,74 +64,10 @@ import sys
 import queue
 import time
 import logging
-import random
 import threading
 from distutils.command.config import config
-
-class InterParent():
-    """ Interface Parent Object: Sends messages to agents and handles
-        optional responses from agents.
-    """
-    def __init__(self, config, name=''):
-        """ Constructor: Set up variables
-        """
-        self.name = name
-        self.queue = queue.Queue() # Queue object for responses
-        self.config = config # configuration
-        self.agents = {} # dictionary for agent queues
-        self.exit = False # Indicates if loop should exit
-        
-    def __call__(self):
-        """ Object call: Runs a loop that runs forever and generates
-            tasks for agents.
-        """
-        # Loop
-        while not self.exit:
-            # get response (try again every 10s)
-            try:
-                resp = self.queue.get(timeout=2)
-            except queue.Empty:
-                print("Interface %s: Waiting" % self.name)
-                resp = ''
-            print('Interface %s - Got response <%s>' % (self.name, resp))
-            if 'exit' in resp.lower():
-                self.exit = True
-            if random.random() < 0.3 and len(resp) ==0 :
-                for a in self.agents:
-                    print('Interface %s - Telling %s to work' % (self.name,a))
-                    self.agents[a].put(('Work!',self.queue))
-    
-    def addagent(self, name, aqueue):
-        """ AddAgent: adds an agent
-        """
-        self.agents[name] = aqueue
-                
-class AgentParent():
-    """ Agent Parent Object: Receives messages (task, responsequeue pairs)
-        and (optionally) returns answer.
-    """
-    def __init__(self, config, name = ''):
-        """ Constructor: Set up variables
-        """
-        self.name = name
-        self.queue = queue.Queue() # Queue object for querries
-        self.config = config # configuration
-        self.exit = False # Indicates that loop should exit
-        
-    def __call__(self):
-        """ Object call: Run a loop that runs forever and handles tasks
-        """
-        # Loop
-        while not self.exit:
-            # Look for task
-            task, respqueue = self.queue.get()
-            print("Agent %s - Handling Task <%s>" % (self.name, task) )
-            # Check if it's exit
-            if 'exit' in task.lower():
-                self.exit = True
-            # Else just send task string back
-            else:
-                respqueue.put("%s: %s" % (self.name, task))    
+from agentparent import AgentParent
+from interparent import InterParent
 
 def hwpcontrol(config):
     """ Run the HWP control
@@ -130,9 +84,11 @@ def hwpcontrol(config):
     inbth.start()
     agrth.start()
     # Wait
-    time.sleep(7)
+    time.sleep(5)
     inboss.queue.put('Master: Hi')
-    time.sleep(3)
+    time.sleep(2)
+    agresp.queue.put(('Do It',inboss.queue))
+    time.sleep(5)
     # Send Quit command
 
 if __name__ == '__main__':
