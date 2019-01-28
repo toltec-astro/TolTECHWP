@@ -22,6 +22,7 @@
 """
 
 import queue
+import logging
 import random
 
 class InterParent():
@@ -36,6 +37,7 @@ class InterParent():
         self.config = config # configuration
         self.agents = {} # dictionary for agent queues
         self.exit = False # Indicates if loop should exit
+        self.log = logging.getLogger('Interface.'+self.name)
         
     def __call__(self):
         """ Object call: Runs a loop that runs forever and generates
@@ -46,15 +48,14 @@ class InterParent():
             # get response (try again every 10s)
             try:
                 resp = self.queue.get(timeout=3)
+                self.log.debug('Got response <%s>' % resp)
             except queue.Empty:
-                print("Interface %s - Waiting" % self.name)
                 resp = ''
-            print('Interface %s - Got response <%s>' % (self.name, resp))
             if 'exit' in resp.lower():
                 self.exit = True
             if random.random() < 0.3 and len(resp) == 0 :
                 for a in self.agents:
-                    print('Interface %s - Telling %s to work' % (self.name,a))
+                    self.log.debug('Telling %s to work' % a)
                     self.sendtask(a+' Work!')
             if random.random() < 0.1 and len(resp) == 0 :
                 self.sendtask('Noone Do Something!')

@@ -26,7 +26,9 @@ class InterUser(InterParent):
                 resp = self.queue.get(timeout=0.2)
             except queue.Empty:
                 resp = ''
-            if len(resp): print(resp)
+            if len(resp):
+                self.log.debug('Got response <%s>' % resp)
+                print(resp)
             # Wait for keyboard input
             command = input('> ')
             # If it's status -> print list of all agents
@@ -56,10 +58,13 @@ class InterUser(InterParent):
                         resp = self.queue.get(timeout=1.0)
                     except queue.Empty:
                         resp = ''
-                    if len(resp): print(resp)
+                    if len(resp):
+                        self.log.debug('Got response <%s>' % resp)
+                        print(resp)
             # Else sent command
             else:
                 self.sendtask(command)
             # Check if exit
             if 'exit' in resp.lower() or 'exit' in command.lower():
                 self.exit = True
+                self.log.info('Exiting')

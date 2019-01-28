@@ -1,4 +1,4 @@
-Help information for controller:
+== Help information for controller ==
 
 Enter commands here: Format is recipient followed by space then
     by the command to send.
@@ -8,3 +8,6 @@ Special Commands:
     exit: will quit the controller application
     status: will list all available recipients (agents)
     config: will print the current configuration
+    
+Remember: Only one response is returned per command.
+    Press <CR> on an empty line to get outstanding responses.

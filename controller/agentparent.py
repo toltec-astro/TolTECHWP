@@ -16,6 +16,7 @@
 
 import time
 import queue
+import logging
 
 class AgentParent():
     """ Agent Parent Object: Receives messages (task, responsequeue pairs)
@@ -27,6 +28,7 @@ class AgentParent():
         self.name = name
         self.queue = queue.Queue() # Queue object for querries
         self.config = config # configuration
+        self.log = logging.getLogger('Agent.'+self.name)
         self.exit = False # Indicates that loop should exit
         
     def __call__(self):
@@ -36,7 +38,7 @@ class AgentParent():
         while not self.exit:
             # Look for task
             task, respqueue = self.queue.get()
-            print("Agent %s - Handling Task <%s>" % (self.name, task) )
+            self.log.debug("Agent %s - Handling Task <%s>" % (self.name, task) )
             # Check if it's exit
             if 'exit' in task.lower():
                 self.exit = True

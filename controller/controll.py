@@ -32,21 +32,26 @@
       ./ Make main code with function for interface and for galil (just this file)
       ./ Make interface and agent parents own files - look at HAWC files first
       ./ Make interface user child (make all die on it) - look at HAWC inter and blimp first
-        ./ Make file and fill
-        ./ Add to master
-        ./ Enter empty string -> query queue for all lost messages
-        ./ Status: lists names of registered agents (and look for extra messages)
-        ./ Help function
       ./ Run tests with config file library: how to open, access and print config
       ./ Add loading config file use it for greeting in user interface
       ./ Get help file text in config file
       ./ Make conf command to list config file
-    * Logging:
-      * Look at HAWC log receiver for port
-      * Make logging message receiver (with queue for stop? but no response)
-      * Fill logging message receiver (listen to port) - make functions to use it
-      * Add logging messages from user interface (query and response)
+    ./ Logging:
+      ./ Make logging message receiver (with queue for stop? but no response)
+      ./ Fill logging message receiver (listen to port) - make functions to use it
+      ./ Add logging messages from agents and interfaces (query and response)
     * Galil:
+      * Use code from galilcomm.py, look at code from HAWC irc
+      * Set up file and connection configuration
+      * Make galilcom and reconnect fuctions (both use self.comm)
+        * checks number of commands and throws error if missing number of
+          commands or ? received
+        * to test: generate both of these with wrong commands
+      * Set up connection and forward messages
+      * Error handling, reconnect 
+      * Allow (re)connect and disconnect command
+      * Require exit command for disconnect at end
+      * - - - -
       * Make interface to talk to galil
       * Make full galil interface loop (look at code from Steve on HAWC)
       * Add initialization and regular comcheck (with warning if lost signal)
@@ -76,6 +81,7 @@ from distutils.command.config import config
 from agentparent import AgentParent
 from interparent import InterParent
 from userinterface import InterUser
+from loggercontrol import LoggerControl
 
 def hwpcontrol(confilename):
     """ Run the HWP control
@@ -84,14 +90,19 @@ def hwpcontrol(confilename):
     config = configparser.ConfigParser()
     config.read(confilename)
     # Make interfaces and agents
+    logctrl = LoggerControl(config, 'Log')
     inusr = InterUser(config, 'User')
-    agresp = AgentParent(config, 'Bee')
-    inusr.addagent('Bee',agresp.queue)
+    agresp = AgentParent(config, 'Echo')
+    # Register agents with interfaces
+    inusr.addagent('Echo',agresp.queue)
     # Run them as threads (both as daemons such that they shut down on exit)
+    logth = threading.Thread(target = logctrl)
+    logth.daemon = True
     agrth = threading.Thread(target = agresp)
     agrth.daemon = True
     inuth = threading.Thread(target = inusr)
     inuth.daemon = True
+    logth.start()
     agrth.start()
     inuth.start()
     # Wait and do some stuff
