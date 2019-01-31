@@ -43,7 +43,7 @@
     * Galil:
       * Use code from galilcomm.py, look at code from HAWC irc
       * Set up file and connection configuration
-      * Make galilcom and reconnect fuctions (both use self.comm)
+      * Make galilcom and reconnect functions (both use self.comm)
         * checks number of commands and throws error if missing number of
           commands or ? received
         * to test: generate both of these with wrong commands
@@ -82,6 +82,7 @@ from agentparent import AgentParent
 from interparent import InterParent
 from userinterface import InterUser
 from loggercontrol import LoggerControl
+from galilagent import GalilAgent
 
 def hwpcontrol(confilename):
     """ Run the HWP control
@@ -93,18 +94,23 @@ def hwpcontrol(confilename):
     logctrl = LoggerControl(config, 'Log')
     inusr = InterUser(config, 'User')
     agresp = AgentParent(config, 'Echo')
+    aggal = GalilAgent(config, 'Galil')
     # Register agents with interfaces
     inusr.addagent('Echo',agresp.queue)
+    inusr.addagent('Galil',aggal.queue)
     # Run them as threads (both as daemons such that they shut down on exit)
     logth = threading.Thread(target = logctrl)
     logth.daemon = True
     agrth = threading.Thread(target = agresp)
     agrth.daemon = True
+    aggth = threading.Thread(target = aggal)
+    aggth.daemon = True
     inuth = threading.Thread(target = inusr)
     inuth.daemon = True
     logth.start()
     agrth.start()
     inuth.start()
+    aggth.start()
     # Wait and do some stuff
     time.sleep(2)
     agresp.queue.put(('Do It',inusr.queue))

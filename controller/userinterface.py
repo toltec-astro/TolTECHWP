@@ -32,7 +32,7 @@ class InterUser(InterParent):
             # Wait for keyboard input
             command = input('> ')
             # If it's status -> print list of all agents
-            if 'status' in command.lower():
+            if 'status' in command.lower()[:7]:
                 # Print agents list
                 print("List of Agents:")
                 for a in self.agents:
@@ -40,13 +40,13 @@ class InterUser(InterParent):
                 # Set command to empty to get all messages
                 command = ''
             # If it's help -> print help message
-            if 'help' in command.lower():
+            if 'help' in command.lower()[:5]:
                 with open(self.config['userinterface']['helpfile'],'rt') as f:
                     print(f.read())
                 # Set command to empty to get all messages
                 command = ''
             # If it's config -> print the configuration
-            if 'config' in command.lower():
+            if 'config' in command.lower()[:7]:
                 self.config.write(sys.stdout)
                 # Set command to empty to get all messages
                 command = ''                
@@ -65,6 +65,6 @@ class InterUser(InterParent):
             else:
                 self.sendtask(command)
             # Check if exit
-            if 'exit' in resp.lower() or 'exit' in command.lower():
+            if 'exit' in resp.lower()[:5] or 'exit' in command.lower()[:10]:
                 self.exit = True
                 self.log.info('Exiting')
