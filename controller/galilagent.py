@@ -13,6 +13,7 @@ import traceback
 import telnetlib
 import serial
 import logging
+import time
 from agentparent import AgentParent
 
 # GalilAgent Object
@@ -35,7 +36,8 @@ class GalilAgent(AgentParent):
         """ Function to read from galil (depends on readout method)
         """
         if isinstance(self.comm, serial.Serial):
-            return self.comm.read(1000)
+            # Decode from bytes then strip
+            return self.comm.read(1000).decode().strip()
         elif isinstance(self.comm, telnetlib.Telnet):
             return self.comm.read_eager()
         else:
@@ -114,8 +116,8 @@ class GalilAgent(AgentParent):
             # Else it's a galil command
             elif len(task):
                 if self.comm != None:
-                    self.comm.write(task+'\n\r')
-                    time.sleep(self.config['galil']['waittime'])
+                    self.comm.write((task+'\n\r').encode())
+                    time.sleep(float(self.config['galil']['waittime']))
                     retmsg = self.read()
                 else:
                     retmsg = "Unable to send command, no open connection"
@@ -127,8 +129,8 @@ class GalilAgent(AgentParent):
                 for s in vlist[1:]: stext += ',' + s
                 stext += '\n\r'
                 # Send - wait - return
-                self.comm.write(stext)
-                time.sleep(self.config['galil']['waittime'])
+                self.comm.write(stext.encode())
+                time.sleep(float(self.config['galil']['waittime']))
                 rtext = self.read().strip()
                 # Log the result
                 self.log.debug('Data: %s' % rtext)
