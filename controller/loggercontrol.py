@@ -85,4 +85,14 @@ class LoggerControl():
             elif lvl.upper() in ['CRIT','CRITICAL']: log.critical(msg)
             else: log.info(msg)
 
-#TAF
+""" Communicate to this via Telnet or the following simple program:
+
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(('127.0.0.1', 50773))
+message = 'error\tpipe.logtest.client\tTest Message'
+s.sendall(message)
+# to receive also data=s.recv(bufsize) # bufsize can be 100 or so
+s.close()
+
+"""
