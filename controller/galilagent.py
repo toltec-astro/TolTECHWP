@@ -10,10 +10,10 @@
 import sys
 import queue
 import traceback
-import telnetlib
-import serial
 import logging
 import time
+import serial
+import telnetlib
 from agentparent import AgentParent
 
 # GalilAgent Object
@@ -31,6 +31,7 @@ class GalilAgent(AgentParent):
         self.log = logging.getLogger('Agent.'+self.name)
         self.exit = False # Indicates that loop should exit
         self.comm = None # Variable for communication object (serial or Telnet)
+                         # None if connection closed, 1 if open but simulgalil=1
     
     def read(self):
         """ Function to read from galil (depends on readout method)
@@ -40,17 +41,30 @@ class GalilAgent(AgentParent):
             return self.comm.read(1000).decode().strip()
         elif isinstance(self.comm, telnetlib.Telnet):
             return self.comm.read_eager()
+        elif self.comm == 1 and len(self.config['galil']['simulategalil']):
+            return 'sim:'
         else:
             self.log.warn("Read failed - not connected")
         
+    def write(self, message):
+        """ Function to write to galil
+        """
+        if self.comm != 1 and self.comm != None:
+            self.comm.write(message.encode())
+
     def open(self):
         """ Function to (re)connect to galil. Returns a message.
         """
         # Close any open connection
         if not self.comm == None:
-            self.comm.close()
+            if not self.comm == 1:
+                self.comm.close()
+            self.comm = None
         # Open conection
-        if self.config['galil']['comtype'] in ['serial']:
+        if len(self.config['galil']['simulategalil']):
+            self.comm = 1
+            retmsg = 'Simulated Galil connection open'
+        elif self.config['galil']['comtype'] in ['serial']:
             # Open serial
             device = self.config['galil']['device']
             baud = int(self.config['galil']['baud'])
@@ -61,7 +75,7 @@ class GalilAgent(AgentParent):
                 traceback.print_tb(err.__traceback__)
                 retmsg = 'Serial connection to %s FAILED' % device
                 self.log.warn(retmsg)
-        else:
+        elif self.config['galil']['comtype'] in ['telnet']:
             # Open telnet
             host = self.config['galil']['host']
             port = self.config['galil']['port']
@@ -72,6 +86,9 @@ class GalilAgent(AgentParent):
                 traceback.print_tb(err.__traceback__)
                 retmsg = 'Telnet connection to %s FAILED' % host
                 self.log.warn(retmsg)
+        else:
+            self.log.warn("Unable to connect, invalid ComType = %s" % 
+                          self.config['galil']['comtype'])
         return retmsg
     
     def __call__(self):
@@ -91,6 +108,7 @@ class GalilAgent(AgentParent):
             if len(task):
                 self.log.debug('Got task <%s>' % task)
             ### Handle task
+            print(repr(self.comm))
             retmsg = ''
             # Exit
             if 'exit' in task.lower():
@@ -108,7 +126,8 @@ class GalilAgent(AgentParent):
             # Disconnect
             elif 'close' in task.lower():
                 if self.comm != None:
-                    self.comm.close()
+                    if self.comm != 1:
+                        self.comm.close()
                     self.comm = None
                     retmsg = 'Connection closed'
                 else:
@@ -116,7 +135,7 @@ class GalilAgent(AgentParent):
             # Else it's a galil command
             elif len(task):
                 if self.comm != None:
-                    self.comm.write((task+'\n\r').encode())
+                    self.write((task+'\n\r'))
                     time.sleep(float(self.config['galil']['waittime']))
                     retmsg = self.read()
                 else:
@@ -129,7 +148,7 @@ class GalilAgent(AgentParent):
                 for s in vlist[1:]: stext += ',' + s
                 stext += '\n\r'
                 # Send - wait - return
-                self.comm.write(stext.encode())
+                self.write(stext)
                 time.sleep(float(self.config['galil']['waittime']))
                 rtext = self.read().strip()
                 # Log the result
