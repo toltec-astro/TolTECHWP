@@ -169,8 +169,7 @@ class Gbe():
           daddr = np.fromstring(header[30:34], dtype = "<I")
           daddr = sock.inet_ntoa(daddr) # dest addr
           smac = np.fromstring(header[6:12], dtype = "<B")
-          print(smac)
-          smac = struct.unpack(b'BBBBBB', smac)
+          #smac = struct.unpack(b'BBBBBB', smac)
           src = np.fromstring(header[34:36], dtype = ">H")[0]
           dst = np.fromstring(header[36:38], dtype = ">H")[0]
         else:
