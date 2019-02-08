@@ -169,12 +169,13 @@ class Gbe():
           daddr = np.fromstring(header[30:34], dtype = "<I")
           daddr = sock.inet_ntoa(daddr) # dest addr
           smac = np.fromstring(header[6:12], dtype = "<B")
-          smac = struct.unpack("BBBBBB", smac)
+          print(smac)
+          smac = struct.unpack(b'BBBBBB', smac)
           src = np.fromstring(header[34:36], dtype = ">H")[0]
           dst = np.fromstring(header[36:38], dtype = ">H")[0]
         else:
           daddr = '127.0.0.1'
-          smac = struct.unpack("BBBBBB", '000000')
+          smac = struct.unpack(b'BBBBBB', b'000000')
           src = 60001
           dst = 60001
         
