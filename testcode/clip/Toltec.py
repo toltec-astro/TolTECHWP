@@ -109,7 +109,8 @@ class Toltec():
         if len(msg) == 0 :
           #print('connection is closed by client, closing socket.')
           break
-                
+        
+        print('INCOMING TELNET')
         print(msg)
 
         reply = ''
