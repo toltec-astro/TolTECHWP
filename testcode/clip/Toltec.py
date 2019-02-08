@@ -116,7 +116,8 @@ class Toltec():
         reply = ''
         status = True
 
-        args = re.sub(r'[\n\r]+', '', msg).split()
+        #args = re.sub(r'[\n\r]+', '', msg).split()
+        args = msg.decode("utf-8").split()
         print('received: ', args)
         
         if(self.listenPort == Toltec.managerPortNum):
