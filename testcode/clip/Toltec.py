@@ -2,8 +2,7 @@
 # Toltec.py
 ##
 
-from string import atoi
-from thread import *
+# from thread import *
 from contextlib import closing
 from socket import *
 import time 
@@ -21,7 +20,7 @@ from time import gmtime, strftime, sleep
 try:
   import casperfpga
 except Exception as ex:
-  print ex
+  print(ex)
 from GbE_init import Gbe
 import threading
 
@@ -58,9 +57,9 @@ class Toltec():
     self.listenPort = port
     self.thisHost       = '0.0.0.0'
     self.debug = 0x0
-    print 'listen at %s:%d'%(self.thisHost, self.listenPort)
+    print('listen at %s:%d'%(self.thisHost, self.listenPort))
     if port == Toltec.managerPortNum:
-      print 'manage %d roaches'%(self.numRoach)
+      print('manage %d roaches'%(self.numRoach))
             
 
     #open listen port 
@@ -85,11 +84,11 @@ class Toltec():
         data1 = s.recv(Toltec.bufsize)
         data += data1.strip()
         if not data1 or data1[len(data1)-1] == '\n': break
-      print 'response from %d = %s' % (sport, data)
+      print('response from %d = %s' % (sport, data))
       s.close()
       return str(index) +' ' +data
     except Exception as e:
-      print e
+      print(e)
       return str(index) +' refused'
         
   def loop(self) :
@@ -117,7 +116,7 @@ class Toltec():
         status = True
 
         args = re.sub(r'[\n\r]+', '', msg).split()
-        print 'received: ', args
+        print('received: ', args)
         
         if(self.listenPort == Toltec.managerPortNum):
           if 'manage' in args:
@@ -141,7 +140,7 @@ class Toltec():
           d = {'msg': msg}
           partialToRoach = partial(toR, **d)
           reply = pool.map(partialToRoach, range(self.numRoach))
-          print reply
+          print(reply)
           if status : conn.send(str(reply)+'\n')
           else      : conn.send(msg +' failed\n')
 
@@ -163,7 +162,7 @@ class Toltec():
                 if len(reply_data) != 2048:
                     break
                 packet_count = (np.fromstring(reply_data[-1],dtype = '>i'))
-                print self.listenPort, 'packet_count', packet_count
+                print(self.listenPort, 'packet_count', packet_count)
             else:
                 reply_data = ','.join(map(str, reply_data))
                 conn_reply = '('+conn_reply+',['+reply_data+'])'
@@ -175,11 +174,11 @@ class Toltec():
         if('quit' in args or 'exit' in args):
           self.done = True
 
-      print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name+' close connection'
+      print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name+' close connection')
       conn.close()
 
   def _exec(self, cmd, shmemUser):
-    print self.getObjectName()+".exec(): "+cmd
+    print(self.getObjectName()+".exec(): "+cmd)
     self.manageCommand(cmd.split())
     self.setStatus(2)
     return True
@@ -215,10 +214,10 @@ class Toltec():
       return commset[0](*subArg)
     
   def init(self, index):
-    print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+    print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
     try:
       self.sim = sys.argv[3]
-      print 'sim =', self.sim
+      print('sim =', self.sim)
     except Exception as e:
       self.sim = None
 
@@ -232,18 +231,18 @@ class Toltec():
       try:
         roach = casperfpga.katcp_fpga.KatcpFpga(ppc_ip, timeout=5.)
       except Exception as ex:
-        print 'casperfpga.katcp_fpga.KatcpFpga ', ex
+        print('casperfpga.katcp_fpga.KatcpFpga ', ex)
         try:
           roach = casperfpga.CasperFpga(ppc_ip, timeout=5.)
         except Exception as e:
-          print 'CasperFpga', e
+          print('CasperFpga', e)
           return False
         else:
-          print 'using casperfpga.CasperFpga'
+          print('using casperfpga.CasperFpga')
       else:
-        print 'using casperfpga.latcp_fpga.KatcpFpga'
-      print 'udp_iface =', udp_iface
-    print 'udp_port =', udp_port
+        print('using casperfpga.latcp_fpga.KatcpFpga')
+      print('udp_iface =', udp_iface)
+    print('udp_port =', udp_port)
     
     self.gbe = Gbe(int(udp_port))
     self.gbe.upload_firmware(roach, ppc_ip, firmware)
@@ -259,33 +258,33 @@ class Toltec():
     return True
 
   def manage(self, args):
-    print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+    print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
     self.numRoach = int(args)
-    print 'manage', self.numRoach
+    print('manage', self.numRoach)
     return True
 
   def config(self):
-    print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+    print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
     return True
 
   def start(self):
-    print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+    print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
     return self.gbe.start_obs()
 
   def stop(self):
-    print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+    print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
     return self.gbe.stop_obs()
 
   def open_nc(self, args):
-    print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+    print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
     return self.gbe.open_nc(args)
 
   def close_nc(self):
-    print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+    print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
     return self.gbe.close_nc()
 
   def snap(self, args):
-    print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+    print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
     if self.open_nc(1) == False:
       return False
     if self.start() == False:
@@ -296,11 +295,11 @@ class Toltec():
     return self.close_nc()
 
   def dump(self):
-    print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+    print (os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
     return True,self.out_data[0]
     
   def quit(self):
-    print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+    print (os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
     self.gbe.done_obs()
     self.done = True
     return True
@@ -310,13 +309,13 @@ def main():
   try:
     toltec.loop()
   except Exception as e:
-    print e
+    print (e)
   
 
 if __name__ == '__main__':
   if(len(sys.argv) < 2):
-    print "usage: ", sys.argv[0], "num_roaches_to_manage"
-    print "usage: ", sys.argv[0], "tcp_port_starting_at_%d udp_port"%Toltec.firstPortNum
+    print("usage: ", sys.argv[0], "num_roaches_to_manage")
+    print("usage: ", sys.argv[0], "tcp_port_starting_at_%d udp_port"%Toltec.firstPortNum)
     exit()
   main()
   
