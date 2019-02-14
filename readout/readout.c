@@ -279,10 +279,11 @@ int main(int argc, char **argv){
     };
 
     // create struct for sensor thread
-    struct args *thread_args_sensor = (struct p_args *)malloc(sizeof(struct p_args));
+    struct p_args *thread_args_sensor = (struct p_args *)malloc(sizeof(struct p_args));
 
     // set initial conditions
     thread_args_sensor->board = 1;
+    
     clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
     thread_args_sensor->time = curtime;
 
