@@ -274,7 +274,7 @@ int main(int argc, char **argv){
     // arguments for threads!
     struct p_args {
         int board;
-        timespec time;
+        struct timespec time;
     };
 
     // create struct for sensor thread
@@ -283,7 +283,7 @@ int main(int argc, char **argv){
     // set initial conditions
     thread_args_sensor->board = 1;
     clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
-    thread_args->time = curtime;
+    thread_args_sensor->time = curtime;
 
     while (1) {
         printf("This is not it!\n");
