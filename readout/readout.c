@@ -229,7 +229,7 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
 
 
 // Main Loop
-int main(void){
+int main(int argc, char **argv){
 
     // signal handler for abrupt close
     signal(SIGINT, SystemCloseHandler);
