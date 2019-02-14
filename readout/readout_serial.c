@@ -1,4 +1,5 @@
 
+
 #define S826_CM_XS_CH0     2
 
 
@@ -227,11 +228,92 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
         printf("S826_CounterStateWrite returned error code %d\n", pps_flags);   
 }
 
+void ReadPPSSnapshot(int board, int countpps, uint tstart)
+{
+    //fprintf(stdout, "PPS. \n");
+    int errcode;
+    int sampcount = 0;
+    uint counts[1000], tstamp[1000], reason[1000];
 
-// Main Loop
-int main(void){
+    errcode = S826_CounterSnapshotRead(
+        board, countpps,
+        counts + sampcount, 
+        tstamp + sampcount, 
+        reason + sampcount, 
+        0
+    );
+    printf("PPS:  flags=%d ok=%d fifooverflow=%d\n", errcode, S826_ERR_OK, S826_ERR_FIFOOVERFLOW);
+    if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
+        printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
+            counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
+    }
+}
 
-    // signal handler for abrupt close
+void ReadQuadSnapshot(int board, int countquad, uint tstart)
+{
+    int errcode;
+    int sampcount = 0;
+    int lastcount = 0;
+    int dcount = 1;
+    uint counts[1000], tstamp[1000], reason[1000];
+
+    errcode = S826_CounterSnapshotRead(
+        board, countquad,
+        counts + sampcount, 
+        tstamp + sampcount, 
+        reason + sampcount, 
+    0);
+    
+    while(errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
+      
+        // Keep track of counts
+        dcount = counts[sampcount] - lastcount;
+        lastcount = counts[sampcount];
+          
+        // Print result
+        printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
+            (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
+        printf("\n");
+        // Increase counter
+        sampcount++;
+
+        // Read next snapshot
+        errcode = S826_CounterSnapshotRead(
+            board, countquad,
+            counts + sampcount, 
+            tstamp + sampcount, 
+            reason + sampcount, 
+        0);
+    }
+}
+
+void ReadSensorSnapshot(void)
+{
+    uint slotlist = 0x0007;
+
+    int errcode;     // errcode 
+    int slotval[16]; // buffer must be sized for 16 slots
+    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
+    if (errcode != S826_ERR_OK)
+        printf("ADC Read Failed. %d \n", errcode);
+
+    int slot;
+    for (slot = 0; slot < 3; slot++) 
+    {
+        int adcdata;
+        unsigned int burstnum;
+        float voltage;
+        
+        adcdata = (int)((slotval[slot] & 0xFFFF));
+        burstnum = ((unsigned int)slotval[slot] >> 24);
+        voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
+        printf("Slot: %d \t Voltage: %f \n", slot, voltage);   
+    };
+}
+
+int main(int argc, char **argv){
+    
+    // signal handler
     signal(SIGINT, SystemCloseHandler);
     
     // argument handler
@@ -256,6 +338,18 @@ int main(void){
     struct timespec treq;
     time_t rawtime, starttime;
     char s[2000000], t[200];
+    char fname[100];
+    FILE *outf;
+
+    // Variables to read all snapshots while it's moving
+    int lastcount = 0;   // last value which was read
+    int dcount = 1;      // diff current - previous value
+    int loopcount = 0;   // number of loops with delays
+    int errcount = 0;    // number of overflow errors
+    int sampcount = 0;   // number of samples in this readout session
+    uint counts[1000], tstamp[1000], reason[1000];
+
+    int duration = 30; // Set duration seconds
 
     // Open the 826 API ---------------
     // int flags = S826_SystemOpen();
@@ -268,41 +362,91 @@ int main(void){
     ConfigureTimerCounter(board, config);
     ConfigurePulsePerSecondCounter(board, config);
     ConfigureQuadCounter(board, config);
-    
-    // struct to hold time!
-    struct timespec treq;
 
-    // arguments for threads!
-    struct p_args {
-        int board;
-        timespec time;
-    };
+    int *quad_intervals   = ini_get(config, "intervals", "quad_intervals");
+    int *pps_intervals    = ini_get(config, "intervals", "pps_intervals");
+    int *sensor_intervals = ini_get(config, "intervals", "sensor_intervals");
+        
+    printf("quad_intervals: %.3f\n", atof(quad_intervals));
+    printf("pps_intervals: %.3f\n", atof(pps_intervals));
+    printf("sensor_intervals: %.3f\n", atof(sensor_intervals));
 
-    // create struct for sensor thread
-    struct args *thread_args_sensor = (struct p_args *)malloc(sizeof(struct p_args));
+    int *countpps = ini_get(config, "counter.pps", "counter_num");
+    int *countquad = ini_get(config, "counter.quad", "counter_num");
 
-    // set initial conditions
-    thread_args->board = 1;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
-    //thread_args->time = 20;
+    time(&rawtime);
+    starttime = rawtime;
 
-    while (1) {
-        printf("This is not it!\n");
+    //time_t curtime, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
+    uint64_t delta_us;
+    struct timespec curtime, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
+
+    // set last read time as start. 
+    clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &sensorlastreadtime);
+
+    // priority flag
+    int priority_flag = 0;
+
+    // Get start time
+    uint tstart;
+    S826_TimestampRead(board, &tstart);
+
+    //// begin reading loop
+    while(rawtime - starttime < duration){
+        
+        priority_flag = 0;
+        //// read from quadrature counter
+        // get elapsed time
+        clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
+        delta_us = (curtime.tv_sec - quadlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - quadlastreadtime.tv_nsec);
+        
+        // read if elapsed
+        //printf("run quad:");
+        if (delta_us > (1000000000 * atof(quad_intervals))){
+            printf("quad yes\n");
+            ReadQuadSnapshot(board, atoi(countquad), tstart);
+            // update last read time
+            clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
+        }
+
+        //// read from pps counter
+        // get elapsed time
+        clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
+        delta_us = (curtime.tv_sec - ppslastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - ppslastreadtime.tv_nsec);
+        
+        // read if elapsed
+        //printf("run pps:");
+        if (delta_us > (1000000000 * atof(pps_intervals))){
+            printf("pps yes\n");
+            ReadPPSSnapshot(board, atoi(countpps), tstart);
+            // update last read time
+            priority_flag = 1;
+            clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
+        }
+        //// read from sensors
+        clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
+        delta_us = (curtime.tv_sec - sensorlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - sensorlastreadtime.tv_nsec);
+        //printf("run sensor:");
+        if (delta_us > (1000000000 * atof(sensor_intervals)) && priority_flag == 0){
+            printf("sensor yes\n");
+            ReadSensorSnapshot();
+            // update last read time
+            clock_gettime(CLOCK_MONOTONIC_RAW, &sensorlastreadtime);
+        }
+
+        // update time and loop
+        time(&rawtime);
+        loopcount++;
     }
 
-    // comment
-    // allocate
-    // struct args *thread_args_readout = (struct thread_args *)malloc(sizeof(struct thread_args));
-    // thread_args->board = 1;
-    // thread_args->time = 20;
+    // power off the correct power channel
+    char *channel = ini_get(config, "sensors.power", "output_channel");
+    int pwr_set_off = S826_DacDataWrite(board, atoi(channel), 0x0000, 0);
+    if (pwr_set_off < 0)
+        printf("Configure power data off code %d.", pwr_set_off);
 
-    // // another comment
-    // pthread_t thread_01, thread_02;
-    // pthread_create(&thread_01, NULL, independent, (void *)thread_args);
-    // pthread_create(&thread_02, NULL, independent_2, (void *)thread_args);
-
-    // // gcc mpt.c -o mpt
-    // pthread_join(thread_01, NULL);
-    // pthread_join(thread_02, NULL);
-    // return 0;
+    // Close the API
+    S826_SystemClose();
 }
