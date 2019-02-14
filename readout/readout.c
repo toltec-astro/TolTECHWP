@@ -252,8 +252,7 @@ int main(int argc, char **argv){
     // Variables
     int board = 0;
 
-    int i;
-    struct timespec treq;
+    int i; 
     time_t rawtime, starttime;
     char s[2000000], t[200];
 
