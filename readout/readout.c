@@ -270,6 +270,7 @@ int main(int argc, char **argv){
     
     // struct to hold time!
     struct timespec treq;
+    struct timespec curtime;
 
     // arguments for threads!
     struct p_args {
