@@ -339,6 +339,9 @@ void *LoopPPSRead(void *input) {
             ((struct p_args*)input)->number, 
             ((struct p_args*)input)->tstart
         );  
+
+        // implement sleep since our delay between
+        // reads is not very short.
         sleep(1);
     }
     return 0;
@@ -349,10 +352,17 @@ void *LoopSensorRead(void *input){
     printf("Sensor Read Thread Start\n");
     while (1) {
         ReadSensorSnapshot();
+
+
+        // implement sleep since our delay between
+        // reads is not very short.
         sleep(15);
     }
     return 0;
+}
 
+void *WriteData(void *input){
+    return 0;
 }
 
 // Main Loop
@@ -433,12 +443,14 @@ int main(int argc, char **argv){
     thread_args_pps->time = curtime;  
 
     // define threads
-    pthread_t quad_thread, pps_thread, sensor_thread;
+    pthread_t quad_thread, pps_thread, sensor_thread, write_thread;
 
     // start all the threads
     pthread_create(&quad_thread, NULL, LoopQuadRead, (void *)thread_args_quad);
     pthread_create(&pps_thread, NULL, LoopPPSRead, (void *)thread_args_pps);
     pthread_create(&sensor_thread, NULL, LoopSensorRead, (void *)thread_args_sensor);
+    // this is one takes nothing right now
+    pthread_create(&write_thread, NULL, WriteData, (void *)thread_args_sensor);
 
     // join back to main
     pthread_join(quad_thread, NULL);
