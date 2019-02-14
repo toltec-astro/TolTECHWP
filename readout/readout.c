@@ -281,9 +281,9 @@ int main(int argc, char **argv){
     struct args *thread_args_sensor = (struct p_args *)malloc(sizeof(struct p_args));
 
     // set initial conditions
-    thread_args->board = 1;
+    thread_args_sensor->board = 1;
     clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
-    //thread_args->time = 20;
+    thread_args->time = curtime;
 
     while (1) {
         printf("This is not it!\n");
