@@ -20,6 +20,7 @@ void ConfigureSensorPower(int board, ini_t *config)
     char *voltage_setpoint = ini_get(config, "sensors.power", "output_voltage_setpoint");
     char *channel = ini_get(config, "sensors.power", "output_channel");
 
+    // print data
     printf("range: %d\n", atoi(range));
     printf("voltage_setpoint: %d\n", (int)strtol(voltage_setpoint, NULL, 0));
     printf("channel: %d\n", atoi(channel));
@@ -59,15 +60,6 @@ void ConfigureSensors(int board, ini_t *config)
         printf("-------------\n");
         printf("id: %s\n", sensor_id);
 
-        // construct the string
-        // char sensor_id[] = "sensors.details.";
-        // snprintf(sensor_id, sizeof sensor_id, "%s%s", str1, str2);
-        // printf("%s", sensor_id);
-
-        // print out ancillary information
-        // const int *debug = ini_get(config, sensor_id, "sensor_name");
-        // printf("name: %s\n", debug);
-
         // get the configuration settings
         int *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
         int *channel = ini_get(config, sensor_id, "sensor_chan");
@@ -105,7 +97,6 @@ void SystemCloseHandler(int sig)
     printf("\nSignal Caught!\n");
 
     // power shut off
-
     S826_SystemClose();
     printf("System Closed!\n");
     exit(0);
@@ -180,7 +171,7 @@ void ConfigureTimerCounter(int board, ini_t *config)
             S826_CM_OM_NOTZERO
     );
 
-    // set period in microseconds
+    // set period in microseconds.
     timer_flags = S826_CounterPreloadWrite(board, atoi(counttime), 0, atoi(datausec));    
     if (timer_flags < 0)
         printf("S826_CounterPreloadWrite returned error code %d\n", timer_flags);
@@ -229,7 +220,6 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
 
 void ReadPPSSnapshot(int board, int countpps, uint tstart)
 {
-    //fprintf(stdout, "PPS. \n");
     int errcode;
     int sampcount = 0;
     uint counts[1000], tstamp[1000], reason[1000];
@@ -326,7 +316,9 @@ void *LoopQuadRead(void *input) {
             ((struct p_args*)input)->number, 
             ((struct p_args*)input)->tstart
         );
-        sleep(500);
+        // sleep(500);
+        // sleep for 500000000L = 0.5 seconds
+        nanosleep((const struct timespec[]) {{0, 500000000L}}, NULL);
     }
     return 0;
 }
@@ -339,7 +331,6 @@ void *LoopPPSRead(void *input) {
             ((struct p_args*)input)->number, 
             ((struct p_args*)input)->tstart
         );  
-
         // implement sleep since our delay between
         // reads is not very short.
         sleep(1);
@@ -352,8 +343,6 @@ void *LoopSensorRead(void *input){
     printf("Sensor Read Thread Start\n");
     while (1) {
         ReadSensorSnapshot();
-
-
         // implement sleep since our delay between
         // reads is not very short.
         sleep(15);
@@ -362,10 +351,41 @@ void *LoopSensorRead(void *input){
 }
 
 void *WriteData(void *input){
+
+    // write buffers 
+    char s_buf[2000000], t_buf[200];
+
+    // format filenames
+    char quad_fname[100], pps_fname[100], sensors_fname[100];
+    strftime(quad_fname, 100, "quad_data_%y-%m-%d_%H-%M.txt", localtime(&startime));
+    strftime(pps_fname, 100, "pps_data_%y-%m-%d_%H-%M.txt", localtime(&startime));
+    strftime(sensors_fname, 100, "sensors_data_%y-%m-%d_%H-%M.txt", localtime(&startime));
+    
+    // open the files
+    FILE *quadf, *ppsf, *sensorf;
+    // quadf = fopen(quad_fname, "wt");
+    // ppsf = fopen(pps_fname, "wt");
+    // sensorsf = fopen(sensors_fname, "wt");
+    
+    while(1){
+        // check buffer
+        // and write
+        sleep(1);
+    }
+    // format the string
+    // sprintf(t, "Count = %d Time = %.3fms Reason = %x Scnt = %d", 
+    //     counts[sampcount], (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount
+    // ); 
+    // fprintf(quadf,"%s", t);
+
+    // fclose(quadf);
+    // fclose(ppsf);
+    // fclose(sensorsf);
+
     return 0;
 }
 
-// Main Loop
+
 int main(int argc, char **argv){
 
     // signal handler for abrupt close
@@ -388,13 +408,9 @@ int main(int argc, char **argv){
 
     // Variables
     int board = 0;
-
     int i; 
     time_t rawtime, starttime;
     char s[2000000], t[200];
-
-
-    
     int *countpps = ini_get(config, "counter.pps", "counter_num");
     int *countquad = ini_get(config, "counter.quad", "counter_num");
 
@@ -412,31 +428,31 @@ int main(int argc, char **argv){
     struct timespec treq;
     struct timespec curtime;
 
-    // create static argument struct for quad
+    // create argument struct for quad
     struct p_args *thread_args_quad = (struct p_args *)malloc(sizeof(struct p_args));
     thread_args_quad->board = board;
     thread_args_quad->number = atoi(countquad);
 
-    // create static argument struct for quad
+    // create argument struct for quad.
     struct p_args *thread_args_pps = (struct p_args *)malloc(sizeof(struct p_args));
     thread_args_pps->board = board;  
     thread_args_pps->number = atoi(countpps);
 
-    // create struct for sensor thread
+    // create struct for sensor thread.
     struct p_args *thread_args_sensor = (struct p_args *)malloc(sizeof(struct p_args));
     thread_args_sensor->board = board;
         
     // set the time for all
     //thread_args_sensor->number = 0;
         
-    // grab time from card;
+    // grab time from card.
     uint tstart;
     S826_TimestampRead(board, &tstart);
     thread_args_sensor->tstart = tstart;
     thread_args_quad->tstart = tstart;    
     thread_args_pps->tstart = tstart;  
 
-    // set the time for all
+    // set the time for all.
     clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
     thread_args_sensor->time = curtime;
     thread_args_quad->time = curtime;    
@@ -445,19 +461,20 @@ int main(int argc, char **argv){
     // define threads
     pthread_t quad_thread, pps_thread, sensor_thread, write_thread;
 
-    // start all the threads
+    // start all the threads.
     pthread_create(&quad_thread, NULL, LoopQuadRead, (void *)thread_args_quad);
     pthread_create(&pps_thread, NULL, LoopPPSRead, (void *)thread_args_pps);
     pthread_create(&sensor_thread, NULL, LoopSensorRead, (void *)thread_args_sensor);
+    
     // this is one takes nothing right now
     pthread_create(&write_thread, NULL, WriteData, (void *)thread_args_sensor);
 
-    // join back to main
+    // join back to main.
     pthread_join(quad_thread, NULL);
     pthread_join(pps_thread, NULL);
     pthread_join(sensor_thread, NULL);
 
-    // free malloc'ed data
+    // free malloc'ed data.
     free(thread_args_quad);
     free(thread_args_pps);
     free(thread_args_sensor);
