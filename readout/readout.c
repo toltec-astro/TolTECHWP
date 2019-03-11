@@ -1,6 +1,6 @@
 
 #define S826_CM_XS_CH0     2
-
+#define BUFFFER_LENGTH     8000
 
 #include "../vend/ini/ini.h"
 #include "../vend/sdk_826_linux_3.3.11/demo/826api.h"
@@ -12,6 +12,30 @@
 #include <stdlib.h> 
 #include <signal.h>
 #include <pthread.h>
+#include <sys/socket.h>
+
+
+// struct quad_dataentry {
+//     int quadcounter;
+//     float cardtime;
+//     float cputime; // double
+// };
+
+// struct pps_dataentry {
+//     int quadcounter;
+//     float cardtime;
+//     float cputime; // double
+// };
+
+// struct sensor_dataentry {
+//     int sensor_id;
+//     float voltage;
+//     float cputime;
+// };
+
+// int quad_ptr_loc = 0;
+// struct quad_dataentry quad_buffer[BUFFFER_LENGTH];
+// quad_buffer[0].quadcounter
 
 void ConfigureSensorPower(int board, ini_t *config)
 {
@@ -255,18 +279,19 @@ void ReadQuadSnapshot(int board, int countquad, uint tstart)
     
     while(errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
       
-        // Keep track of counts
+        // keep track of counts
         dcount = counts[sampcount] - lastcount;
         lastcount = counts[sampcount];
           
-        // Print result
+        // print result
         printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
             (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
         printf("\n");
-        // Increase counter
+        
+        // increase counter
         sampcount++;
 
-        // Read next snapshot
+        // read next snapshot
         errcode = S826_CounterSnapshotRead(
             board, countquad,
             counts + sampcount, 
@@ -309,8 +334,8 @@ struct p_args {
 };
 
 void *LoopQuadRead(void *input) {
-    printf("Quad Read Thread Start\n"); 
     while (1) {
+
         ReadQuadSnapshot(
             ((struct p_args*)input)->board, 
             ((struct p_args*)input)->number, 
@@ -324,27 +349,21 @@ void *LoopQuadRead(void *input) {
 }
 
 void *LoopPPSRead(void *input) {
-    printf("PPS Read Thread Start\n");
     while (1) {
         ReadPPSSnapshot(
             ((struct p_args*)input)->board, 
             ((struct p_args*)input)->number, 
             ((struct p_args*)input)->tstart
         );  
-        // implement sleep since our delay between
-        // reads is not very short.
         sleep(1);
     }
     return 0;
-
 }
 
 void *LoopSensorRead(void *input){
     printf("Sensor Read Thread Start\n");
     while (1) {
         ReadSensorSnapshot();
-        // implement sleep since our delay between
-        // reads is not very short.
         sleep(15);
     }
     return 0;
@@ -423,7 +442,43 @@ int main(int argc, char **argv){
     ConfigureTimerCounter(board, config);
     ConfigurePulsePerSecondCounter(board, config);
     ConfigureQuadCounter(board, config);
+
+    // Configurations for clip destination port
+    struct timeval tv;
+    tv.tv_sec = 1;
+    tv.tv_usec = 100000;
+
+    // hostname = argv[1];
+    // portno = atoi(argv[2]);
+    // socklen_t serverlen;
+
+    // sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    // set_sock = setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv))
+    // server = gethostbyname(hostname);
+    // bzero((char *) &serveraddr, sizeof(serveraddr));
+    // serveraddr.sin_family = AF_INET;
+    // bcopy((char *)server->h_addr, (char *)&serveraddr.sin_addr.s_addr, server->h_length);
+    // serveraddr.sin_port = htons(portno);
+    // serverlen = sizeof(serveraddr);
+
+    // udpsend = sendto(sockfd, buf, BUFFER_SIZE, 0, (struct sockaddr *)&serveraddr, serverlen)
+
+    // create buffer
+    struct quad_dataentry {
+        int quadcounter;
+        float cardtime;
+        float cputime; // double?
+    };
+    struct quad_dataentry quad_buffer[BUFFFER_LENGTH];
+    struct quad_dataentry *quad_buffer_ptr = &quad_buffer; // for reference
     
+    // quad_buffer_ptr[]->
+    for (i = 0; i < 4; i++)
+    {
+        printf(quad_buffer_ptr->cardtime);
+        quad_buffer_ptr++
+    }
+
     // struct to hold time!
     struct timespec treq;
     struct timespec curtime;
@@ -445,14 +500,14 @@ int main(int argc, char **argv){
     // set the time for all
     //thread_args_sensor->number = 0;
         
-    // grab time from card.
+    // grab the cardtime!
     uint tstart;
     S826_TimestampRead(board, &tstart);
     thread_args_sensor->tstart = tstart;
     thread_args_quad->tstart = tstart;    
     thread_args_pps->tstart = tstart;  
 
-    // set the time for all.
+    // grab the computer time!
     clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
     thread_args_sensor->time = curtime;
     thread_args_quad->time = curtime;    
@@ -479,11 +534,10 @@ int main(int argc, char **argv){
     free(thread_args_pps);
     free(thread_args_sensor);
 
-    // return 0
+    // end.
     return 0;
 }
 /*
 gcc -D_LINUX -Wall -Wextra -DOSTYPE_LINUX -c -no-pie readout.c ../vend/ini/ini.c
 gcc -D_LINUX readout.o ini.o -no-pie -o readout -L ../vend/sdk_826_linux_3.3.11/demo -l826_64 -pthread 
-
 */
