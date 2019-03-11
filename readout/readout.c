@@ -74,10 +74,6 @@ void ConfigureSensors(int board, ini_t *config)
     {
         printf("sensor number: %d\n", sens);
         
-        // sprintf(buf, "%02d", sens);
-        // printf("sensors string %s\n", buf);
-        //char sensor_id[18];
-
         //// construct the string
         sprintf(sensor_id, "sensors.details.%02d", sens);
 
@@ -232,8 +228,10 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
 
     pps_flags = S826_CounterSnapshotConfigWrite(
         board, 
-        atoi(countpps),  // Acquire counts upon tick rising edge.
-                  S826_SSRMASK_IXRISE, S826_BITWRITE);
+        atoi(countpps),  
+        S826_SSRMASK_IXRISE, // Acquire counts upon tick rising edge. 
+        S826_BITWRITE
+    );
     if (pps_flags < 0)
         printf("S826_CounterSnapshotConfigWrite returned error code %d\n", pps_flags); 
 
@@ -257,14 +255,9 @@ void ReadPPSSnapshot(int board, int countpps, uint tstart)
     );
     
     // iterate through and pull data through
-    // printf("PPS:  flags=%d ok=%d fifooverflow=%d\n", errcode, S826_ERR_OK, S826_ERR_FIFOOVERFLOW);
-    // if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
-    //     printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
-    //         counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
-    // }
-
     while(errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
         
+        // this is where we will update the array
         printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
                 counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
         
@@ -300,7 +293,7 @@ void ReadQuadSnapshot(int board, int countquad, uint tstart)
         dcount = counts[sampcount] - lastcount;
         lastcount = counts[sampcount];
           
-        // print result
+        // this is where we will update the array
         printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
             (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
         printf("\n");
@@ -340,6 +333,8 @@ void ReadSensorSnapshot(void)
         adcdata = (int)((slotval[slot] & 0xFFFF));
         burstnum = ((unsigned int)slotval[slot] >> 24);
         voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
+
+        // this is where we will update the array
         printf("Slot: %d \t Voltage: %f \n", slot, voltage);   
     };
 }
@@ -360,7 +355,7 @@ void *LoopQuadRead(void *input) {
             ((struct p_args*)input)->number, 
             ((struct p_args*)input)->tstart
         );
-        sleep(500);
+        sleep(15);
         // sleep for 500000000L = 0.5 seconds
         // nanosleep((const struct timespec[]) {{0, 500000000L}}, NULL);
     }
@@ -532,7 +527,7 @@ int main(int argc, char **argv){
     thread_args_quad->time = curtime;    
     thread_args_pps->time = curtime;  
 
-    // define threads
+    // define threads.
     pthread_t quad_thread, pps_thread, sensor_thread, write_thread;
 
     // start all the threads.
@@ -540,7 +535,7 @@ int main(int argc, char **argv){
     pthread_create(&pps_thread, NULL, LoopPPSRead, (void *)thread_args_pps);
     pthread_create(&sensor_thread, NULL, LoopSensorRead, (void *)thread_args_sensor);
     
-    // this is one takes nothing right now
+    // this is one takes nothing right now.
     pthread_create(&write_thread, NULL, WriteData, (void *)thread_args_sensor);
 
     // join back to main.
