@@ -376,9 +376,9 @@ void *WriteData(void *input){
 
     // format filenames
     char quad_fname[100], pps_fname[100], sensors_fname[100];
-    strftime(quad_fname, 100, "quad_data_%y-%m-%d_%H-%M.txt", localtime(&startime));
-    strftime(pps_fname, 100, "pps_data_%y-%m-%d_%H-%M.txt", localtime(&startime));
-    strftime(sensors_fname, 100, "sensors_data_%y-%m-%d_%H-%M.txt", localtime(&startime));
+    // strftime(quad_fname, 100, "quad_data_%y-%m-%d_%H-%M.txt", localtime(&startime));
+    // strftime(pps_fname, 100, "pps_data_%y-%m-%d_%H-%M.txt", localtime(&startime));
+    // strftime(sensors_fname, 100, "sensors_data_%y-%m-%d_%H-%M.txt", localtime(&startime));
     
     // open the files
     FILE *quadf, *ppsf, *sensorf;
