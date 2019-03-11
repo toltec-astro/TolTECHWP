@@ -255,6 +255,8 @@ void ReadPPSSnapshot(int board, int countpps, uint tstart)
         reason + sampcount, 
         0
     );
+    
+    // iterate through and pull data through
     printf("PPS:  flags=%d ok=%d fifooverflow=%d\n", errcode, S826_ERR_OK, S826_ERR_FIFOOVERFLOW);
     if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
         printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
@@ -312,6 +314,8 @@ void ReadSensorSnapshot(void)
         printf("ADC Read Failed. %d \n", errcode);
 
     int slot;
+
+    // iterate through list of signals
     for (slot = 0; slot < 3; slot++) 
     {
         int adcdata;
@@ -341,9 +345,9 @@ void *LoopQuadRead(void *input) {
             ((struct p_args*)input)->number, 
             ((struct p_args*)input)->tstart
         );
-        // sleep(500);
+        sleep(500);
         // sleep for 500000000L = 0.5 seconds
-        nanosleep((const struct timespec[]) {{0, 500000000L}}, NULL);
+        // nanosleep((const struct timespec[]) {{0, 500000000L}}, NULL);
     }
     return 0;
 }
@@ -355,7 +359,7 @@ void *LoopPPSRead(void *input) {
             ((struct p_args*)input)->number, 
             ((struct p_args*)input)->tstart
         );  
-        sleep(1);
+        sleep(5);
     }
     return 0;
 }
