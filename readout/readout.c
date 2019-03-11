@@ -355,7 +355,7 @@ void *LoopQuadRead(void *input) {
             ((struct p_args*)input)->number, 
             ((struct p_args*)input)->tstart
         );
-        sleep(15);
+        sleep(5);
         // sleep for 500000000L = 0.5 seconds
         // nanosleep((const struct timespec[]) {{0, 500000000L}}, NULL);
     }
