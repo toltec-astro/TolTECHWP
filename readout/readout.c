@@ -257,11 +257,24 @@ void ReadPPSSnapshot(int board, int countpps, uint tstart)
     );
     
     // iterate through and pull data through
-    printf("PPS:  flags=%d ok=%d fifooverflow=%d\n", errcode, S826_ERR_OK, S826_ERR_FIFOOVERFLOW);
-    if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
+    // printf("PPS:  flags=%d ok=%d fifooverflow=%d\n", errcode, S826_ERR_OK, S826_ERR_FIFOOVERFLOW);
+    // if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
+    //     printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
+    //         counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
+    // }
+
+    while(errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
+        errcode = S826_CounterSnapshotRead(
+            board, countpps,
+            counts + sampcount, 
+            tstamp + sampcount, 
+            reason + sampcount, 
+            0
+        );
         printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
-            counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
+                counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
     }
+
 }
 
 void ReadQuadSnapshot(int board, int countquad, uint tstart)
