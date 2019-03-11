@@ -64,7 +64,7 @@ void ConfigureSensorPower(int board, ini_t *config)
 void ConfigureSensors(int board, ini_t *config)
 {
     // get number of sensors
-    int *sens_count = ini_get(config, "sensors", "sensor_num");
+    char *sens_count = ini_get(config, "sensors", "sensor_num");
     printf("sensor count: %d\n", atoi(sens_count));    
     //char buf[2];
 
@@ -81,8 +81,8 @@ void ConfigureSensors(int board, ini_t *config)
         printf("id: %s\n", sensor_id);
 
         // get the configuration settings
-        int *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
-        int *channel = ini_get(config, sensor_id, "sensor_chan");
+        char *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
+        char *channel = ini_get(config, sensor_id, "sensor_chan");
         
         printf("timeslot: %d\n", atoi(timeslot));
         printf("channel: %d\n", atoi(channel));
@@ -144,9 +144,9 @@ void ConfigureQuadCounter(int board, ini_t *config)
     int quad_flags;
 
     printf("Configure QuadCounter \n");
-    int *countquad = ini_get(config, "counter.quad", "counter_num");
+    char *countquad = ini_get(config, "counter.quad", "counter_num");
     printf("countquad (0): %d\n", atoi(countquad));    
-    int *counttime = ini_get(config, "counter.timer", "counter_num");
+    char *counttime = ini_get(config, "counter.timer", "counter_num");
     printf("counttime (2): %d\n", atoi(counttime));    
 
     quad_flags = S826_CounterModeWrite(
@@ -177,10 +177,10 @@ void ConfigureTimerCounter(int board, ini_t *config)
 {
     int timer_flags;
 
-    int *datausec = ini_get(config, "intervals", "carddata_intervals");
+    char *datausec = ini_get(config, "intervals", "carddata_intervals");
     printf("datausec: %d\n", atoi(datausec));  
 
-    int *counttime = ini_get(config, "counter.timer", "counter_num");
+    char *counttime = ini_get(config, "counter.timer", "counter_num");
     printf("counttime (2): %d\n", atoi(counttime));    
 
     printf("Configure Timer Counter. \n");
@@ -206,7 +206,7 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
 {
     int pps_flags;
 
-    int *countpps = ini_get(config, "counter.pps", "counter_num");
+    char *countpps = ini_get(config, "counter.pps", "counter_num");
     printf("countpps: %d\n", atoi(countpps));  
 
     pps_flags = S826_CounterModeWrite(
