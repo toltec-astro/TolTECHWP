@@ -272,6 +272,7 @@ void ReadPPSSnapshot(int board, int countpps, uint tstart)
 
 }
 
+static float QuadDataBuffer[BUFFFER_LENGTH + 1];
 void ReadQuadSnapshot(int board, int countquad, uint tstart)
 {
     int errcode;
@@ -297,6 +298,9 @@ void ReadQuadSnapshot(int board, int countquad, uint tstart)
         printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
             (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
         printf("\n");
+
+        // myListQ[qLast] = qItem;
+        // qLast++;
         
         // increase counter
         sampcount++;
@@ -444,8 +448,8 @@ int main(int argc, char **argv){
     int i; 
     time_t rawtime, starttime;
     char s[2000000], t[200];
-    int *countpps = ini_get(config, "counter.pps", "counter_num");
-    int *countquad = ini_get(config, "counter.quad", "counter_num");
+    char *countpps = ini_get(config, "counter.pps", "counter_num");
+    char *countquad = ini_get(config, "counter.quad", "counter_num");
 
     // Open the System
     SystemOpenHandler();
@@ -551,7 +555,8 @@ int main(int argc, char **argv){
     // end.
     return 0;
 }
+
 /*
 gcc -D_LINUX -Wall -Wextra -DOSTYPE_LINUX -c -no-pie readout.c ../vend/ini/ini.c
-gcc -D_LINUX readout.o ini.o -no-pie -o readout -L ../vend/sdk_826_linux_3.3.11/demo -l826_64 -pthread 
+gcc -D_LINUX readout.o ini.o -no-pie -o readout -L ../vend/sdk_826_linux_3.3.11/demo -l826_64 -lpthread
 */
