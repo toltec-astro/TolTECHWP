@@ -463,21 +463,21 @@ int main(int argc, char **argv){
 
     // udpsend = sendto(sockfd, buf, BUFFER_SIZE, 0, (struct sockaddr *)&serveraddr, serverlen)
 
-    // create buffer
-    struct quad_dataentry {
-        int quadcounter;
-        float cardtime;
-        float cputime; // double?
-    };
-    struct quad_dataentry quad_buffer[BUFFFER_LENGTH];
-    struct quad_dataentry *quad_buffer_ptr = &quad_buffer; // for reference
+    // // create buffer
+    // struct quad_dataentry {
+    //     int quadcounter;
+    //     float cardtime;
+    //     float cputime; // double?
+    // };
+    // struct quad_dataentry quad_buffer[BUFFFER_LENGTH];
+    // struct quad_dataentry *quad_buffer_ptr = &quad_buffer; // for reference
     
-    // quad_buffer_ptr[]->
-    for (i = 0; i < 4; i++)
-    {
-        printf(quad_buffer_ptr->cardtime);
-        quad_buffer_ptr++
-    }
+    // // quad_buffer_ptr[]->
+    // for (i = 0; i < 4; i++)
+    // {
+    //     printf(quad_buffer_ptr->cardtime);
+    //     quad_buffer_ptr++
+    // }
 
     // struct to hold time!
     struct timespec treq;
