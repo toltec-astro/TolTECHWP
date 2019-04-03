@@ -120,7 +120,7 @@ void *SensorThread(void *input){
     );
 
     char *countpps = ini_get(config, "intervals", "sensor_intervals");
-    sensor_intervals = atoi(countpps);
+    int sensor_intervals = atoi(countpps);
     sensor_intervals = 15;
 
     while (1) {
@@ -187,8 +187,8 @@ int main(int argc, char **argv){
 
     // start reading threads
     pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
-    pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
-    pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);
+    //pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
+    //pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);
         
     // join back to main.
     pthread_join(quad_thread, NULL);
