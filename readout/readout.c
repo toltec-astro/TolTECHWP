@@ -201,7 +201,7 @@ int main(int argc, char **argv){
     // start the power from the board.
     SystemOpenHandler();
     ConfigureSensorPower(board, config);
-
+    printf('Power Configured');
     // define threads.
     pthread_t quad_thread, pps_thread, sensor_thread, write_thread;
 
