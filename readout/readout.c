@@ -112,6 +112,7 @@ void *SensorThread(void *input){
     int sensor_in_ptr = 0;
     int sensor_id[BUFFER_LENGTH];
     int sensor_cpu_time[BUFFER_LENGTH];
+    float sensor_voltage[BUFFER_LENGTH];
 
     // Configure Sensor Data
     ConfigureSensors(
@@ -138,8 +139,9 @@ void *SensorThread(void *input){
             // this is where we will update the array
             // printf("Slot: %d \t Voltage: %f \n", slot, voltage);   
             sensor_id[sensor_in_ptr] = slot;
-            sensor_cpu_time[sensor_in_ptr] = voltage;
-            printf("Slot: %d \t Voltage: %f \n", sensor_id[sensor_in_ptr], sensor_cpu_time[sensor_in_ptr]);   
+            sensor_cpu_time[sensor_in_ptr] = slot;
+            sensor_voltage[sensor_in_ptr] = voltage;
+            printf("Slot: %d \t Voltage: %f \n", sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]);   
             sensor_in_ptr++;
 
             // reset write in head to start
