@@ -120,7 +120,7 @@ void *SensorThread(void *input){
         ((struct p_args*)input)->config
     );
 
-    char *countpps = ini_get(config, "intervals", "sensor_intervals");
+    char *countpps = ini_get(((struct p_args*)input)->config, "intervals", "sensor_intervals");
     int sensor_intervals = atoi(countpps);
     sensor_intervals = 15;
 
