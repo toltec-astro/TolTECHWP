@@ -153,7 +153,20 @@ void *SensorThread(void *input){
     return 0;
 }
 
+void SystemCloseHandler(int sig)
+{
+    signal(sig, SIG_IGN);
+    printf("\nSignal Caught!\n");
+
+    // power shut off
+    S826_SystemClose();
+    printf("System Closed!\n");
+    exit(0);
+}
+
 int main(int argc, char **argv){
+    // signal handler for abrupt/any close
+    signal(SIGINT, SystemCloseHandler);
 
     int board = 0;
 
@@ -169,12 +182,28 @@ int main(int argc, char **argv){
     // start the power from the board.
     ConfigureSensorPower(board, config);
 
+    // define threads.
+    pthread_t quad_thread, pps_thread, sensor_thread, write_thread;
+
     // start reading threads
     pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
     pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
     pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);
         
+    // join back to main.
+    pthread_join(quad_thread, NULL);
+    pthread_join(pps_thread, NULL);
+    pthread_join(sensor_thread, NULL);
 
+    // break up the thing into multiple
+    
+    // free malloc'ed data.
+    free(thread_args_quad);
+    free(thread_args_pps);
+    free(thread_args_sensor);
+    
+    // end.
+    return 0;
 }
 
 /*
