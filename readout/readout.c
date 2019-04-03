@@ -122,7 +122,10 @@ void *SensorThread(void *input){
 
     char *countpps = ini_get(((struct p_args*)input)->config, "intervals", "sensor_intervals");
     int sensor_intervals = atoi(countpps);
+    printf(sensor_intervals);
     sensor_intervals = 15;
+    printf(sensor_intervals);
+
 
     while (1) {
         errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
@@ -207,12 +210,10 @@ int main(int argc, char **argv){
     // start the power from the board.
     SystemOpenHandler();
     ConfigureSensorPower(board, config);
-    printf("Power Configured");
-
 
     // define threads.
     pthread_t quad_thread, pps_thread, sensor_thread, write_thread;
-    printf("Starting Threads....");
+    
     // start reading threads
     // pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
     // pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
