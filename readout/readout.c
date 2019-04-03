@@ -206,18 +206,18 @@ int main(int argc, char **argv){
 
     // start the power from the board.
     SystemOpenHandler();
-    //ConfigureSensorPower(board, config);
+    ConfigureSensorPower(board, config);
     printf("Power Configured");
 
-/*
+
     // define threads.
     pthread_t quad_thread, pps_thread, sensor_thread, write_thread;
-
+    printf("Starting Threads....");
     // start reading threads
     // pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
     // pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
-    pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);
-        
+    pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);    
+
     // join back to main.
     pthread_join(quad_thread, NULL);
     pthread_join(pps_thread, NULL);
@@ -227,7 +227,7 @@ int main(int argc, char **argv){
     
     // free malloc'ed data.
     free(thread_args);
-*/    
+    
     // end.
     // return 0;
 }
