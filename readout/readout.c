@@ -187,6 +187,12 @@ int main(int argc, char **argv){
     // signal handler for abrupt/any close
     signal(SIGINT, SystemCloseHandler);
 
+    if( argc < 1 ) {
+        printf("Use: readout \n");
+        printf("     configfilename \n");
+        exit(0);
+    }
+
     int board = 0;
 
     // read config into memory.
