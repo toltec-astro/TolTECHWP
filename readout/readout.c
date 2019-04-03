@@ -177,7 +177,7 @@ int main(int argc, char **argv){
     // argument for the various threads
     struct p_args *thread_args = (struct p_args *)malloc(sizeof(struct p_args));
     thread_args->board = board;  
-    thread_args->number = config;
+    thread_args->config = config;
 
     // start the power from the board.
     ConfigureSensorPower(board, config);
