@@ -146,6 +146,7 @@ void *SensorThread(void *input){
             // reset write in head to start
             if (sensor_in_ptr > BUFFER_LENGTH - 1)
                 sensor_in_ptr = 0;
+                printf('Reset to beginning!');
         };
 
         // wait designated time
