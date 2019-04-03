@@ -166,6 +166,23 @@ void SystemCloseHandler(int sig)
     exit(0);
 }
 
+void SystemOpenHandler(void)
+{
+    int id;
+    int flags = S826_SystemOpen();
+    if (flags < 0)
+        printf("S826_SystemOpen returned error code %d\n", flags);
+    else if (flags == 0)
+        printf("No boards were detected\n");
+    else {
+        printf("Boards were detected with these IDs:");
+        for (id = 0; id < 16; id++) {
+            if (flags & (1 << id))
+                printf(" %d \n", id);
+        }
+    }
+}
+
 int main(int argc, char **argv){
     // signal handler for abrupt/any close
     signal(SIGINT, SystemCloseHandler);
@@ -182,6 +199,7 @@ int main(int argc, char **argv){
     thread_args->config = config;
 
     // start the power from the board.
+    SystemOpenHandler();
     ConfigureSensorPower(board, config);
 
     // define threads.
