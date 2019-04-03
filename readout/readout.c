@@ -198,9 +198,7 @@ int main(int argc, char **argv){
     // break up the thing into multiple
     
     // free malloc'ed data.
-    free(thread_args_quad);
-    free(thread_args_pps);
-    free(thread_args_sensor);
+    free(thread_args);
     
     // end.
     return 0;
