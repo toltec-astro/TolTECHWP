@@ -120,13 +120,9 @@ void *SensorThread(void *input){
         ((struct p_args*)input)->config
     );
 
-    char *countpps = ini_get(((struct p_args*)input)->config, "intervals", "sensor_intervals");
-    int sensor_intervals = atoi(countpps);
-    printf(sensor_intervals);
-    sensor_intervals = 15;
-    printf(sensor_intervals);
-
-
+    char *sensor_interval = ini_get(((struct p_args*)input)->config, "intervals", "sensor_intervals");
+    int sensor_intervals = atoi(sensor_interval);
+    
     while (1) {
         errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
         if (errcode != S826_ERR_OK)
