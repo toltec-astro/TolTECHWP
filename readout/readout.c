@@ -207,7 +207,7 @@ int main(int argc, char **argv){
     // start the power from the board.
     SystemOpenHandler();
     //ConfigureSensorPower(board, config);
-    printf('Power Configured');
+    printf("Power Configured");
 
 /*
     // define threads.
@@ -229,7 +229,7 @@ int main(int argc, char **argv){
     free(thread_args);
 */    
     // end.
-    return 0;
+    // return 0;
 }
 
 /*
