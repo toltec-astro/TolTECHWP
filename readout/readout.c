@@ -219,8 +219,8 @@ int main(int argc, char **argv){
     pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);    
 
     // join back to main.
-    pthread_join(quad_thread, NULL);
-    pthread_join(pps_thread, NULL);
+    // pthread_join(quad_thread, NULL);
+    // pthread_join(pps_thread, NULL);
     pthread_join(sensor_thread, NULL);
 
     // break up the thing into multiple
