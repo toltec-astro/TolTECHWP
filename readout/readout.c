@@ -290,7 +290,7 @@ void *SensorThread(void *input){
             sensor_id[sensor_in_ptr] = slot;
             sensor_cpu_time[sensor_in_ptr] = slot;
             sensor_voltage[sensor_in_ptr] = voltage;
-            // printf("%i \t Slot: %d \t Voltage: %f \n", sensor_in_ptr, sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]);   
+            printf("%i \t Slot: %d \t Voltage: %f \n", sensor_in_ptr, sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]);   
             sensor_in_ptr++;
 
             // reset write in head to start
