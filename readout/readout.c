@@ -270,6 +270,7 @@ void *QuadThread(void *input){
     int sampcount = 0;
     int lastcount = 0;
     int dcount = 1;
+    uint tstart;
     uint counts[1000], tstamp[1000], reason[1000];
 
     int board = ((struct p_args*)input)->board;
