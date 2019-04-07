@@ -268,8 +268,8 @@ void *SensorThread(void *input){
 
     // in case, sub second
     struct timespec treq;
-    treq.tv_sec = 0;
-    treq.tv_nsec = 1000000000 * atof(sensor_interval);
+    treq.tv_sec = atoi(sensor_interval);
+    treq.tv_nsec = 1000000000 * (atof(sensor_interval) - atoi(sensor_interval));
     printf("setting: %i \n", treq.tv_nsec);
 
     // begin reading loop
