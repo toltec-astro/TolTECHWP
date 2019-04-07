@@ -392,11 +392,12 @@ void *QuadThread(void *input){
             reason + sampcount, 
         0);
         
+        // read until you can't anymore! FIFO style.
         while(errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
               
             // this is where we will update the array
-            printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
-                (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
+            printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", 
+                counts[sampcount], (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
             printf("\n");
             
             // increase counter
