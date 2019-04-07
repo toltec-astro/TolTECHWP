@@ -128,6 +128,68 @@ void ConfigurePulsePerSecondCounter(int board, ini_t *config)
         printf("S826_CounterStateWrite returned error code %d\n", pps_flags);   
 }
 
+void ConfigureTimerCounter(int board, ini_t *config)
+{
+    int timer_flags;
+
+    int *datausec = ini_get(config, "intervals", "carddata_intervals");
+    printf("datausec: %d\n", atoi(datausec));  
+
+    int *counttime = ini_get(config, "counter.timer", "counter_num");
+    printf("counttime (2): %d\n", atoi(counttime));    
+
+    printf("Configure Timer Counter. \n");
+    timer_flags = S826_CounterModeWrite(board, atoi(counttime),  // Configure counter mode:
+            S826_CM_K_1MHZ |                     // clock source = 1 MHz internal
+            S826_CM_PX_START | S826_CM_PX_ZERO | // preload @start and counts==0
+            S826_CM_UD_REVERSE |                 // count down
+            S826_CM_OM_NOTZERO
+    );
+
+    // set period in microseconds
+    timer_flags = S826_CounterPreloadWrite(board, atoi(counttime), 0, atoi(datausec));    
+    if (timer_flags < 0)
+        printf("S826_CounterPreloadWrite returned error code %d\n", timer_flags);
+
+    // start the timer running.
+    timer_flags = S826_CounterStateWrite(board, atoi(counttime), 1);    
+    if (timer_flags < 0)
+        printf("S826_CounterStateWrite returned error code %d\n", timer_flags);
+}
+
+void ConfigureQuadCounter(int board, ini_t *config)
+{
+    int quad_flags;
+
+    printf("Configure QuadCounter \n");
+    int *countquad = ini_get(config, "counter.quad", "counter_num");
+    printf("countquad (0): %d\n", atoi(countquad));    
+    int *counttime = ini_get(config, "counter.timer", "counter_num");
+    printf("counttime (2): %d\n", atoi(counttime));    
+
+    quad_flags = S826_CounterModeWrite(
+        board, 
+        atoi(countquad),                   // Configure counter:
+        S826_CM_K_QUADX4 |                 // Quadrature x1/x2/x4 multiplier
+        //S826_CM_K_ARISE |                // clock = ClkA (external digital signal)
+        //S826_XS_100HKZ |                 // route tick generator to index input
+        (atoi(counttime) + S826_CM_XS_CH0) // route CH1 to Index input
+    );   
+    if (quad_flags < 0)
+        printf("S826_CounterModeWrite returned error code %d\n", quad_flags);
+
+    quad_flags = S826_CounterSnapshotConfigWrite(
+        board, atoi(countquad),  // Acquire counts upon tick rising edge.
+        S826_SSRMASK_IXRISE, 
+        S826_BITWRITE
+    );
+    if (quad_flags < 0)
+        printf("S826_CounterSnapshotConfigWrite returned error code %d\n", quad_flags);
+  
+    quad_flags = S826_CounterStateWrite(board, atoi(countquad), 1); // start the counter
+    if (quad_flags < 0)
+        printf("S826_CounterStateWrite returned error code %d\n", quad_flags);
+}
 
 struct p_args {
     int board;
@@ -139,6 +201,7 @@ void *PPSThread(void *input){
     int errcode;
     int sampcount = 0;
     uint counts[1000], tstamp[1000], reason[1000];
+    uint tstart;
 
     ConfigurePulsePerSecondCounter(
         ((struct p_args*)input)->board, 
