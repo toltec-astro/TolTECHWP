@@ -393,10 +393,6 @@ void *QuadThread(void *input){
         0);
         
         while(errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
-          
-            // keep track of counts
-            dcount = counts[sampcount] - lastcount;
-            lastcount = counts[sampcount];
               
             // this is where we will update the array
             printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
@@ -406,12 +402,6 @@ void *QuadThread(void *input){
             // increase counter
             sampcount++;
 
-            // reset write in head to start
-            if (quad_in_ptr > BUFFER_LENGTH - 1){
-                quad_in_ptr = 0;
-                printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
-            }
-
             // read next snapshot
             errcode = S826_CounterSnapshotRead(
                 board, countquad,
@@ -420,6 +410,14 @@ void *QuadThread(void *input){
                 reason + sampcount, 
             0);
         }
+
+        // reset write in head to start
+        if (quad_in_ptr > BUFFER_LENGTH - 1){
+            quad_in_ptr = 0;
+            printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+        }
+
+        sleep(1);
     }
     return 0;
 }
