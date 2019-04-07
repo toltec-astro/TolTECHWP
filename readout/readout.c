@@ -230,12 +230,25 @@ void *PPSThread(void *input){
         );
 
         if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
+            // printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
+            //         counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
+            pps_id[pps_in_ptr] = 1;
+            pps_cpu_time[pps_in_ptr] = time(NULL);
+            pps_card_time[pps_in_ptr] = 1;
             printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
-                    counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
-        }    
+                     counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
+        }
+
+        pps_in_ptr++;
+
+        // reset write in head to start
+        if (pps_in_ptr > BUFFER_LENGTH - 1){
+            pps_in_ptr = 0;
+            printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+        }
+
         sleep(pps_intervals);
     }
-
     return 0;
 }
 
@@ -392,6 +405,12 @@ void *QuadThread(void *input){
             
             // increase counter
             sampcount++;
+
+            // reset write in head to start
+            if (quad_in_ptr > BUFFER_LENGTH - 1){
+                quad_in_ptr = 0;
+                printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+            }
 
             // read next snapshot
             errcode = S826_CounterSnapshotRead(
