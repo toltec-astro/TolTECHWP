@@ -272,6 +272,9 @@ void *QuadThread(void *input){
     int dcount = 1;
     uint counts[1000], tstamp[1000], reason[1000];
 
+    int board = ((struct p_args*)input)->board;
+    ini_t config = ((struct p_args*)input)->config;
+
     ConfigureTimerCounter(
         ((struct p_args*)input)->board, 
         ((struct p_args*)input)->config
@@ -281,6 +284,10 @@ void *QuadThread(void *input){
         ((struct p_args*)input)->board, 
         ((struct p_args*)input)->config
     );
+
+    // read in the interval for sensors
+    char *countquad_id = ini_get(config, "counter.quad", "counter_num");
+    int countquad = atoi(countquad_id);
 
     while (1) {
 
