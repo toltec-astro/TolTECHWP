@@ -265,7 +265,12 @@ void *SensorThread(void *input){
     // read in the interval for sensors
     char *sensor_interval = ini_get(((struct p_args*)input)->config, "intervals", "sensor_intervals");
     int sensor_intervals = atoi(sensor_interval);
-    
+
+    // in case, sub second
+    struct timespec treq;
+    treq.tv_sec = 0;
+    treq.tv_nsec = 1000000000 * sensor_intervals;
+
     // begin reading loop
     while (1) {
 
@@ -295,7 +300,11 @@ void *SensorThread(void *input){
         };
 
         // wait designated time
-        sleep(sensor_intervals);
+        //sleep(sensor_intervals);
+
+        //
+        
+        nanosleep(&treq, NULL);
     }
 
     return 0;
