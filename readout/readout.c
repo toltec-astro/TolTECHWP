@@ -146,6 +146,7 @@ void *PPSThread(void *input){
     );
 
     // read in the interval for pps
+    char *countpps = ini_get(config, "counter.pps", "counter_num");
     char *pps_interval = ini_get(((struct p_args*)input)->config, "intervals", "pps_intervals");
     int pps_intervals = atoi(pps_interval);
 
@@ -158,7 +159,7 @@ void *PPSThread(void *input){
     while (1) {
 
         errcode = S826_CounterSnapshotRead(
-            board, countpps,
+            board, atoi(countpps),
             counts + sampcount, 
             tstamp + sampcount, 
             reason + sampcount, 
