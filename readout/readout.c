@@ -350,6 +350,12 @@ void *QuadThread(void *input){
 
     int board = ((struct p_args*)input)->board;
 
+    // storage parameters
+    int quad_in_ptr = 0;
+    int quad_counter[BUFFER_LENGTH];
+    int quad_cpu_time[BUFFER_LENGTH];
+    int quad_card_time[BUFFER_LENGTH];
+
     ConfigureTimerCounter(
         ((struct p_args*)input)->board, 
         ((struct p_args*)input)->config
@@ -428,12 +434,12 @@ int main(int argc, char **argv){
     pthread_t quad_thread, pps_thread, sensor_thread, write_thread;
     
     // start reading threads
-    // pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
+    pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
     pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
     pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);    
 
     // join back to main.
-    // pthread_join(quad_thread, NULL);
+    pthread_join(quad_thread, NULL);
     pthread_join(pps_thread, NULL);
     pthread_join(sensor_thread, NULL);
 
