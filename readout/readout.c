@@ -265,6 +265,11 @@ void SystemOpenHandler(void)
 }
 
 void *QuadThread(void *input){
+    
+    int errcode;
+    int sampcount = 0;
+    int lastcount = 0;
+    int dcount = 1;
 
     ConfigureTimerCounter(
         ((struct p_args*)input)->board, 
