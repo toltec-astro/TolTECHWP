@@ -270,7 +270,6 @@ void *SensorThread(void *input){
     struct timespec treq;
     treq.tv_sec = atoi(sensor_interval);
     treq.tv_nsec = 1000000000 * (atof(sensor_interval) - atoi(sensor_interval));
-    printf("setting: %i \n", treq.tv_nsec);
 
     // begin reading loop
     while (1) {
@@ -430,12 +429,12 @@ int main(int argc, char **argv){
     
     // start reading threads
     // pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
-    // pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
+    pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
     pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);    
 
     // join back to main.
     // pthread_join(quad_thread, NULL);
-    // pthread_join(pps_thread, NULL);
+    pthread_join(pps_thread, NULL);
     pthread_join(sensor_thread, NULL);
 
     // break up the thing into multiple
