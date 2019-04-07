@@ -286,11 +286,16 @@ void *SensorThread(void *input){
             voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
 
             // this is where we will update the array
-            // printf("Slot: %d \t Voltage: %f \n", slot, voltage);   
             sensor_id[sensor_in_ptr] = slot;
-            sensor_cpu_time[sensor_in_ptr] = slot;
+            sensor_cpu_time[sensor_in_ptr] = time(NULL); //slot;
             sensor_voltage[sensor_in_ptr] = voltage;
-            printf("%i \t Slot: %d \t Voltage: %f \n", sensor_in_ptr, sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]);   
+
+            printf("%i: \t Time: %i \t Slot: %d \t Voltage: %f \n", 
+                sensor_in_ptr, 
+                sensor_cpu_time[sensor_in_ptr],
+                sensor_id[sensor_in_ptr], 
+                sensor_voltage[sensor_in_ptr]
+            );   
             sensor_in_ptr++;
 
             // reset write in head to start
@@ -301,10 +306,6 @@ void *SensorThread(void *input){
         };
 
         // wait designated time
-        //sleep(sensor_intervals);
-
-        //
-        
         nanosleep(&treq, NULL);
     }
 
