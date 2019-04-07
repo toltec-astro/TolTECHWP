@@ -270,7 +270,7 @@ void *SensorThread(void *input){
     struct timespec treq;
     treq.tv_sec = 0;
     treq.tv_nsec = 1000000000 * atof(sensor_interval);
-    print("setting: %i \n", treq.tv_nsec);
+    printf("setting: %i \n", treq.tv_nsec);
 
     // begin reading loop
     while (1) {
