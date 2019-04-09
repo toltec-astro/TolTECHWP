@@ -379,9 +379,17 @@ void *QuadThread(void *input){
         ((struct p_args*)input)->config
     );
 
-    // read in the interval for sensors
     char *countquad_id = ini_get(((struct p_args*)input)->config, "counter.quad", "counter_num");
     int countquad = atoi(countquad_id);
+
+    // read in the interval for sensors
+    char *quad_interval = ini_get(((struct p_args*)input)->config, "intervals", "quad_intervals");
+    int quad_intervals = atoi(quad_interval);
+
+    // in case, sub second
+    struct timespec treq;
+    treq.tv_sec = atoi(quad_intervals);
+    treq.tv_nsec = 1000000000 * (atof(quad_intervals) - atoi(quad_intervals));
 
     while (1) {
 
@@ -418,7 +426,7 @@ void *QuadThread(void *input){
             printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
         }
 
-        sleep(100);
+        nanosleep(&treq, NULL);
     }
     return 0;
 }
