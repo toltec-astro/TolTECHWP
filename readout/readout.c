@@ -426,7 +426,7 @@ void *QuadThread(void *input){
             printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
         }
 
-        nanosleep(&treq, NULL);
+        //nanosleep(&treq, NULL);
     }
     return 0;
 }
