@@ -387,9 +387,9 @@ void *QuadThread(void *input){
     int quad_intervals = atoi(quad_interval);
 
     // in case, sub second
-    struct timespec treq;
-    treq.tv_sec = atoi(quad_intervals);
-    treq.tv_nsec = 1000000000 * (atof(quad_intervals) - atoi(quad_intervals));
+    // struct timespec treq;
+    // treq.tv_sec = atoi(quad_intervals);
+    // treq.tv_nsec = 1000000000 * (atof(quad_intervals) - atoi(quad_intervals));
 
     while (1) {
 
