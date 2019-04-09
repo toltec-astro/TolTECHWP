@@ -383,6 +383,14 @@ void *QuadThread(void *input){
     char *countquad_id = ini_get(((struct p_args*)input)->config, "counter.quad", "counter_num");
     int countquad = atoi(countquad_id);
 
+    char *quad_interval = ini_get(((struct p_args*)input)->config, "intervals", "quad_intervals");
+    int quad_intervals = atoi(quad_interval);
+
+    // in case, sub second
+    struct timespec treq;
+    treq.tv_sec = atoi(quad_intervals);
+    treq.tv_nsec = 1000000000 * (atof(quad_intervals) - atoi(quad_intervals));
+
     while (1) {
 
         errcode = S826_CounterSnapshotRead(
@@ -393,12 +401,11 @@ void *QuadThread(void *input){
         0);
         
         // read until you can't anymore! FIFO style.
-        while (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
-            
+        while (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){    
             // this is where we will update the array
-            // printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", 
-            //     counts[sampcount], (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
-            // printf("\n");
+            printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", 
+                counts[sampcount], (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
+            printf("\n");
             
             // increase counter
             sampcount++;
@@ -418,7 +425,7 @@ void *QuadThread(void *input){
             printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
         }
 
-        sleep(100);
+        nanosleep(&treq, NULL);
     }
     return 0;
 }
