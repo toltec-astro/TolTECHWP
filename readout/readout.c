@@ -14,6 +14,23 @@
 #include <pthread.h>
 #include <sys/socket.h>
 
+// storage parameters
+int sensor_in_ptr = 0;
+int sensor_id[BUFFER_LENGTH];
+int sensor_cpu_time[BUFFER_LENGTH];
+float sensor_voltage[BUFFER_LENGTH];
+
+// storage parameters
+int pps_in_ptr = 0;
+int pps_id[BUFFER_LENGTH];
+int pps_cpu_time[BUFFER_LENGTH];
+float pps_card_time[BUFFER_LENGTH];
+
+// storage parameters
+int quad_in_ptr = 0;
+int quad_counter[BUFFER_LENGTH];
+int quad_cpu_time[BUFFER_LENGTH];
+float quad_card_time[BUFFER_LENGTH];
 
 void ConfigureSensorPower(int board, ini_t *config)
 {
@@ -200,7 +217,7 @@ void *PPSThread(void *input){
 
     int errcode;
     int sampcount = 0;
-    uint counts[1000], tstamp[1000], reason[1000];
+    uint counts, tstamp, reason;
     uint tstart;
 
     ConfigurePulsePerSecondCounter(
@@ -211,43 +228,45 @@ void *PPSThread(void *input){
     // read in the interval for pps
     char *countpps = ini_get(((struct p_args*)input)->config, "counter.pps", "counter_num");
     char *pps_interval = ini_get(((struct p_args*)input)->config, "intervals", "pps_intervals");
-    int pps_intervals = atoi(pps_interval);
-
-    // storage parameters
-    int pps_in_ptr = 0;
-    int pps_id[BUFFER_LENGTH];
-    int pps_cpu_time[BUFFER_LENGTH];
-    int pps_card_time[BUFFER_LENGTH];
+    struct timespec pps_sleep_time;
+    pps_sleep_time.tv_sec = atoi(pps_interval);
+    pps_sleep_time.tv_nsec = 1000000000 * (atof(pps_interval) - atoi(pps_interval));
 
     while (1) {
 
         errcode = S826_CounterSnapshotRead(
             ((struct p_args*)input)->board, atoi(countpps),
-            counts + sampcount, 
-            tstamp + sampcount, 
-            reason + sampcount, 
+            &counts, 
+            &tstamp, 
+            &reason, 
             0
         );
 
         if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
-            // printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
-            //         counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
-            pps_id[pps_in_ptr] = 1;
-            pps_cpu_time[pps_in_ptr] = time(NULL);
-            pps_card_time[pps_in_ptr] = 1;
-            printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
-                     counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
+ 
+            pps_id[pps_in_ptr] = counts;
+            pps_cpu_time[pps_in_ptr] = time(NULL); // milliseconds 
+            pps_card_time[pps_in_ptr] = tstamp;
+/*
+            printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d, CPUTime = %i, RawCardTime = %f \n", 
+                     pps_id[pps_in_ptr], (float)(tstamp - tstart)/1000.0, reason, sampcount, pps_cpu_time[pps_in_ptr], pps_card_time[pps_in_ptr]);
+        
+            printf("PPS: BufferPosition = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                     pps_in_ptr, pps_id[pps_in_ptr], pps_cpu_time[pps_in_ptr], pps_card_time[pps_in_ptr]);
+    */          
+            pps_in_ptr++;
+            sampcount++;
+
         }
-
-        pps_in_ptr++;
-
+        
         // reset write in head to start
         if (pps_in_ptr > BUFFER_LENGTH - 1){
             pps_in_ptr = 0;
             printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
         }
-
-        sleep(pps_intervals);
+        
+        // wait designated time
+        nanosleep(&pps_sleep_time, NULL);
     }
     return 0;
 }
@@ -255,20 +274,20 @@ void *PPSThread(void *input){
 void *SensorThread(void *input){
 
     uint slotlist = 0x0007;
-    int errcode;            // errcode 
+    int errcode;             // errcode 
     int slotval[16];         // buffer must be sized for 16 slots
     int slot;
     
     int adcdata;
     unsigned int burstnum;
     float voltage;
-
+/*
     // storage parameters
     int sensor_in_ptr = 0;
     int sensor_id[BUFFER_LENGTH];
     int sensor_cpu_time[BUFFER_LENGTH];
     float sensor_voltage[BUFFER_LENGTH];
-
+*/
     // configure sensor data
     ConfigureSensors(
         ((struct p_args*)input)->board, 
@@ -277,12 +296,9 @@ void *SensorThread(void *input){
 
     // read in the interval for sensors
     char *sensor_interval = ini_get(((struct p_args*)input)->config, "intervals", "sensor_intervals");
-    int sensor_intervals = atoi(sensor_interval);
-
-    // in case, sub second
-    struct timespec treq;
-    treq.tv_sec = atoi(sensor_interval);
-    treq.tv_nsec = 1000000000 * (atof(sensor_interval) - atoi(sensor_interval));
+    struct timespec sensor_wait_time;
+    sensor_wait_time.tv_sec = atoi(sensor_interval);
+    sensor_wait_time.tv_nsec = 1000000000 * (atof(sensor_interval) - atoi(sensor_interval));
 
     // begin reading loop
     while (1) {
@@ -299,15 +315,15 @@ void *SensorThread(void *input){
 
             // this is where we will update the array
             sensor_id[sensor_in_ptr] = slot;
-            sensor_cpu_time[sensor_in_ptr] = time(NULL); //slot;
+            sensor_cpu_time[sensor_in_ptr] = time(NULL); 
             sensor_voltage[sensor_in_ptr] = voltage;
-
-            printf("%i: \t Time: %i \t Slot: %d \t Voltage: %f \n", 
+/*
+            printf("Sensors: %i: \t Time: %i \t Slot: %d \t Voltage: %f \n", 
                 sensor_in_ptr, 
                 sensor_cpu_time[sensor_in_ptr],
                 sensor_id[sensor_in_ptr], 
                 sensor_voltage[sensor_in_ptr]
-            );   
+            );   */
             sensor_in_ptr++;
 
             // reset write in head to start
@@ -318,7 +334,7 @@ void *SensorThread(void *input){
         };
 
         // wait designated time
-        nanosleep(&treq, NULL);
+        nanosleep(&sensor_wait_time, NULL);
     }
 
     return 0;
@@ -352,22 +368,21 @@ void SystemOpenHandler(void)
     }
 }
 
+
+
 void *QuadThread(void *input){
+
+    int quad_debug = 0;
 
     int errcode;
     int sampcount = 0;
     int lastcount = 0;
     int dcount = 1;
     uint tstart;
-    uint counts[1000], tstamp[1000], reason[1000];
+    uint counts, tstamp, reason;
 
     int board = ((struct p_args*)input)->board;
 
-    // storage parameters
-    int quad_in_ptr = 0;
-    int quad_counter[BUFFER_LENGTH];
-    int quad_cpu_time[BUFFER_LENGTH];
-    int quad_card_time[BUFFER_LENGTH];
 
     ConfigureTimerCounter(
         ((struct p_args*)input)->board, 
@@ -382,54 +397,75 @@ void *QuadThread(void *input){
     char *countquad_id = ini_get(((struct p_args*)input)->config, "counter.quad", "counter_num");
     int countquad = atoi(countquad_id);
 
+    
+
     // read in the interval for sensors
     char *quad_interval = ini_get(((struct p_args*)input)->config, "intervals", "quad_intervals");
-    int quad_intervals = atoi(quad_interval);
-
-    // in case, sub second
-    // struct timespec treq;
-    // treq.tv_sec = atoi(quad_intervals);
-    // treq.tv_nsec = 1000000000 * (atof(quad_intervals) - atoi(quad_intervals));
+    struct timespec quad_sleep_time;
+    quad_sleep_time.tv_sec = atoi(quad_interval);
+    quad_sleep_time.tv_nsec = 1000000000 * (atof(quad_interval) - atoi(quad_interval));
 
     while (1) {
 
         errcode = S826_CounterSnapshotRead(
             board, countquad,
-            counts + sampcount, 
-            tstamp + sampcount, 
-            reason + sampcount, 
+            &counts,
+            &tstamp,
+            &reason,
         0);
         
         // read until you can't anymore! FIFO style.
         while (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
             
             // this is where we will update the array
-            printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", 
-                counts[sampcount], (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
-            printf("\n");
+            // printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", 
+            //    counts, (float)(tstamp-tstart)/1000.0, reason, sampcount);
+            // printf("\n");
+            
+            quad_counter[quad_in_ptr] = counts;
+            quad_cpu_time[quad_in_ptr] = time(NULL);
+            quad_card_time[quad_in_ptr] = tstamp;
+
+            if (quad_debug == 1) {
+                printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i", 
+                   quad_in_ptr, quad_counter[quad_in_ptr], quad_card_time[quad_in_ptr], quad_cpu_time[quad_in_ptr]);
+                printf("\n");           
+            }
             
             // increase counter
-            sampcount++;
+            quad_in_ptr++;
 
             // read next snapshot
             errcode = S826_CounterSnapshotRead(
                 board, countquad,
-                counts + sampcount, 
-                tstamp + sampcount, 
-                reason + sampcount, 
+                &counts,
+                &tstamp,  
+                &reason,
             0);
         }
 
-        // reset write in head to start
+        // reset write-in head to start
         if (quad_in_ptr > BUFFER_LENGTH - 1){
             quad_in_ptr = 0;
             printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
         }
 
-        //nanosleep(&treq, NULL);
+        nanosleep(&quad_sleep_time, NULL);
     }
     return 0;
 }
+
+void *BufferToDisk(void *input){
+
+    while (1) {
+        printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
+            sensor_in_ptr, pps_in_ptr, quad_in_ptr      
+        );  
+        sleep(1);
+    }
+    return 0;
+}
+
 
 int main(int argc, char **argv){
     // signal handler for abrupt/any close
@@ -456,18 +492,22 @@ int main(int argc, char **argv){
     SystemOpenHandler();
     ConfigureSensorPower(board, config);
 
+
+
     // define threads.
     pthread_t quad_thread, pps_thread, sensor_thread, write_thread;
     
     // start reading threads
     pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
     pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
-    pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);    
+    pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);   
+    pthread_create(&write_thread, NULL, BufferToDisk, (void *)thread_args);    
 
     // join back to main.
     pthread_join(quad_thread, NULL);
     pthread_join(pps_thread, NULL);
     pthread_join(sensor_thread, NULL);
+    pthread_join(write_thread, NULL);
 
     // break up the thing into multiple
     
@@ -481,4 +521,7 @@ int main(int argc, char **argv){
 /*
 gcc -D_LINUX -Wall -Wextra -DOSTYPE_LINUX -c -no-pie readout.c ../vend/ini/ini.c
 gcc -D_LINUX readout.o ini.o -no-pie -o readout -L ../vend/sdk_826_linux_3.3.11/demo -l826_64 -lpthread
+
+gcc -D_LINUX -Wall -Wextra -DOSTYPE_LINUX -c -no-pie readout_serial.c ../vend/ini/ini.c
+gcc -D_LINUX readout_serial.o ini.o -no-pie -o readout_serial -L ../vend/sdk_826_linux_3.3.11/demo -l826_64 -lpthread
 */
