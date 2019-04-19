@@ -6,6 +6,18 @@
     
 """
 
+helpmsg = """Galil Agent: Communicates to Galil motor controller
+    exit - shuts down agent
+    open - (re)opens connection to galil with current config settings
+    close - closes connection to galil
+    conf - sends the config commands to the galil
+    init - initializes the motor (do this after config)
+    start - start motor movement
+    stop - stop motor movement
+    off - shuts motor off
+    any galil command is send to the controller"""
+
+
 # Preparation
 import sys
 import queue
@@ -42,15 +54,29 @@ class GalilAgent(AgentParent):
         elif isinstance(self.comm, telnetlib.Telnet):
             return self.comm.read_eager()
         elif self.comm == 1 and len(self.config['galil']['simulategalil']):
-            return 'sim:'
+            return 'sim'
         else:
             self.log.warn("Read failed - not connected")
         
-    def write(self, message):
+    def write(self, message, debug=True):
         """ Function to write to galil
         """
+        if debug: self.log.debug('Write: %s' % message)
         if self.comm != 1 and self.comm != None:
             self.comm.write(message.encode())
+            
+    def command(self, command):
+        """ Function to send commands and returns response.
+            Uses write and read, checks if comm is open.
+        """
+        if self.comm != None:
+            self.write((command+'\n\r'))
+            time.sleep(float(self.config['galil']['waittime']))
+            retmsg = self.read()
+            self.log.debug('Read: %s' % retmsg)
+        else:
+            retmsg = "Unable to send command, no open connection"
+        return retmsg
 
     def open(self):
         """ Function to (re)connect to galil. Returns a message.
@@ -108,18 +134,14 @@ class GalilAgent(AgentParent):
             if len(task):
                 self.log.debug('Got task <%s>' % task)
             ### Handle task
-            print(repr(self.comm))
+            #print(repr(self.comm))
             retmsg = ''
             # Exit
             if 'exit' in task.lower():
                 self.exit = True
             # Help message
             elif 'help' in task.lower():
-                retmsg = """Galil Agent: Communicates to Galil motor controller
-  exit - shuts down agent
-  open - (re)opens connection to galil with current config settings
-  close - closes connection to galil
-  any galil command is send to the controller"""
+                retmsg = helpmsg
             # Connect
             elif 'open' in task.lower():
                 retmsg = self.open()
@@ -132,14 +154,24 @@ class GalilAgent(AgentParent):
                     retmsg = 'Connection closed'
                 else:
                     retmsg = 'Already closed'
+            # setup
+            elif 'conf' in task.lower():
+                retmsg = self.command(self.config['galil']['confcomm'])
+            # init
+            elif 'init' in task.lower():
+                retmsg = self.command(self.config['galil']['initcomm'])
+            # start
+            elif 'start' in task.lower():
+                retmsg = self.command(self.config['galil']['startcomm'])
+            # stop
+            elif 'stop' in task.lower():
+                retmsg = self.command(self.config['galil']['stopcomm'])
+            # stop
+            elif 'off' in task.lower():
+                retmsg = self.command(self.config['galil']['offcomm'])
             # Else it's a galil command
             elif len(task):
-                if self.comm != None:
-                    self.write((task+'\n\r'))
-                    time.sleep(float(self.config['galil']['waittime']))
-                    retmsg = self.read()
-                else:
-                    retmsg = "Unable to send command, no open connection"
+                retmsg = self.command(task)
             # No task -> Get data if connection is on
             elif self.comm != None:
                 # Make command
@@ -148,7 +180,7 @@ class GalilAgent(AgentParent):
                 for s in vlist[1:]: stext += ',' + s
                 stext += '\n\r'
                 # Send - wait - return
-                self.write(stext)
+                self.write(stext, debug=False)
                 time.sleep(float(self.config['galil']['waittime']))
                 rtext = self.read().strip()
                 # Log the result
