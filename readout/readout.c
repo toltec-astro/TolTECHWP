@@ -1,6 +1,7 @@
 
-#define S826_CM_XS_CH0    2
-#define BUFFER_LENGTH     5000
+#define S826_CM_XS_CH0         2
+#define QUAD_BUFFER_LENGTH     8000
+#define BUFFER_LENGTH          20
 
 #include "../vend/ini/ini.h"
 #include "../vend/sdk_826_linux_3.3.11/demo/826api.h"
@@ -14,23 +15,27 @@
 #include <pthread.h>
 #include <sys/socket.h>
 
+
 // storage parameters
 int sensor_in_ptr = 0;
 int sensor_id[BUFFER_LENGTH];
 int sensor_cpu_time[BUFFER_LENGTH];
 float sensor_voltage[BUFFER_LENGTH];
 
-// storage parameters
 int pps_in_ptr = 0;
 int pps_id[BUFFER_LENGTH];
 int pps_cpu_time[BUFFER_LENGTH];
 float pps_card_time[BUFFER_LENGTH];
 
-// storage parameters
 int quad_in_ptr = 0;
-int quad_counter[BUFFER_LENGTH];
-int quad_cpu_time[BUFFER_LENGTH];
-float quad_card_time[BUFFER_LENGTH];
+int quad_counter[QUAD_BUFFER_LENGTH];
+int quad_cpu_time[QUAD_BUFFER_LENGTH];
+float quad_card_time[QUAD_BUFFER_LENGTH];
+
+// readout parameters
+int sensor_out_ptr = 0;
+int pps_out_ptr = 0;
+int quad_out_ptr = 0;
 
 void ConfigureSensorPower(int board, ini_t *config)
 {
@@ -62,7 +67,6 @@ void ConfigureSensors(int board, ini_t *config)
     // get number of sensors
     char *sens_count = ini_get(config, "sensors", "sensor_num");
     printf("sensor count: %d\n", atoi(sens_count));    
-    //char buf[2];
 
     // loop over and set all the sensors
     char sensor_id[30];
@@ -251,15 +255,17 @@ void *PPSThread(void *input){
             }
     
             pps_in_ptr++;
-        }
-        
-        // reset write in head to start
-        if (pps_in_ptr > BUFFER_LENGTH - 1){
-            pps_in_ptr = 0;
-            if (debug == 1){
-                printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+            
+            // reset write in head to start
+            if (pps_in_ptr > BUFFER_LENGTH - 1){
+                pps_in_ptr = 0;
+                if (debug == 1){
+                    printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+                }
             }
         }
+        
+        
         
         // wait designated time
         nanosleep(&pps_sleep_time, NULL);
@@ -272,8 +278,14 @@ void *SensorThread(void *input){
     int board = ((struct p_args*)input)->board;
     int debug = 0;
 
+    // get sensor count
+    char *sensor_count = ini_get(((struct p_args*)input)->config, "sensors", "sensor_num");
+    int sens_cnt = atoi(sensor_count);
+
     // is there a programmatic way to grab this?
-    uint slotlist = 0x0007;
+    // !(0xFFFF<< N)
+    // uint slotlist = 0x0007;
+    uint slotlist = !(0xFFFF << sens_cnt);
 
     int errcode;             // errcode 
     int slotval[16];         // buffer must be sized for 16 slots
@@ -284,6 +296,8 @@ void *SensorThread(void *input){
 
     // configure sensor data
     ConfigureSensors(board, ((struct p_args*)input)->config);
+
+    
 
     // read in the interval for sensors
     char *sensor_interval = ini_get(((struct p_args*)input)->config, "intervals", "sensor_intervals");
@@ -299,8 +313,8 @@ void *SensorThread(void *input){
         if (errcode != S826_ERR_OK)
             printf("ADC Read Failed. %d \n", errcode);
 
-        // loop through sensors
-        for (slot = 0; slot < 3; slot++) 
+        // loop through sensors 
+        for (slot = 0; slot < sens_cnt; slot++) 
         {
             adcdata = (int)((slotval[slot] & 0xFFFF));
             burstnum = ((unsigned int)slotval[slot] >> 24);
@@ -322,7 +336,9 @@ void *SensorThread(void *input){
             // reset write in head to start
             if (sensor_in_ptr > BUFFER_LENGTH - 1){
                 sensor_in_ptr = 0;
-                printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+                if (debug == 1) {
+                    printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+                }
             }
         };
 
@@ -403,16 +419,18 @@ void *QuadThread(void *input){
             // increase counter
             quad_in_ptr++;
 
+            // reset write-in head to start
+            if (quad_in_ptr > QUAD_BUFFER_LENGTH - 1){
+                quad_in_ptr = 0;
+                if (debug == 1) {
+                    printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+                }
+            }
+
             // read next snapshot
             errcode = S826_CounterSnapshotRead(board, countquad, &counts, &tstamp, &reason, 0);
         }
-        // reset write-in head to start
-        if (quad_in_ptr > BUFFER_LENGTH - 1){
-            quad_in_ptr = 0;
-            if (debug == 1) {
-                printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
-            }
-        }
+
         // sleep for the designated time
         nanosleep(&quad_sleep_time, NULL);
     }
@@ -420,13 +438,64 @@ void *QuadThread(void *input){
 }
 
 void *BufferToDisk(void *input){
+    
+    int lower_unread = 1;
+    int upper_unread = 0;
+
     while (1) {
+
+        if (pps_in_ptr < BUFFER_LENGTH/2){
+            printf("Updating Lower Half...\n");
+            
+            printf("Reading Upper Half if unread:\n");
+            if (upper_unread == 1) {
+                int pps_out_ptr = BUFFER_LENGTH/2;
+                while (pps_out_ptr != BUFFER_LENGTH - 1){
+                    printf("PPS: Read Position = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                            pps_out_ptr, pps_id[pps_out_ptr], pps_cpu_time[pps_out_ptr], pps_card_time[pps_out_ptr]
+                    );
+                    pps_out_ptr++;
+                }
+                upper_unread = 1;   
+            }
+        } else if (pps_in_ptr >= BUFFER_LENGTH/2 && pps_out_ptr != BUFFER_LENGTH/2 - 1 && 1 == 2) {
+            printf("Updating Upper Half\n");        
+
+            // read the lower half // unless we just read it
+            int pps_out_ptr = 0;
+            while (pps_out_ptr <  BUFFER_LENGTH/2 && pps_out_ptr != BUFFER_LENGTH/2){
+                printf("PPS: Read Position = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                        pps_out_ptr, pps_id[pps_out_ptr], pps_cpu_time[pps_out_ptr], pps_card_time[pps_out_ptr]
+                );
+                pps_out_ptr++;
+            }
+        }
+/*
+        if (pps_in_ptr >= 0 && pps_in_ptr < BUFFER_LENGTH/2){
+            int pps_out_ptr = BUFFER_LENGTH/2;
+            printf("PPS: Read Position = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                    pps_out_ptr, pps_id[pps_out_ptr], pps_cpu_time[pps_out_ptr], pps_card_time[pps_out_ptr]
+            );
+            while (pps_out_ptr < BUFFER_LENGTH){
+                printf("PPS: Read Position = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                    pps_out_ptr, pps_id[pps_out_ptr], pps_cpu_time[pps_out_ptr], pps_card_time[pps_out_ptr]
+                );  
+
+                // next data point
+                pps_out_ptr++;  
+            }
+        }
+*/          
+
+
         printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
             sensor_in_ptr, pps_in_ptr, quad_in_ptr      
         );  
         sleep(1);
     }
     return 0;
+
+    // if ptr_in between 0 and BUFFER/2
 }
 
 
