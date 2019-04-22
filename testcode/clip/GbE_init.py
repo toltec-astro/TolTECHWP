@@ -40,14 +40,14 @@ class Gbe():
   def __init__(self, dest_port):
       self.dest_port = dest_port
       self.index = dest_port-100*(int)(dest_port/100)
-      print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name, self.dest_port, self.index
+      print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name, self.dest_port, self.index)
 
   ### Upload firmware
   def upload_firmware(self, roach, ppc_ip, firmware_file):
       if roach == None:
-          print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +': no roach'
+          print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +': no roach')
           return
-      print 'Connecting...'
+      print('Connecting...')
       katcp_port=7147
       t1 = time.time()
       timeout = 10
@@ -56,19 +56,19 @@ class Gbe():
              raise Exception("Connection timeout to roach")
       time.sleep(0.1)
       if (roach.is_connected() == True):
-          print 'Connected to the FPGA '
+          print('Connected to the FPGA ')
           roach.upload_to_ram_and_program(str(firmware_file))
       else:
-          print 'Not connected to the FPGA'
+          print('Not connected to the FPGA')
       time.sleep(2)
-      print 'Connection established to', ppc_ip
-      print 'Uploaded', firmware_file
+      print('Connection established to', ppc_ip)
+      print('Uploaded', firmware_file)
       return
 
   ### Initialize GbE parameters
   def init_reg(self, roach):
       if roach == None:
-          print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +': no roach'
+          print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +': no roach')
           return
       roach.write_int('GbE_tx_destip', self.dest_ip)
       roach.write_int('GbE_tx_destport', self.dest_port)
@@ -84,7 +84,7 @@ class Gbe():
   ### Create a socket for receiving UDP data,
   # bind to eth_iface (raw socket is used here, could be datagram).
   def init_socket(self, eth_iface):
-      print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name, eth_iface
+      print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name, eth_iface)
       sock_fd = sock.socket(sock.AF_PACKET, sock.SOCK_RAW, 3)
       # test gaps
       if UDP_BUF_SIZE_TIMES > 0:
@@ -94,7 +94,7 @@ class Gbe():
 
   ### Create a socket for receiving simulated UDP data
   def sim_socket(self, iface):
-      print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name, self.dest_port
+      print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name, self.dest_port)
       sock_fd = sock.socket(sock.AF_INET, sock.SOCK_DGRAM)
       # test gaps
       if UDP_BUF_SIZE_TIMES > 0:
@@ -120,10 +120,10 @@ class Gbe():
   ### Stream set number of packets (Npackets) on Eth interface, iface. 
   ### Prints header and data info for a single channel (0 < chan < 1016)    
   def stream_UDP(self, roach, iface, chan, out_data):
-      print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+      print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
       old_dowrite = 0
       if roach == None:
-          print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +': no roach'
+          print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +': no roach')
           sock_fd = self.sim_socket(iface)
       else:
           sock_fd = self.init_socket(iface)
@@ -134,7 +134,7 @@ class Gbe():
       self.dodoing = True
       while self.dodone == 0:
         if(old_dowrite != self.dowrite):
-          print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +' self.dowrite = ' +str(self.dowrite)
+          print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +' self.dowrite = ' +str(self.dowrite))
         old_dowrite = self.dowrite
         packet_data = self.wait_for_data(sock_fd)
         if USE_NC:
@@ -147,7 +147,7 @@ class Gbe():
               #self.bin_file.write(packet_data[:self.header_len])
               #self.bin_file.write(packet_data[-self.nc_data_len:])
       sock_fd.close()
-      print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name+' done'
+      print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name+' done')
       self.dodoing = False
       return
 
@@ -158,7 +158,7 @@ class Gbe():
         saddr = sock.inet_ntoa(saddr) # source addr
         ### Filter on source IP ###
         if (False and saddr != self.roach_saddr):
-          print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +' saddr = ' +saddr +' roach_saddr = ' +self.roach_saddr
+          print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +' saddr = ' +saddr +' roach_saddr = ' +self.roach_saddr)
           return
       else:
         saddr = '127.0.0.1'
@@ -169,12 +169,12 @@ class Gbe():
           daddr = np.fromstring(header[30:34], dtype = "<I")
           daddr = sock.inet_ntoa(daddr) # dest addr
           smac = np.fromstring(header[6:12], dtype = "<B")
-          smac = struct.unpack("BBBBBB", smac)
+          #smac = struct.unpack(b'BBBBBB', smac)
           src = np.fromstring(header[34:36], dtype = ">H")[0]
           dst = np.fromstring(header[36:38], dtype = ">H")[0]
         else:
           daddr = '127.0.0.1'
-          smac = struct.unpack("BBBBBB", '000000')
+          smac = struct.unpack(b'BBBBBB', b'000000')
           src = 60001
           dst = 60001
         
@@ -215,8 +215,8 @@ class Gbe():
       ### Check for missing packets ###
       if self.previous_count > 0:
         if (packet_count[0] - self.previous_count != 1):
-      	  print self.index, 'missing packets', self.previous_count, packet_count[0]-self.previous_count
-      	  #break
+          print(self.index, 'missing packets', self.previous_count, packet_count[0]-self.previous_count)
+          #break
       self.previous_count = packet_count[0]
       if USE_NC:
         chan = 0
@@ -232,22 +232,22 @@ class Gbe():
           #self.doprint = True
         if self.doprint:
             self.doprint = False
-            print
-            print "Roach chan =", chan
-            print "Packet length =", len(packet_data)
-            print "src MAC = %x:%x:%x:%x:%x:%x" % smac
-            print "src IP : src port =", saddr,":", src
-            print "dst IP : dst port  =", daddr,":", dst
-            print "Roach chksum =", roach_checksum[0]
-            print "Time sec =", time.time()
-            print "PPS sec =", sec_ts[0]
-            print "PPS msec =", fine_ts[0]
-            print "Packet count =", packet_count[0]
-            print "I (unscaled) =", I
-            print "Q (unscaled) =", Q
+            print()
+            print("Roach chan =", chan)
+            print("Packet length =", len(packet_data))
+            print("src MAC = %x:%x:%x:%x:%x:%x" % smac)
+            print("src IP : src port =", saddr,":", src)
+            print("dst IP : dst port  =", daddr,":", dst)
+            print("Roach chksum =", roach_checksum[0])
+            print("Time sec =", time.time())
+            print("PPS sec =", sec_ts[0])
+            print("PPS msec =", fine_ts[0])
+            print("Packet count =", packet_count[0])
+            print("I (unscaled) =", I)
+            print("Q (unscaled) =", Q)
 
   def init(self):
-      print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+      print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
       self.nc_lock = threading.Lock()
       self.dowrite = 0
       self.dodone = 0
@@ -255,7 +255,7 @@ class Gbe():
       self.count = 0
       self.nc_file = None
       self.daemon = True
-      print 'data len', self.nc_data_len
+      print('data len', self.nc_data_len)
 
   def open_nc(self, obsNum):
       self.nc_lock.acquire()
@@ -265,7 +265,7 @@ class Gbe():
         zlib = False
         complevel = 1
         filename = '%s/r%d_%s.nc'%(dataDir, self.index, obsNum)
-        print 'open', filename
+        print('open', filename)
         self.nc_file = Dataset(filename, 'w')
         self.nc_file.createDimension('data_len', self.nc_data_len/4)
         self.nc_file.createDimension('dim_one', 1)
@@ -279,14 +279,14 @@ class Gbe():
         self.nc_msec = self.nc_file.createVariable('Data.Toltec.Msec',np.dtype('float').char,('time', 'dim_one'),zlib=zlib,complevel=complevel)
         self.nc_msec_clip = self.nc_file.createVariable('Data.Toltec.MsecClip',np.dtype('float').char,('time', 'dim_one'),zlib=zlib,complevel=complevel)
         self.nc_packet_count = self.nc_file.createVariable('Data.Toltec.Count',np.dtype('int32').char,('time', 'dim_one'),zlib=zlib,complevel=complevel)
-        print 'opened nc file'
+        print('opened nc file')
       else:
         self.bin_file = open('%s/r%d_%s.bin'%(dataDir, self.index, obsNum), 'w', 0)
       self.nc_lock.release()
       return True
 
   def close_nc(self):
-      print 'close nc file'
+      print('close nc file')
       if self.nc_file == None:
         return False
       self.nc_lock.acquire()
@@ -298,14 +298,14 @@ class Gbe():
       return True
 
   def start_obs(self):
-      print 'start obs'
+      print('start obs')
       if self.nc_file == None:
         return False
       self.dowrite = 1
       return True
 
   def stop_obs(self):
-      print 'stop obs'
+      print('stop obs')
       if self.nc_file == None:
         return False
       self.dowrite = 0
@@ -317,7 +317,7 @@ class Gbe():
           time.sleep(0.1)
 
   def run_test(self):
-      print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name
+      print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name)
       self.doprint = True
       old_dowrite = 0
       self.count = 0
@@ -325,7 +325,7 @@ class Gbe():
       self.dodoing = True
       while self.dodone == 0:
           if(old_dowrite != self.dowrite):
-              print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +' self.dowrite = ' +str(self.dowrite)
+              print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name +' self.dowrite = ' +str(self.dowrite))
               old_dowrite = self.dowrite
           data = np.zeros((self.data_len/4), dtype='<i')
           iii = np.iinfo('<i')
@@ -348,7 +348,7 @@ class Gbe():
           if self.count > 29270:
             self.dodone = 1
           #time.sleep(0.5/Gbe.data_rate)
-      print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name+' done'
+      print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name+' done')
       self.dodoing = False
       return
 
