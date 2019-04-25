@@ -38,9 +38,9 @@ int pps_out_ptr = 0;
 int quad_out_ptr = 0;
 
 // readout flags
-int pps_low_flag, pps_up_flag;
-int sensor_low_flag, sensor_up_flag;
-int quad_low_flag, quad_up_flag;
+int pps_bot_flag, pps_top_flag;
+int sensor_bot_flag, sensor_top_flag;
+int quad_bot_flag, quad_top_flag;
 
 void ConfigureSensorPower(int board, ini_t *config)
 {
@@ -261,15 +261,28 @@ void *PPSThread(void *input){
     
             pps_in_ptr++;
 
+            // if bottom is full
             if (pps_in_ptr == BUFFER_LENGTH / 2) {
-                // FLIP THE FLAG THAT BOTTOM IS DONE
+                // if bottom flag was NOT flipped back by 
+                // the read head, note this
+                if (pps_bot_flag == 1) {
+                    printf("PPS-BOTTOM: Read did not finish and was overwritten.");
+                }
+                pps_bot_flag = 1;
                 printf("BOTTOM IS READY");
+            // if top is full
             } else if (pps_in_ptr == BUFFER_LENGTH) {
-                // FLIP THE FLAG THAT TOP IS DONE
+                // if top flag was NOT flipped back by 
+                // the read head, note this
+                if (pps_top_flag == 1) {
+                    printf("PPS-TOP: Read did not finish and was overwritten.");
+                }
+                // inform ready to be read
+                pps_top_flag = 1;
                 printf("TOP IS READY");
             }
             
-            // reset write in head to start
+            // reset write-in head to start
             if (pps_in_ptr > BUFFER_LENGTH - 1){
                 pps_in_ptr = 0;
                 if (debug == 1){
@@ -277,8 +290,6 @@ void *PPSThread(void *input){
                 }
             }
         }
-        
-        
         
         // wait designated time
         nanosleep(&pps_sleep_time, NULL);
@@ -347,11 +358,24 @@ void *SensorThread(void *input){
             // next spot in the buffer
             sensor_in_ptr++;
 
+            // if bottom is full
             if (sensor_in_ptr == BUFFER_LENGTH / 2) {
-                // FLIP THE FLAG THAT BOTTOM IS DONE
+                // if bottom flag was NOT flipped back by 
+                // the read head, note this
+                if (sensor_bot_flag == 1) {
+                    printf("SENSOR-BOTTOM: Read did not finish and was overwritten.");
+                }
+                sensor_bot_flag = 1;
                 printf("BOTTOM IS READY");
+            // if top is full
             } else if (sensor_in_ptr == BUFFER_LENGTH) {
-                // FLIP THE FLAG THAT TOP IS DONE
+                // if top flag was NOT flipped back by 
+                // the read head, note this
+                if (sensor_top_flag == 1) {
+                    printf("SENSOR-TOP: Read did not finish and was overwritten.");
+                }
+                // inform ready to be read
+                sensor_top_flag = 1;
                 printf("TOP IS READY");
             }
 
@@ -378,7 +402,7 @@ void SystemCloseHandler(int sig)
 
     // power shut off
     S826_SystemClose();
-    printf("System Closed!\n");
+    printf("Power Shutoff + System Closed!\n");
     exit(0);
 }
 
@@ -468,64 +492,25 @@ void *QuadThread(void *input){
 }
 
 void *BufferToDisk(void *input){
-    
-    int lower_unread = 1;
-    int upper_unread = 0;
 
     while (1) {
-
-        if (pps_in_ptr < BUFFER_LENGTH/2){
-            printf("Updating Lower Half...\n");
-            
-            printf("Reading Upper Half if unread:\n");
-            if (upper_unread == 1) {
-                int pps_out_ptr = BUFFER_LENGTH/2;
-                while (pps_out_ptr != BUFFER_LENGTH - 1){
-                    printf("PPS: Read Position = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
-                            pps_out_ptr, pps_id[pps_out_ptr], pps_cpu_time[pps_out_ptr], pps_card_time[pps_out_ptr]
-                    );
-                    pps_out_ptr++;
-                }
-                upper_unread = 1;   
-            }
-        } else if (pps_in_ptr >= BUFFER_LENGTH/2 && pps_out_ptr != BUFFER_LENGTH/2 - 1 && 1 == 2) {
-            printf("Updating Upper Half\n");        
-
-            // read the lower half // unless we just read it
-            int pps_out_ptr = 0;
-            while (pps_out_ptr <  BUFFER_LENGTH/2 && pps_out_ptr != BUFFER_LENGTH/2){
-                printf("PPS: Read Position = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
-                        pps_out_ptr, pps_id[pps_out_ptr], pps_cpu_time[pps_out_ptr], pps_card_time[pps_out_ptr]
-                );
-                pps_out_ptr++;
-            }
+        // if the bottom is ready 
+        if (pps_bot_flag == 1) {
+            // read the bottom
+            pps_bot_flag = 0;
         }
-/*
-        if (pps_in_ptr >= 0 && pps_in_ptr < BUFFER_LENGTH/2){
-            int pps_out_ptr = BUFFER_LENGTH/2;
-            printf("PPS: Read Position = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
-                    pps_out_ptr, pps_id[pps_out_ptr], pps_cpu_time[pps_out_ptr], pps_card_time[pps_out_ptr]
-            );
-            while (pps_out_ptr < BUFFER_LENGTH){
-                printf("PPS: Read Position = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
-                    pps_out_ptr, pps_id[pps_out_ptr], pps_cpu_time[pps_out_ptr], pps_card_time[pps_out_ptr]
-                );  
 
-                // next data point
-                pps_out_ptr++;  
-            }
+        // if the top is ready 
+        if (pps_top_flag == 1){
+            // read the top
+            pps_top_flag = 0;
         }
-*/          
-
-
-        printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
-            sensor_in_ptr, pps_in_ptr, quad_in_ptr      
-        );  
-        sleep(1);
     }
-    return 0;
 
-    // if ptr_in between 0 and BUFFER/2
+    return 0;
+    printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
+        sensor_in_ptr, pps_in_ptr, quad_in_ptr      
+    );
 }
 
 
