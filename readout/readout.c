@@ -467,10 +467,10 @@ void *QuadThread(void *input){
 
             if (quad_in_ptr == QUAD_BUFFER_LENGTH / 2) {
                 // FLIP THE FLAG THAT BOTTOM IS DONE
-                printf("Quad: BOTTOM IS READY \n");
+                printf("Quad: BOTTOM IS FULL \n");
             } else if (quad_in_ptr == QUAD_BUFFER_LENGTH - 1) {
                 // FLIP THE FLAG THAT TOP IS DONE
-                printf("Quad: TOP IS READY \n");
+                printf("Quad: TOP IS FULL \n");
             }
 
             // reset write-in head to start
@@ -495,15 +495,25 @@ void *BufferToDisk(void *input){
 
     while (1) {
         // if the bottom is ready 
-        if (pps_bot_flag == 1) {
+        if (quad_bot_flag == 1) {
             // read the bottom
-            pps_bot_flag = 0;
+            for (i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {
+                printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
+                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]);
+            }
+            printf("Quad: BOTTOM IS EMPTY \n");
+            quad_bot_flag = 0;
         }
 
         // if the top is ready 
-        if (pps_top_flag == 1){
+        if (quad_top_flag == 1){
             // read the top
-            pps_top_flag = 0;
+            for (i = 0; i < QUAD_BUFFER_LENGTH; i++) {
+                printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
+                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]);
+            }
+            printf("Quad: TOP IS EMPTY \n");
+            quad_top_flag = 0;
         }
     }
 
