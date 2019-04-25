@@ -467,11 +467,11 @@ void *QuadThread(void *input){
 
             if (quad_in_ptr == QUAD_BUFFER_LENGTH / 2) {
                 // FLIP THE FLAG THAT BOTTOM IS DONE
-                quad_bot_flag == 1
+                quad_bot_flag == 1;
                 printf("Quad: BOTTOM IS FULL \n");
             } else if (quad_in_ptr == QUAD_BUFFER_LENGTH - 1) {
                 // FLIP THE FLAG THAT TOP IS DONE
-                quad_top_flag == 1
+                quad_top_flag == 1;
                 printf("Quad: TOP IS FULL \n");
             }
 
