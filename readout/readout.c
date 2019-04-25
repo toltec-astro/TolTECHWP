@@ -467,10 +467,10 @@ void *QuadThread(void *input){
 
             if (quad_in_ptr == QUAD_BUFFER_LENGTH / 2) {
                 // FLIP THE FLAG THAT BOTTOM IS DONE
-                printf("BOTTOM IS READY");
+                printf("BOTTOM IS READY \n");
             } else if (quad_in_ptr == QUAD_BUFFER_LENGTH - 1) {
                 // FLIP THE FLAG THAT TOP IS DONE
-                printf("TOP IS READY");
+                printf("TOP IS READY \n");
             }
 
             // reset write-in head to start
