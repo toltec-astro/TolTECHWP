@@ -37,6 +37,11 @@ int sensor_out_ptr = 0;
 int pps_out_ptr = 0;
 int quad_out_ptr = 0;
 
+// readout flags
+int pps_low_flag, pps_up_flag;
+int sensor_low_flag, sensor_up_flag;
+int quad_low_flag, quad_up_flag;
+
 void ConfigureSensorPower(int board, ini_t *config)
 {
     // get voltage information
@@ -255,6 +260,14 @@ void *PPSThread(void *input){
             }
     
             pps_in_ptr++;
+
+            if (pps_in_ptr == BUFFER_LENGTH / 2) {
+                // FLIP THE FLAG THAT BOTTOM IS DONE
+                printf("BOTTOM IS READY");
+            } else if (pps_in_ptr == BUFFER_LENGTH) {
+                // FLIP THE FLAG THAT TOP IS DONE
+                printf("TOP IS READY");
+            }
             
             // reset write in head to start
             if (pps_in_ptr > BUFFER_LENGTH - 1){
@@ -297,8 +310,6 @@ void *SensorThread(void *input){
     // configure sensor data
     ConfigureSensors(board, ((struct p_args*)input)->config);
 
-    
-
     // read in the interval for sensors
     char *sensor_interval = ini_get(((struct p_args*)input)->config, "intervals", "sensor_intervals");
     struct timespec sensor_wait_time;
@@ -316,8 +327,9 @@ void *SensorThread(void *input){
         // loop through sensors 
         for (slot = 0; slot < sens_cnt; slot++) 
         {
-            adcdata = (int)((slotval[slot] & 0xFFFF));
-            burstnum = ((unsigned int)slotval[slot] >> 24);
+            // read in data (voltage in volts)
+            // adcdata = (int)((slotval[slot] & 0xFFFF));
+            // burstnum = ((unsigned int)slotval[slot] >> 24);
             voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
 
             // update buffer
@@ -325,13 +337,23 @@ void *SensorThread(void *input){
             sensor_cpu_time[sensor_in_ptr] = time(NULL); 
             sensor_voltage[sensor_in_ptr] = voltage;
             
+            // print out data if debug
             if (debug == 1) {
                 printf("Sensors: %i: \t Time: %i \t Slot: %d \t Voltage: %f \n", sensor_in_ptr, 
                     sensor_cpu_time[sensor_in_ptr], sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]
                 );
             }
 
+            // next spot in the buffer
             sensor_in_ptr++;
+
+            if (sensor_in_ptr == BUFFER_LENGTH / 2) {
+                // FLIP THE FLAG THAT BOTTOM IS DONE
+                printf("BOTTOM IS READY");
+            } else if (sensor_in_ptr == BUFFER_LENGTH) {
+                // FLIP THE FLAG THAT TOP IS DONE
+                printf("TOP IS READY");
+            }
 
             // reset write in head to start
             if (sensor_in_ptr > BUFFER_LENGTH - 1){
@@ -418,6 +440,14 @@ void *QuadThread(void *input){
             
             // increase counter
             quad_in_ptr++;
+
+            if (quad_in_ptr == QUAD_BUFFER_LENGTH / 2) {
+                // FLIP THE FLAG THAT BOTTOM IS DONE
+                printf("BOTTOM IS READY");
+            } else if (quad_in_ptr == QUAD_BUFFER_LENGTH) {
+                // FLIP THE FLAG THAT TOP IS DONE
+                printf("TOP IS READY");
+            }
 
             // reset write-in head to start
             if (quad_in_ptr > QUAD_BUFFER_LENGTH - 1){
