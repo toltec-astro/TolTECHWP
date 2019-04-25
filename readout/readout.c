@@ -497,7 +497,7 @@ void *BufferToDisk(void *input){
         // if the bottom is ready 
         if (quad_bot_flag == 1) {
             // read the bottom
-            for (i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {
+            for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {
                 printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
                        i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]);
             }
@@ -508,7 +508,7 @@ void *BufferToDisk(void *input){
         // if the top is ready 
         if (quad_top_flag == 1){
             // read the top
-            for (i = 0; i < QUAD_BUFFER_LENGTH; i++) {
+            for (int i = 0; i < QUAD_BUFFER_LENGTH; i++) {
                 printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
                        i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]);
             }
