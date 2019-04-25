@@ -1,4 +1,3 @@
-
 #define S826_CM_XS_CH0         2
 #define QUAD_BUFFER_LENGTH     8000
 #define BUFFER_LENGTH          20
@@ -32,15 +31,11 @@ int quad_counter[QUAD_BUFFER_LENGTH];
 int quad_cpu_time[QUAD_BUFFER_LENGTH];
 float quad_card_time[QUAD_BUFFER_LENGTH];
 
-// readout parameters
-int sensor_out_ptr = 0;
-int pps_out_ptr = 0;
-int quad_out_ptr = 0;
-
 // readout flags
 int pps_bot_flag, pps_top_flag;
 int sensor_bot_flag, sensor_top_flag;
-int quad_bot_flag, quad_top_flag;
+int quad_bot_flag = 0; 
+int quad_top_flag = 0;
 
 void ConfigureSensorPower(int board, ini_t *config)
 {
@@ -451,6 +446,10 @@ void *QuadThread(void *input){
         errcode = S826_CounterSnapshotRead(board, countquad, &counts, &tstamp, &reason, 0);    
         // read until you can't anymore! FIFO style.
         while (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
+
+            if (errcode == S826_ERR_FIFOOVERFLOW) {
+                printf("ERROR OVERFLOW \n");            
+            };
         
             // store     
             quad_counter[quad_in_ptr] = counts;
@@ -468,11 +467,11 @@ void *QuadThread(void *input){
             if (quad_in_ptr == QUAD_BUFFER_LENGTH / 2) {
                 // FLIP THE FLAG THAT BOTTOM IS DONE
                 quad_bot_flag == 1;
-                printf("Quad: BOTTOM IS FULL \n");
+                printf("Quad: BOTTOM IS FULL %i \n", quad_bot_flag);
             } else if (quad_in_ptr == QUAD_BUFFER_LENGTH - 1) {
                 // FLIP THE FLAG THAT TOP IS DONE
                 quad_top_flag == 1;
-                printf("Quad: TOP IS FULL \n");
+                printf("Quad: TOP IS FULL %i \n", quad_top_flag);
             }
 
             // reset write-in head to start
@@ -495,8 +494,35 @@ void *QuadThread(void *input){
 
 void *BufferToDisk(void *input){
 
+    int cycle = 0;
+
     while (1) {
-        // if the bottom is ready 
+        // if the bottom is ready  printf("Quad Bottom: %i, Quad Top: %i \n", quad_bot_flag, quad_top_flag);
+        
+    
+        if ((quad_in_ptr > QUAD_BUFFER_LENGTH/2) && (cycle == 0)){
+            // read the bottom
+            for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {
+//                printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
+//                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]);
+                continue;            
+            }
+            cycle = 1;
+            printf("Quad: BOTTOM IS EMPTY \n");
+        }
+
+        if ((quad_in_ptr < QUAD_BUFFER_LENGTH/2) && (cycle == 1)){
+            // read the bottom
+            for (int i = QUAD_BUFFER_LENGTH/2; i < QUAD_BUFFER_LENGTH; i++) {
+//                printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
+//                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]);
+                continue;
+            }
+            cycle = 0;
+            printf("Quad: TOP IS EMPTY \n");
+        }
+
+        /*
         if (quad_bot_flag == 1) {
             // read the bottom
             for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {
@@ -506,8 +532,6 @@ void *BufferToDisk(void *input){
             printf("Quad: BOTTOM IS EMPTY \n");
             quad_bot_flag = 0;
         }
-
-        // if the top is ready 
         if (quad_top_flag == 1){
             // read the top
             for (int i = 0; i < QUAD_BUFFER_LENGTH; i++) {
@@ -517,12 +541,29 @@ void *BufferToDisk(void *input){
             printf("Quad: TOP IS EMPTY \n");
             quad_top_flag = 0;
         }
+        */
     }
-
+    
     return 0;
     printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
         sensor_in_ptr, pps_in_ptr, quad_in_ptr      
     );
+}
+
+
+void *DebugThread(void *input){
+
+    int cycle = 0;
+
+    while (1) {
+        printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
+            sensor_in_ptr, pps_in_ptr, quad_in_ptr      
+        );
+        sleep(1);
+    }
+    
+    return 0;
+
 }
 
 
@@ -553,7 +594,7 @@ int main(int argc, char **argv){
     ConfigureSensorPower(board, config);
 
     // define threads.
-    pthread_t quad_thread, pps_thread, sensor_thread, write_thread;
+    pthread_t quad_thread, pps_thread, sensor_thread, write_thread, debug_thread;
     
     // start reading threads
     pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
@@ -561,7 +602,11 @@ int main(int argc, char **argv){
     pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);   
 
     // start the writing threads
-    pthread_create(&write_thread, NULL, BufferToDisk, (void *)thread_args);    
+    pthread_create(&write_thread, NULL, BufferToDisk, (void *)thread_args);
+
+
+    // debug thread
+    pthread_create(&debug_thread, NULL, DebugThread, (void *)thread_args);    
 
     // join back to main.
     pthread_join(quad_thread, NULL);
@@ -576,7 +621,6 @@ int main(int argc, char **argv){
 /*
 gcc -D_LINUX -Wall -Wextra -DOSTYPE_LINUX -c -no-pie readout.c ../vend/ini/ini.c
 gcc -D_LINUX readout.o ini.o -no-pie -o readout -L ../vend/sdk_826_linux_3.3.11/demo -l826_64 -lpthread
-
 gcc -D_LINUX -Wall -Wextra -DOSTYPE_LINUX -c -no-pie readout_serial.c ../vend/ini/ini.c
 gcc -D_LINUX readout_serial.o ini.o -no-pie -o readout_serial -L ../vend/sdk_826_linux_3.3.11/demo -l826_64 -lpthread
 */
