@@ -262,25 +262,25 @@ void *PPSThread(void *input){
             pps_in_ptr++;
 
             // if bottom is full
-            if (pps_in_ptr == BUFFER_LENGTH / 2) {
-                // if bottom flag was NOT flipped back by 
-                // the read head, note this
-                if (pps_bot_flag == 1) {
-                    printf("PPS-BOTTOM: Read did not finish and was overwritten.");
-                }
-                pps_bot_flag = 1;
-                printf("BOTTOM IS READY");
-            // if top is full
-            } else if (pps_in_ptr == BUFFER_LENGTH) {
-                // if top flag was NOT flipped back by 
-                // the read head, note this
-                if (pps_top_flag == 1) {
-                    printf("PPS-TOP: Read did not finish and was overwritten.");
-                }
-                // inform ready to be read
-                pps_top_flag = 1;
-                printf("TOP IS READY");
-            }
+            // if (pps_in_ptr == BUFFER_LENGTH / 2) {
+            //     // if bottom flag was NOT flipped back by 
+            //     // the read head, note this
+            //     if (pps_bot_flag == 1) {
+            //         printf("PPS-BOTTOM: Read did not finish and was overwritten.");
+            //     }
+            //     pps_bot_flag = 1;
+            //     printf("BOTTOM IS READY");
+            // // if top is full
+            // } else if (pps_in_ptr == BUFFER_LENGTH) {
+            //     // if top flag was NOT flipped back by 
+            //     // the read head, note this
+            //     if (pps_top_flag == 1) {
+            //         printf("PPS-TOP: Read did not finish and was overwritten.");
+            //     }
+            //     // inform ready to be read
+            //     pps_top_flag = 1;
+            //     printf("TOP IS READY");
+            // }
             
             // reset write-in head to start
             if (pps_in_ptr > BUFFER_LENGTH - 1){
@@ -359,25 +359,25 @@ void *SensorThread(void *input){
             sensor_in_ptr++;
 
             // if bottom is full
-            if (sensor_in_ptr == BUFFER_LENGTH / 2) {
-                // if bottom flag was NOT flipped back by 
-                // the read head, note this
-                if (sensor_bot_flag == 1) {
-                    printf("SENSOR-BOTTOM: Read did not finish and was overwritten.");
-                }
-                sensor_bot_flag = 1;
-                printf("BOTTOM IS READY");
-            // if top is full
-            } else if (sensor_in_ptr == BUFFER_LENGTH) {
-                // if top flag was NOT flipped back by 
-                // the read head, note this
-                if (sensor_top_flag == 1) {
-                    printf("SENSOR-TOP: Read did not finish and was overwritten.");
-                }
-                // inform ready to be read
-                sensor_top_flag = 1;
-                printf("TOP IS READY");
-            }
+            // if (sensor_in_ptr == BUFFER_LENGTH / 2) {
+            //     // if bottom flag was NOT flipped back by 
+            //     // the read head, note this
+            //     if (sensor_bot_flag == 1) {
+            //         printf("SENSOR-BOTTOM: Read did not finish and was overwritten.");
+            //     }
+            //     sensor_bot_flag = 1;
+            //     printf("BOTTOM IS READY");
+            // // if top is full
+            // } else if (sensor_in_ptr == BUFFER_LENGTH) {
+            //     // if top flag was NOT flipped back by 
+            //     // the read head, note this
+            //     if (sensor_top_flag == 1) {
+            //         printf("SENSOR-TOP: Read did not finish and was overwritten.");
+            //     }
+            //     // inform ready to be read
+            //     sensor_top_flag = 1;
+            //     printf("TOP IS READY");
+            // }
 
             // reset write in head to start
             if (sensor_in_ptr > BUFFER_LENGTH - 1){
@@ -468,7 +468,7 @@ void *QuadThread(void *input){
             if (quad_in_ptr == QUAD_BUFFER_LENGTH / 2) {
                 // FLIP THE FLAG THAT BOTTOM IS DONE
                 printf("BOTTOM IS READY");
-            } else if (quad_in_ptr == QUAD_BUFFER_LENGTH) {
+            } else if (quad_in_ptr == QUAD_BUFFER_LENGTH - 1) {
                 // FLIP THE FLAG THAT TOP IS DONE
                 printf("TOP IS READY");
             }
