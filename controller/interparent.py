@@ -66,7 +66,7 @@ class InterParent():
         self.agents[name.strip().lower()] = aqueue
         
     def sendtask(self, task):
-        """ Forwards tasks in the format "Agent: Task"
+        """ Forwards tasks in the format "Agent Task"
         """
         # Get agent and task
         try:
