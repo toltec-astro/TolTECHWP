@@ -13,12 +13,12 @@ class ToltecSim():
         pass
     
     def init(self, dest_host, dest_port):
-        print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name, dest_host, dest_host, dest_port
+        print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name, dest_host, dest_host, dest_port)
         self.index = dest_port-100*(int)(dest_port/100)
         self.dest_host = dest_host
         self.dest_port = dest_port
         self.header =  bytearray([1]*(Gbe.header_len))
-        self.data = np.zeros((Gbe.data_len/4), dtype='<i')
+        self.data = np.zeros(int(Gbe.data_len/4), dtype='<i')
         for i in range(len(self.data)):
             self.data[i] = i
             
@@ -31,15 +31,15 @@ class ToltecSim():
                 self.beg = Gbe.header_len # will always be this way
                 self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             
-            print 'sim socket created to', self.dest_host, self.dest_port
-        except socket.error, msg :
-            print 'Failed to create socket. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
+            print('sim socket created to', self.dest_host, self.dest_port)
+        except socket.error as msg :
+            print('Failed to create socket. Error Code : ' + str(msg[0]) + ' Message ' + msg[1])
             self.s = None
             return False
 
         self.sndbuflen = len(self.header) +  len(self.data.tobytes())
         self.s.setsockopt(socket.SOL_SOCKET,socket.SO_SNDBUF,self.sndbuflen)
-        print self.sndbuflen, len(self.data.tobytes()), Gbe.data_rate, 1./Gbe.data_rate
+        print(self.sndbuflen, len(self.data.tobytes()), Gbe.data_rate, 1./Gbe.data_rate)
 
         return True
 
@@ -102,7 +102,7 @@ class ToltecSim():
             #print t, count, sec, msec
             time.sleep(1./Gbe.data_rate/2.)
 
-        print os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name+' done'
+        print(os.path.basename(__file__)+'::'+sys._getframe().f_code.co_name+' done')
         self.s.close()
 
     def done_sim(self):
@@ -112,10 +112,10 @@ def main(udp_host, udp_port):
   toltecSim = ToltecSim()
   if toltecSim.init(udp_host, udp_port):
     toltecSim.loop()
-  print 'ToltecSim done'
+  print('ToltecSim done')
 
 if __name__ == '__main__':
     if(len(sys.argv) < 3):
-        print "usage: ", sys.argv[0], "udp_host udp_port"
+        print("usage: ", sys.argv[0], "udp_host udp_port")
         exit()
     main((sys.argv[1]), int(sys.argv[2]))
