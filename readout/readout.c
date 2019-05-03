@@ -31,12 +31,6 @@ int quad_counter[QUAD_BUFFER_LENGTH];
 int quad_cpu_time[QUAD_BUFFER_LENGTH];
 float quad_card_time[QUAD_BUFFER_LENGTH];
 
-// readout flags
-int pps_bot_flag, pps_top_flag;
-int sensor_bot_flag, sensor_top_flag;
-int quad_bot_flag = 0; 
-int quad_top_flag = 0;
-
 void ConfigureSensorPower(int board, ini_t *config)
 {
     // get voltage information
@@ -280,9 +274,9 @@ void *PPSThread(void *input){
             // reset write-in head to start
             if (pps_in_ptr > BUFFER_LENGTH - 1){
                 pps_in_ptr = 0;
-                if (debug == 1){
-                    printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
-                }
+                //if (debug == 1){
+                //    printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+                //}
             }
         }
         
@@ -304,7 +298,8 @@ void *SensorThread(void *input){
     // is there a programmatic way to grab this?
     // !(0xFFFF<< N)
     // uint slotlist = 0x0007;
-    uint slotlist = !(0xFFFF << sens_cnt);
+    //uint slotlist = !(0xFFFF << sens_cnt);
+    uint slotlist = 0x0007;
 
     int errcode;             // errcode 
     int slotval[16];         // buffer must be sized for 16 slots
@@ -334,8 +329,8 @@ void *SensorThread(void *input){
         for (slot = 0; slot < sens_cnt; slot++) 
         {
             // read in data (voltage in volts)
-            // adcdata = (int)((slotval[slot] & 0xFFFF));
-            // burstnum = ((unsigned int)slotval[slot] >> 24);
+            adcdata = (int)((slotval[slot] & 0xFFFF));
+            burstnum = ((unsigned int)slotval[slot] >> 24);
             voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
 
             // update buffer
@@ -345,7 +340,7 @@ void *SensorThread(void *input){
             
             // print out data if debug
             if (debug == 1) {
-                printf("Sensors: %i: \t Time: %i \t Slot: %d \t Voltage: %f \n", sensor_in_ptr, 
+                printf("Sensors: %i \t Time: %i \t Slot: %d \t Voltage: %f \n", sensor_in_ptr, 
                     sensor_cpu_time[sensor_in_ptr], sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]
                 );
             }
@@ -448,7 +443,7 @@ void *QuadThread(void *input){
         while (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
 
             if (errcode == S826_ERR_FIFOOVERFLOW) {
-                printf("ERROR OVERFLOW \n");            
+                printf("Quadrature Counter: Error Overflow Detected.\n");            
             };
         
             // store     
@@ -463,16 +458,6 @@ void *QuadThread(void *input){
             
             // increase counter
             quad_in_ptr++;
-
-            if (quad_in_ptr == QUAD_BUFFER_LENGTH / 2) {
-                // FLIP THE FLAG THAT BOTTOM IS DONE
-                quad_bot_flag == 1;
-                printf("Quad: BOTTOM IS FULL %i \n", quad_bot_flag);
-            } else if (quad_in_ptr == QUAD_BUFFER_LENGTH - 1) {
-                // FLIP THE FLAG THAT TOP IS DONE
-                quad_top_flag == 1;
-                printf("Quad: TOP IS FULL %i \n", quad_top_flag);
-            }
 
             // reset write-in head to start
             if (quad_in_ptr > QUAD_BUFFER_LENGTH - 1){
@@ -492,68 +477,128 @@ void *QuadThread(void *input){
     return 0;
 }
 
-void *BufferToDisk(void *input){
+void *QuadBufferToDisk(void *input){
+
+    char txt_out_buf[500];
+    FILE *outfile;
+    outfile = fopen("quad_test.txt", "wt");
 
     int cycle = 0;
 
     while (1) {
         // if the bottom is ready  printf("Quad Bottom: %i, Quad Top: %i \n", quad_bot_flag, quad_top_flag);
         
-    
+        // read the bottom
         if ((quad_in_ptr > QUAD_BUFFER_LENGTH/2) && (cycle == 0)){
-            // read the bottom
+            
             for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {
-//                printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
-//                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]);
+                sprintf(txt_out_buf, "Quad: Buffer ID = %i,\t Count = %d,\t CardTime = %.3f,\t CPUTime = %i \n", 
+                      i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
+                );
+
+                fprintf(outfile, "%s", txt_out_buf);
                 continue;            
             }
             cycle = 1;
-            printf("Quad: BOTTOM IS EMPTY \n");
         }
 
+        // read the top
         if ((quad_in_ptr < QUAD_BUFFER_LENGTH/2) && (cycle == 1)){
-            // read the bottom
             for (int i = QUAD_BUFFER_LENGTH/2; i < QUAD_BUFFER_LENGTH; i++) {
-//                printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
-//                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]);
+                sprintf(txt_out_buf, "Quad: Buffer ID = %i,\t Count = %d,\t CardTime = %.3f,\t CPUTime = %i \n", 
+                      i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
+                );
+                fprintf(outfile, "%s", txt_out_buf);
                 continue;
             }
             cycle = 0;
-            printf("Quad: TOP IS EMPTY \n");
+        }
+    } 
+    return 0;
+}
+
+
+void *SensorBufferToDisk(void *input){
+
+    char txt_out_buf[500];
+    FILE *outfile;
+    outfile = fopen("sensor_test.txt", "wt");
+
+    int cycle = 0;
+
+    while (1) {
+        
+        // read the bottom
+        if ((sensor_in_ptr > BUFFER_LENGTH/2) && (cycle == 0)){
+            
+            for (int i = 0; i < BUFFER_LENGTH/2; i++) {
+                sprintf(txt_out_buf, "Sensors: %i: \t Time: %i \t Slot: %d \t Voltage: %f \n", 
+                      i, sensor_cpu_time[i], sensor_id[i], sensor_voltage[i]
+                );
+                fprintf(outfile, "%s", txt_out_buf);
+                continue;            
+            }
+            cycle = 1;
         }
 
-        /*
-        if (quad_bot_flag == 1) {
-            // read the bottom
-            for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {
-                printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
-                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]);
+        // read the top
+        if ((sensor_in_ptr < BUFFER_LENGTH/2) && (cycle == 1)){
+            for (int i = BUFFER_LENGTH/2; i < BUFFER_LENGTH; i++) {
+                sprintf(txt_out_buf, "Sensors: %i: \t Time: %i \t Slot: %d \t Voltage: %f \n", 
+                      i, sensor_cpu_time[i], sensor_id[i], sensor_voltage[i]
+                );
+                fprintf(outfile, "%s", txt_out_buf);
+                continue;
             }
-            printf("Quad: BOTTOM IS EMPTY \n");
-            quad_bot_flag = 0;
+            cycle = 0;
         }
-        if (quad_top_flag == 1){
-            // read the top
-            for (int i = 0; i < QUAD_BUFFER_LENGTH; i++) {
-                printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
-                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]);
-            }
-            printf("Quad: TOP IS EMPTY \n");
-            quad_top_flag = 0;
-        }
-        */
-    }
-    
+        sleep(3);
+    } 
     return 0;
-    printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
-        sensor_in_ptr, pps_in_ptr, quad_in_ptr      
-    );
+}
+
+void *PPSBufferToDisk(void *input){
+
+    char txt_out_buf[500];
+    FILE *outfile;
+    outfile = fopen("pps_test.txt", "wt");
+
+    int cycle = 0;
+
+    while (1) {
+        
+        // read the bottom
+        if ((pps_in_ptr > BUFFER_LENGTH/2) && (cycle == 0)){
+            
+            for (int i = 0; i < BUFFER_LENGTH/2; i++) {
+                sprintf(txt_out_buf, "PPS: BufferPosition = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                      i, pps_id[i], pps_cpu_time[i], pps_card_time[i]
+                );
+                fprintf(outfile, "%s", txt_out_buf);
+                continue;            
+            }
+            cycle = 1;
+        }
+
+        // read the top
+        if ((pps_in_ptr < BUFFER_LENGTH/2) && (cycle == 1)){
+            for (int i = BUFFER_LENGTH/2; i < BUFFER_LENGTH; i++) {
+                sprintf(txt_out_buf, "PPS: BufferPosition = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                      i, pps_id[i], pps_cpu_time[i], pps_card_time[i]
+                );
+                fprintf(outfile, "%s", txt_out_buf);
+                continue;
+            }
+            cycle = 0;
+        }
+
+        sleep(3);
+    } 
+    return 0;
 }
 
 
 void *DebugThread(void *input){
-
-    int cycle = 0;
 
     while (1) {
         printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
@@ -594,7 +639,7 @@ int main(int argc, char **argv){
     ConfigureSensorPower(board, config);
 
     // define threads.
-    pthread_t quad_thread, pps_thread, sensor_thread, write_thread, debug_thread;
+    pthread_t quad_thread, pps_thread, sensor_thread, quad_write_thread, pps_write_thread, sensor_write_thread, debug_thread;
     
     // start reading threads
     pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
@@ -602,17 +647,22 @@ int main(int argc, char **argv){
     pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);   
 
     // start the writing threads
-    pthread_create(&write_thread, NULL, BufferToDisk, (void *)thread_args);
+    pthread_create(&quad_write_thread, NULL, QuadBufferToDisk, (void *)thread_args);
+    pthread_create(&pps_write_thread, NULL, PPSBufferToDisk, (void *)thread_args);
+    pthread_create(&sensor_write_thread, NULL, SensorBufferToDisk, (void *)thread_args);
 
 
     // debug thread
-    pthread_create(&debug_thread, NULL, DebugThread, (void *)thread_args);    
+    // pthread_create(&debug_thread, NULL, DebugThread, (void *)thread_args);    
 
     // join back to main.
+    //pthread_join(debug_thread, NULL);
     pthread_join(quad_thread, NULL);
     pthread_join(pps_thread, NULL);
     pthread_join(sensor_thread, NULL);
-    pthread_join(write_thread, NULL);
+    pthread_join(quad_write_thread, NULL);
+    pthread_join(pps_write_thread, NULL);
+    pthread_join(sensor_write_thread, NULL);
     
     // free malloc'ed data.
     free(thread_args);
