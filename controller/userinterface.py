@@ -9,6 +9,7 @@
 import sys
 import queue
 from interparent import InterParent
+#from __builtin__ import False
 
 class InterUser(InterParent):
     """ User Interface object: Receives commands from
@@ -18,6 +19,8 @@ class InterUser(InterParent):
         """ Object call: Runs a loop that runs forever and forwards
             user input.
         """
+        # Setup
+        self.lastagent = ''
         # Loop
         print(self.config['userinterface']['greeting'])
         while not self.exit:
@@ -50,10 +53,17 @@ class InterUser(InterParent):
                 self.config.write(sys.stdout)
                 # Set command to empty to get all messages
                 command = ''                
+            # Check if exit
+            if 'exit' in resp.lower()[:5] or 'exit' in command.lower()[:10]:
+                self.exit = True
+                # Set command to empty to get all messages
+                command = ''
             # Empty command -> empty queue
             if not len(command):
                 resp = ' '
                 while len(resp):
+                    if 'exit' in resp.lower()[:5]:
+                        self.exit = True
                     try:
                         resp = self.queue.get(timeout=1.0)
                     except queue.Empty:
@@ -63,8 +73,25 @@ class InterUser(InterParent):
                         print(resp)
             # Else sent command
             else:
+                agentincmd = True
+                agent = ''
+                # Check if command starts with valid agent name
+                if command.find(' ')<0:
+                    agentincmd = False
+                else:
+                    agent = command.split(' ')[0].strip().lower()
+                if agentincmd:
+                    if not agent in self.agents:
+                        agentincmd = False
+                    else:
+                        self.lastagent = agent
+                # Confirm if message should be sent to last agent
+                if not agentincmd and len(self.lastagent):
+                    print('Missing Agent: Confirm sending "%s" to "%s"?' 
+                          % (command, self.lastagent))
+                    resp = input('  For YES <return> for NO any_key then <return>')
+                    if len(resp) < 1:
+                        command = self.lastagent + ' ' + command
+                # Send task
                 self.sendtask(command)
-            # Check if exit
-            if 'exit' in resp.lower()[:5] or 'exit' in command.lower()[:10]:
-                self.exit = True
-                self.log.info('Exiting')
+        self.log.info('Exiting')

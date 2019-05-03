@@ -41,19 +41,18 @@
       ./ Fill logging message receiver (listen to port) - make functions to use it
       ./ Add logging messages from agents and interfaces (query and response)
     * Galil:
-      * Use code from galilcomm.py, look at code from HAWC irc
-      * Set up file and connection configuration
-      * Make galilcom and reconnect functions (both use self.comm)
+      ./ Use code from galilcomm.py, look at code from HAWC irc
+      ./ Set up file and connection configuration
+      ./ Make galilcom and reconnect functions (both use self.comm)
         * checks number of commands and throws error if missing number of
           commands or ? received
         * to test: generate both of these with wrong commands
-      * Set up connection and forward messages
+      ./ Set up connection and forward messages
       * Error handling, reconnect 
-      * Allow (re)connect and disconnect command
-      * Require exit command for disconnect at end
-      * - - - -
-      * Make interface to talk to galil
-      * Make full galil interface loop (look at code from Steve on HAWC)
+      ./ Allow (re)connect and disconnect command
+      ./ Require exit command for disconnect at end
+      ./ Make interface to talk to galil
+      ./ Make full galil interface loop (look at code from Steve on HAWC)
       * Add initialization and regular comcheck (with warning if lost signal)
     * Readout:
       * Make list of commands
