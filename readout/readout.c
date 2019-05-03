@@ -1,7 +1,6 @@
-
-
-#define S826_CM_XS_CH0     2
-
+#define S826_CM_XS_CH0         2
+#define QUAD_BUFFER_LENGTH     8000
+#define BUFFER_LENGTH          20
 
 #include "../vend/ini/ini.h"
 #include "../vend/sdk_826_linux_3.3.11/demo/826api.h"
@@ -13,6 +12,24 @@
 #include <stdlib.h> 
 #include <signal.h>
 #include <pthread.h>
+#include <sys/socket.h>
+
+
+// storage parameters
+int sensor_in_ptr = 0;
+int sensor_id[BUFFER_LENGTH];
+int sensor_cpu_time[BUFFER_LENGTH];
+float sensor_voltage[BUFFER_LENGTH];
+
+int pps_in_ptr = 0;
+int pps_id[BUFFER_LENGTH];
+int pps_cpu_time[BUFFER_LENGTH];
+float pps_card_time[BUFFER_LENGTH];
+
+int quad_in_ptr = 0;
+int quad_counter[QUAD_BUFFER_LENGTH];
+int quad_cpu_time[QUAD_BUFFER_LENGTH];
+float quad_card_time[QUAD_BUFFER_LENGTH];
 
 void ConfigureSensorPower(int board, ini_t *config)
 {
@@ -21,9 +38,10 @@ void ConfigureSensorPower(int board, ini_t *config)
     char *voltage_setpoint = ini_get(config, "sensors.power", "output_voltage_setpoint");
     char *channel = ini_get(config, "sensors.power", "output_channel");
 
-    printf("range: %d\n", atoi(range));
-    printf("voltage_setpoint: %d\n", (int)strtol(voltage_setpoint, NULL, 0));
-    printf("channel: %d\n", atoi(channel));
+    // print data
+    // printf("range: %d\n", atoi(range));
+    // printf("voltage_setpoint: %d\n", (int)strtol(voltage_setpoint, NULL, 0));
+    // printf("channel: %d\n", atoi(channel));
 
     // normal runmode / not safemode.
     int runmode = 0;
@@ -35,14 +53,14 @@ void ConfigureSensorPower(int board, ini_t *config)
     int pwr_set = S826_DacDataWrite(board, atoi(channel), 0xFFFF, runmode);
     if (pwr_set < 0)
         printf("Configure power data error code %d", pwr_set);
+
 }
 
 void ConfigureSensors(int board, ini_t *config)
 {
     // get number of sensors
-    int *sens_count = ini_get(config, "sensors", "sensor_num");
+    char *sens_count = ini_get(config, "sensors", "sensor_num");
     printf("sensor count: %d\n", atoi(sens_count));    
-    //char buf[2];
 
     // loop over and set all the sensors
     char sensor_id[30];
@@ -50,28 +68,15 @@ void ConfigureSensors(int board, ini_t *config)
     {
         printf("sensor number: %d\n", sens);
         
-        // sprintf(buf, "%02d", sens);
-        // printf("sensors string %s\n", buf);
-        //char sensor_id[18];
-
         //// construct the string
         sprintf(sensor_id, "sensors.details.%02d", sens);
 
         printf("-------------\n");
         printf("id: %s\n", sensor_id);
 
-        // construct the string
-        // char sensor_id[] = "sensors.details.";
-        // snprintf(sensor_id, sizeof sensor_id, "%s%s", str1, str2);
-        // printf("%s", sensor_id);
-
-        // print out ancillary information
-        // const int *debug = ini_get(config, sensor_id, "sensor_name");
-        // printf("name: %s\n", debug);
-
         // get the configuration settings
-        int *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
-        int *channel = ini_get(config, sensor_id, "sensor_chan");
+        char *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
+        char *channel = ini_get(config, sensor_id, "sensor_chan");
         
         printf("timeslot: %d\n", atoi(timeslot));
         printf("channel: %d\n", atoi(channel));
@@ -100,33 +105,71 @@ void ConfigureSensors(int board, ini_t *config)
         printf("S826_AdcEnableWrite error code %d", err_AdcEnableWrite);    
 }
 
-void SystemCloseHandler(int sig)
+void ConfigurePulsePerSecondCounter(int board, ini_t *config)
 {
-    signal(sig, SIG_IGN);
-    printf("\nSignal Caught!\n");
+    int pps_flags;
 
-    // power shut off
+    char *countpps = ini_get(config, "counter.pps", "counter_num");
+    printf("countpps: %d\n", atoi(countpps));  
 
-    S826_SystemClose();
-    printf("System Closed!\n");
-    exit(0);
+    pps_flags = S826_CounterModeWrite(
+        board, 
+        atoi(countpps),      // Configure counter:
+        S826_CM_K_AFALL 
+    );   // clock = ClkA (external digital signal)
+    
+    if (pps_flags < 0)
+        printf("S826_CounterModeWrite returned error code %d\n", pps_flags); 
+
+    pps_flags = S826_CounterFilterWrite(
+                board, atoi(countpps),  // Filer Configuration:
+                (1 << 31) | (1 << 30) | // Apply to IX and clock
+                100                     // 100x20ns = 2us filter constant
+    );                 
+    if (pps_flags < 0)
+        printf("S826_CounterFilterWrite returned error code %d\n", pps_flags); 
+
+    pps_flags = S826_CounterSnapshotConfigWrite(
+        board, 
+        atoi(countpps),  
+        S826_SSRMASK_IXRISE, // Acquire counts upon tick rising edge. 
+        S826_BITWRITE
+    );
+    if (pps_flags < 0)
+        printf("S826_CounterSnapshotConfigWrite returned error code %d\n", pps_flags); 
+
+    pps_flags = S826_CounterStateWrite(board, atoi(countpps), 1); // start the counter
+    if (pps_flags < 0)
+        printf("S826_CounterStateWrite returned error code %d\n", pps_flags);   
 }
 
-void SystemOpenHandler(void)
+void ConfigureTimerCounter(int board, ini_t *config)
 {
-    int id;
-    int flags = S826_SystemOpen();
-    if (flags < 0)
-        printf("S826_SystemOpen returned error code %d\n", flags);
-    else if (flags == 0)
-        printf("No boards were detected\n");
-    else {
-        printf("Boards were detected with these IDs:");
-        for (id = 0; id < 16; id++) {
-            if (flags & (1 << id))
-                printf(" %d \n", id);
-        }
-    }
+    int timer_flags;
+
+    int *datausec = ini_get(config, "intervals", "carddata_intervals");
+    printf("datausec: %d\n", atoi(datausec));  
+
+    int *counttime = ini_get(config, "counter.timer", "counter_num");
+    printf("counttime (2): %d\n", atoi(counttime));    
+
+    printf("Configure Timer Counter. \n");
+    timer_flags = S826_CounterModeWrite(board, atoi(counttime),  // Configure counter mode:
+            S826_CM_K_1MHZ |                     // clock source = 1 MHz internal
+            S826_CM_PX_START | S826_CM_PX_ZERO | // preload @start and counts==0
+            S826_CM_UD_REVERSE |                 // count down
+            S826_CM_OM_NOTZERO
+    );
+
+    // set period in microseconds
+    timer_flags = S826_CounterPreloadWrite(board, atoi(counttime), 0, atoi(datausec));    
+    if (timer_flags < 0)
+        printf("S826_CounterPreloadWrite returned error code %d\n", timer_flags);
+
+    // start the timer running.
+    timer_flags = S826_CounterStateWrite(board, atoi(counttime), 1);    
+    if (timer_flags < 0)
+        printf("S826_CounterStateWrite returned error code %d\n", timer_flags);
 }
 
 void ConfigureQuadCounter(int board, ini_t *config)
@@ -163,290 +206,471 @@ void ConfigureQuadCounter(int board, ini_t *config)
         printf("S826_CounterStateWrite returned error code %d\n", quad_flags);
 }
 
-void ConfigureTimerCounter(int board, ini_t *config)
-{
-    int timer_flags;
+struct p_args {
+    int board;
+    ini_t *config;
+};
 
-    int *datausec = ini_get(config, "intervals", "carddata_intervals");
-    printf("datausec: %d\n", atoi(datausec));  
+void *PPSThread(void *input){
 
-    int *counttime = ini_get(config, "counter.timer", "counter_num");
-    printf("counttime (2): %d\n", atoi(counttime));    
+    int board = ((struct p_args*)input)->board;
+    int debug = 0;
 
-    printf("Configure Timer Counter. \n");
-    timer_flags = S826_CounterModeWrite(board, atoi(counttime),  // Configure counter mode:
-            S826_CM_K_1MHZ |                     // clock source = 1 MHz internal
-            S826_CM_PX_START | S826_CM_PX_ZERO | // preload @start and counts==0
-            S826_CM_UD_REVERSE |                 // count down
-            S826_CM_OM_NOTZERO
-    );
-
-    // set period in microseconds
-    timer_flags = S826_CounterPreloadWrite(board, atoi(counttime), 0, atoi(datausec));    
-    if (timer_flags < 0)
-        printf("S826_CounterPreloadWrite returned error code %d\n", timer_flags);
-
-    // start the timer running.
-    timer_flags = S826_CounterStateWrite(board, atoi(counttime), 1);    
-    if (timer_flags < 0)
-        printf("S826_CounterStateWrite returned error code %d\n", timer_flags);
-}
-
-void ConfigurePulsePerSecondCounter(int board, ini_t *config)
-{
-    int pps_flags;
-
-    int *countpps = ini_get(config, "counter.pps", "counter_num");
-    printf("countpps: %d\n", atoi(countpps));  
-
-    pps_flags = S826_CounterModeWrite(
-        board, 
-        atoi(countpps),      // Configure counter:
-        S826_CM_K_AFALL 
-    );   // clock = ClkA (external digital signal)
-    
-    if (pps_flags < 0)
-        printf("S826_CounterModeWrite returned error code %d\n", pps_flags); 
-
-    pps_flags = S826_CounterFilterWrite(
-                board, atoi(countpps),  // Filer Configuration:
-                (1 << 31) | (1 << 30) | // Apply to IX and clock
-                100                     // 100x20ns = 2us filter constant
-    );                 
-    if (pps_flags < 0)
-        printf("S826_CounterFilterWrite returned error code %d\n", pps_flags); 
-
-    pps_flags = S826_CounterSnapshotConfigWrite(
-        board, 
-        atoi(countpps),  // Acquire counts upon tick rising edge.
-                  S826_SSRMASK_IXRISE, S826_BITWRITE);
-    if (pps_flags < 0)
-        printf("S826_CounterSnapshotConfigWrite returned error code %d\n", pps_flags); 
-
-    pps_flags = S826_CounterStateWrite(board, atoi(countpps), 1); // start the counter
-    if (pps_flags < 0)
-        printf("S826_CounterStateWrite returned error code %d\n", pps_flags);   
-}
-
-void ReadPPSSnapshot(int board, int countpps, uint tstart)
-{
-    //fprintf(stdout, "PPS. \n");
     int errcode;
     int sampcount = 0;
-    uint counts[1000], tstamp[1000], reason[1000];
+    uint counts, tstamp, reason;
 
-    errcode = S826_CounterSnapshotRead(
-        board, countpps,
-        counts + sampcount, 
-        tstamp + sampcount, 
-        reason + sampcount, 
-        0
-    );
-    printf("PPS:  flags=%d ok=%d fifooverflow=%d\n", errcode, S826_ERR_OK, S826_ERR_FIFOOVERFLOW);
-    if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
-        printf("PPS:  Count = %d   Time = %.3fms   Reason = %x   Scnt = %d\n", 
-            counts[sampcount], (float)(tstamp[sampcount] - tstart)/1000.0, reason[sampcount], sampcount);
+    // Configure PPS Counter
+    ConfigurePulsePerSecondCounter(board, ((struct p_args*)input)->config);
+
+    // read in the interval for pps
+    char *countpps_id = ini_get(((struct p_args*)input)->config, "counter.pps", "counter_num");
+    int countpps = atoi(countpps_id);
+
+    // read in time interval
+    char *pps_interval = ini_get(((struct p_args*)input)->config, "intervals", "pps_intervals");
+    struct timespec pps_sleep_time;
+    pps_sleep_time.tv_sec = atoi(pps_interval);
+    pps_sleep_time.tv_nsec = 1000000000 * (atof(pps_interval) - atoi(pps_interval));
+
+    // pps main loop
+    while (1) {
+        errcode = S826_CounterSnapshotRead(board, countpps, &counts, &tstamp, &reason, 0);
+        
+        if (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
+
+            pps_id[pps_in_ptr] = counts;
+            pps_cpu_time[pps_in_ptr] = time(NULL); // milliseconds 
+            pps_card_time[pps_in_ptr] = tstamp;
+
+            if (debug == 1) {
+                printf("PPS: BufferPosition = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                     pps_in_ptr, pps_id[pps_in_ptr], pps_cpu_time[pps_in_ptr], pps_card_time[pps_in_ptr]);
+            }
+    
+            pps_in_ptr++;
+
+            // if bottom is full
+            // if (pps_in_ptr == BUFFER_LENGTH / 2) {
+            //     // if bottom flag was NOT flipped back by 
+            //     // the read head, note this
+            //     if (pps_bot_flag == 1) {
+            //         printf("PPS-BOTTOM: Read did not finish and was overwritten.");
+            //     }
+            //     pps_bot_flag = 1;
+            //     printf("BOTTOM IS READY");
+            // // if top is full
+            // } else if (pps_in_ptr == BUFFER_LENGTH) {
+            //     // if top flag was NOT flipped back by 
+            //     // the read head, note this
+            //     if (pps_top_flag == 1) {
+            //         printf("PPS-TOP: Read did not finish and was overwritten.");
+            //     }
+            //     // inform ready to be read
+            //     pps_top_flag = 1;
+            //     printf("TOP IS READY");
+            // }
+            
+            // reset write-in head to start
+            if (pps_in_ptr > BUFFER_LENGTH - 1){
+                pps_in_ptr = 0;
+                //if (debug == 1){
+                //    printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+                //}
+            }
+        }
+        
+        // wait designated time
+        nanosleep(&pps_sleep_time, NULL);
+    }
+    return 0;
+}
+
+void *SensorThread(void *input){
+
+    int board = ((struct p_args*)input)->board;
+    int debug = 0;
+
+    // get sensor count
+    char *sensor_count = ini_get(((struct p_args*)input)->config, "sensors", "sensor_num");
+    int sens_cnt = atoi(sensor_count);
+
+    // is there a programmatic way to grab this?
+    // !(0xFFFF<< N)
+    // uint slotlist = 0x0007;
+    //uint slotlist = !(0xFFFF << sens_cnt);
+    uint slotlist = 0x0007;
+
+    int errcode;             // errcode 
+    int slotval[16];         // buffer must be sized for 16 slots
+    int slot;    
+    int adcdata;
+    unsigned int burstnum;
+    float voltage;
+
+    // configure sensor data
+    ConfigureSensors(board, ((struct p_args*)input)->config);
+
+    // read in the interval for sensors
+    char *sensor_interval = ini_get(((struct p_args*)input)->config, "intervals", "sensor_intervals");
+    struct timespec sensor_wait_time;
+    sensor_wait_time.tv_sec = atoi(sensor_interval);
+    sensor_wait_time.tv_nsec = 1000000000 * (atof(sensor_interval) - atoi(sensor_interval));
+
+    // begin reading loop
+    while (1) {
+
+        // read data
+        errcode = S826_AdcRead(board, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
+        if (errcode != S826_ERR_OK)
+            printf("ADC Read Failed. %d \n", errcode);
+
+        // loop through sensors 
+        for (slot = 0; slot < sens_cnt; slot++) 
+        {
+            // read in data (voltage in volts)
+            adcdata = (int)((slotval[slot] & 0xFFFF));
+            burstnum = ((unsigned int)slotval[slot] >> 24);
+            voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
+
+            // update buffer
+            sensor_id[sensor_in_ptr] = slot;
+            sensor_cpu_time[sensor_in_ptr] = time(NULL); 
+            sensor_voltage[sensor_in_ptr] = voltage;
+            
+            // print out data if debug
+            if (debug == 1) {
+                printf("Sensors: %i \t Time: %i \t Slot: %d \t Voltage: %f \n", sensor_in_ptr, 
+                    sensor_cpu_time[sensor_in_ptr], sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]
+                );
+            }
+
+            // next spot in the buffer
+            sensor_in_ptr++;
+
+            // if bottom is full
+            // if (sensor_in_ptr == BUFFER_LENGTH / 2) {
+            //     // if bottom flag was NOT flipped back by 
+            //     // the read head, note this
+            //     if (sensor_bot_flag == 1) {
+            //         printf("SENSOR-BOTTOM: Read did not finish and was overwritten.");
+            //     }
+            //     sensor_bot_flag = 1;
+            //     printf("BOTTOM IS READY");
+            // // if top is full
+            // } else if (sensor_in_ptr == BUFFER_LENGTH) {
+            //     // if top flag was NOT flipped back by 
+            //     // the read head, note this
+            //     if (sensor_top_flag == 1) {
+            //         printf("SENSOR-TOP: Read did not finish and was overwritten.");
+            //     }
+            //     // inform ready to be read
+            //     sensor_top_flag = 1;
+            //     printf("TOP IS READY");
+            // }
+
+            // reset write in head to start
+            if (sensor_in_ptr > BUFFER_LENGTH - 1){
+                sensor_in_ptr = 0;
+                if (debug == 1) {
+                    printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+                }
+            }
+        };
+
+        // wait designated time
+        nanosleep(&sensor_wait_time, NULL);
+    }
+
+    return 0;
+}
+
+void SystemCloseHandler(int sig)
+{
+    signal(sig, SIG_IGN);
+    printf("\nSignal Caught!\n");
+
+    // power shut off
+    S826_SystemClose();
+    printf("Power Shutoff + System Closed!\n");
+    exit(0);
+}
+
+void SystemOpenHandler(void)
+{
+    int id;
+    int flags = S826_SystemOpen();
+    if (flags < 0)
+        printf("S826_SystemOpen returned error code %d\n", flags);
+    else if (flags == 0)
+        printf("No boards were detected\n");
+    else {
+        printf("Boards were detected with these IDs:");
+        for (id = 0; id < 16; id++) {
+            if (flags & (1 << id))
+                printf(" %d \n", id);
+        }
     }
 }
 
-void ReadQuadSnapshot(int board, int countquad, uint tstart)
-{
+void *QuadThread(void *input){
+
+    int debug = 0;
     int errcode;
     int sampcount = 0;
     int lastcount = 0;
     int dcount = 1;
-    uint counts[1000], tstamp[1000], reason[1000];
+    uint tstart;
+    uint counts, tstamp, reason;
 
-    errcode = S826_CounterSnapshotRead(
-        board, countquad,
-        counts + sampcount, 
-        tstamp + sampcount, 
-        reason + sampcount, 
-    0);
-    
-    while(errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
-      
-        // Keep track of counts
-        dcount = counts[sampcount] - lastcount;
-        lastcount = counts[sampcount];
-          
-        // Print result
-        printf("Quad: Count = %d   Time = %.3fms   Reason = %x   Scnt = %d", counts[sampcount],
-            (float)(tstamp[sampcount]-tstart)/1000.0, reason[sampcount], sampcount);
-        printf("\n");
-        // Increase counter
-        sampcount++;
+    int board = ((struct p_args*)input)->board;
 
-        // Read next snapshot
-        errcode = S826_CounterSnapshotRead(
-            board, countquad,
-            counts + sampcount, 
-            tstamp + sampcount, 
-            reason + sampcount, 
-        0);
-    }
-}
+    ConfigureTimerCounter(board, ((struct p_args*)input)->config);
+    ConfigureQuadCounter(board, ((struct p_args*)input)->config);
 
-void ReadSensorSnapshot(void)
-{
-    uint slotlist = 0x0007;
+    char *countquad_id = ini_get(((struct p_args*)input)->config, "counter.quad", "counter_num");
+    int countquad = atoi(countquad_id);
 
-    int errcode;     // errcode 
-    int slotval[16]; // buffer must be sized for 16 slots
-    errcode = S826_AdcRead(0, slotval, NULL, &slotlist, S826_WAIT_INFINITE); 
-    if (errcode != S826_ERR_OK)
-        printf("ADC Read Failed. %d \n", errcode);
+    // interval between quad reads
+    char *quad_interval = ini_get(((struct p_args*)input)->config, "intervals", "quad_intervals");
+    struct timespec quad_sleep_time;
+    quad_sleep_time.tv_sec = atoi(quad_interval);
+    quad_sleep_time.tv_nsec = 1000000000 * (atof(quad_interval) - atoi(quad_interval));
 
-    int slot;
-    for (slot = 0; slot < 3; slot++) 
-    {
-        int adcdata;
-        unsigned int burstnum;
-        float voltage;
+    while (1) {
+        errcode = S826_CounterSnapshotRead(board, countquad, &counts, &tstamp, &reason, 0);    
+        // read until you can't anymore! FIFO style.
+        while (errcode == S826_ERR_OK || errcode == S826_ERR_FIFOOVERFLOW){
+
+            if (errcode == S826_ERR_FIFOOVERFLOW) {
+                printf("Quadrature Counter: Error Overflow Detected.\n");            
+            };
         
-        adcdata = (int)((slotval[slot] & 0xFFFF));
-        burstnum = ((unsigned int)slotval[slot] >> 24);
-        voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
-        printf("Slot: %d \t Voltage: %f \n", slot, voltage);   
-    };
+            // store     
+            quad_counter[quad_in_ptr] = counts;
+            quad_cpu_time[quad_in_ptr] = time(NULL);
+            quad_card_time[quad_in_ptr] = tstamp;
+
+            if (debug == 1) {
+                printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
+                   quad_in_ptr, quad_counter[quad_in_ptr], quad_card_time[quad_in_ptr], quad_cpu_time[quad_in_ptr]);  
+            }
+            
+            // increase counter
+            quad_in_ptr++;
+
+            // reset write-in head to start
+            if (quad_in_ptr > QUAD_BUFFER_LENGTH - 1){
+                quad_in_ptr = 0;
+                if (debug == 1) {
+                    printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+                }
+            }
+
+            // read next snapshot
+            errcode = S826_CounterSnapshotRead(board, countquad, &counts, &tstamp, &reason, 0);
+        }
+
+        // sleep for the designated time
+        nanosleep(&quad_sleep_time, NULL);
+    }
+    return 0;
 }
+
+void *QuadBufferToDisk(void *input){
+
+    char txt_out_buf[500];
+    FILE *outfile;
+    outfile = fopen("quad_test.txt", "wt");
+
+    int cycle = 0;
+
+    while (1) {
+        // if the bottom is ready  printf("Quad Bottom: %i, Quad Top: %i \n", quad_bot_flag, quad_top_flag);
+        
+        // read the bottom
+        if ((quad_in_ptr > QUAD_BUFFER_LENGTH/2) && (cycle == 0)){
+            
+            for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {
+                sprintf(txt_out_buf, "Quad: Buffer ID = %i,\t Count = %d,\t CardTime = %.3f,\t CPUTime = %i \n", 
+                      i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
+                );
+
+                fprintf(outfile, "%s", txt_out_buf);
+                continue;            
+            }
+            cycle = 1;
+        }
+
+        // read the top
+        if ((quad_in_ptr < QUAD_BUFFER_LENGTH/2) && (cycle == 1)){
+            for (int i = QUAD_BUFFER_LENGTH/2; i < QUAD_BUFFER_LENGTH; i++) {
+                sprintf(txt_out_buf, "Quad: Buffer ID = %i,\t Count = %d,\t CardTime = %.3f,\t CPUTime = %i \n", 
+                      i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
+                );
+                fprintf(outfile, "%s", txt_out_buf);
+                continue;
+            }
+            cycle = 0;
+        }
+    } 
+    return 0;
+}
+
+
+void *SensorBufferToDisk(void *input){
+
+    char txt_out_buf[500];
+    FILE *outfile;
+    outfile = fopen("sensor_test.txt", "wt");
+
+    int cycle = 0;
+
+    while (1) {
+        
+        // read the bottom
+        if ((sensor_in_ptr > BUFFER_LENGTH/2) && (cycle == 0)){
+            
+            for (int i = 0; i < BUFFER_LENGTH/2; i++) {
+                sprintf(txt_out_buf, "Sensors: %i: \t Time: %i \t Slot: %d \t Voltage: %f \n", 
+                      i, sensor_cpu_time[i], sensor_id[i], sensor_voltage[i]
+                );
+                fprintf(outfile, "%s", txt_out_buf);
+                continue;            
+            }
+            cycle = 1;
+        }
+
+        // read the top
+        if ((sensor_in_ptr < BUFFER_LENGTH/2) && (cycle == 1)){
+            for (int i = BUFFER_LENGTH/2; i < BUFFER_LENGTH; i++) {
+                sprintf(txt_out_buf, "Sensors: %i: \t Time: %i \t Slot: %d \t Voltage: %f \n", 
+                      i, sensor_cpu_time[i], sensor_id[i], sensor_voltage[i]
+                );
+                fprintf(outfile, "%s", txt_out_buf);
+                continue;
+            }
+            cycle = 0;
+        }
+        sleep(3);
+    } 
+    return 0;
+}
+
+void *PPSBufferToDisk(void *input){
+
+    char txt_out_buf[500];
+    FILE *outfile;
+    outfile = fopen("pps_test.txt", "wt");
+
+    int cycle = 0;
+
+    while (1) {
+        
+        // read the bottom
+        if ((pps_in_ptr > BUFFER_LENGTH/2) && (cycle == 0)){
+            
+            for (int i = 0; i < BUFFER_LENGTH/2; i++) {
+                sprintf(txt_out_buf, "PPS: BufferPosition = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                      i, pps_id[i], pps_cpu_time[i], pps_card_time[i]
+                );
+                fprintf(outfile, "%s", txt_out_buf);
+                continue;            
+            }
+            cycle = 1;
+        }
+
+        // read the top
+        if ((pps_in_ptr < BUFFER_LENGTH/2) && (cycle == 1)){
+            for (int i = BUFFER_LENGTH/2; i < BUFFER_LENGTH; i++) {
+                sprintf(txt_out_buf, "PPS: BufferPosition = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                      i, pps_id[i], pps_cpu_time[i], pps_card_time[i]
+                );
+                fprintf(outfile, "%s", txt_out_buf);
+                continue;
+            }
+            cycle = 0;
+        }
+
+        sleep(3);
+    } 
+    return 0;
+}
+
+
+void *DebugThread(void *input){
+
+    while (1) {
+        printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
+            sensor_in_ptr, pps_in_ptr, quad_in_ptr      
+        );
+        sleep(1);
+    }
+    
+    return 0;
+
+}
+
 
 int main(int argc, char **argv){
-    
-    // signal handler
+    // signal handler for abrupt/any close
     signal(SIGINT, SystemCloseHandler);
-    
-    // argument handler
+
     if( argc < 1 ) {
         printf("Use: readout \n");
         printf("     configfilename \n");
         exit(0);
     }
 
-    // get handler to configuration file
-    char filename[] = "../config/masterconfig.ini"; //argv[1];
-    printf("configfile: %s\n", filename);
-    printf("runtime: %s\n", argv[1]);
-    
-    // load configuration
-    ini_t *config = ini_load(filename);
-
-    // Variables
+    // defined board number
     int board = 0;
 
-    int i;
-    struct timespec treq;
-    time_t rawtime, starttime;
-    char s[2000000], t[200];
-    char fname[100];
-    FILE *outf;
+    // read config into memory.
+    char filename[] = "../config/masterconfig.ini";
+    ini_t *config = ini_load(filename);
 
-    // Variables to read all snapshots while it's moving
-    int lastcount = 0;   // last value which was read
-    int dcount = 1;      // diff current - previous value
-    int loopcount = 0;   // number of loops with delays
-    int errcount = 0;    // number of overflow errors
-    int sampcount = 0;   // number of samples in this readout session
-    uint counts[1000], tstamp[1000], reason[1000];
+    // argument for the various threads
+    struct p_args *thread_args = (struct p_args *)malloc(sizeof(struct p_args));
+    thread_args->board = board;  
+    thread_args->config = config;
 
-    int duration = 30; // Set duration seconds
-
-    // Open the 826 API ---------------
-    // int flags = S826_SystemOpen();
-    // printf("S826_SystemOpen returned error code %d\n", flags);
+    // start the power from the board.
     SystemOpenHandler();
-
-    // Configurations
     ConfigureSensorPower(board, config);
-    ConfigureSensors(board, config);
-    ConfigureTimerCounter(board, config);
-    ConfigurePulsePerSecondCounter(board, config);
-    ConfigureQuadCounter(board, config);
 
-    int *quad_intervals   = ini_get(config, "intervals", "quad_intervals");
-    int *pps_intervals    = ini_get(config, "intervals", "pps_intervals");
-    int *sensor_intervals = ini_get(config, "intervals", "sensor_intervals");
-        
-    printf("quad_intervals: %.3f\n", atof(quad_intervals));
-    printf("pps_intervals: %.3f\n", atof(pps_intervals));
-    printf("sensor_intervals: %.3f\n", atof(sensor_intervals));
+    // define threads.
+    pthread_t quad_thread, pps_thread, sensor_thread, quad_write_thread, pps_write_thread, sensor_write_thread, debug_thread;
+    
+    // start reading threads
+    pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
+    pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
+    pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);   
 
-    int *countpps = ini_get(config, "counter.pps", "counter_num");
-    int *countquad = ini_get(config, "counter.quad", "counter_num");
+    // start the writing threads
+    pthread_create(&quad_write_thread, NULL, QuadBufferToDisk, (void *)thread_args);
+    pthread_create(&pps_write_thread, NULL, PPSBufferToDisk, (void *)thread_args);
+    pthread_create(&sensor_write_thread, NULL, SensorBufferToDisk, (void *)thread_args);
 
-    time(&rawtime);
-    starttime = rawtime;
 
-    //time_t curtime, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
-    uint64_t delta_us;
-    struct timespec curtime, quadlastreadtime, ppslastreadtime, sensorlastreadtime;
+    // debug thread
+    // pthread_create(&debug_thread, NULL, DebugThread, (void *)thread_args);    
 
-    // set last read time as start. 
-    clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
-    clock_gettime(CLOCK_MONOTONIC_RAW, &sensorlastreadtime);
-
-    // priority flag
-    int priority_flag = 0;
-
-    // Get start time
-    uint tstart;
-    S826_TimestampRead(board, &tstart);
-
-    //// begin reading loop
-    while(rawtime - starttime < duration){
-        
-        priority_flag = 0;
-        //// read from quadrature counter
-        // get elapsed time
-        clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
-        delta_us = (curtime.tv_sec - quadlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - quadlastreadtime.tv_nsec);
-        
-        // read if elapsed
-        //printf("run quad:");
-        if (delta_us > (1000000000 * atof(quad_intervals))){
-            printf("quad yes\n");
-            ReadQuadSnapshot(board, atoi(countquad), tstart);
-            // update last read time
-            clock_gettime(CLOCK_MONOTONIC_RAW, &quadlastreadtime);
-        }
-
-        //// read from pps counter
-        // get elapsed time
-        clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
-        delta_us = (curtime.tv_sec - ppslastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - ppslastreadtime.tv_nsec);
-        
-        // read if elapsed
-        //printf("run pps:");
-        if (delta_us > (1000000000 * atof(pps_intervals))){
-            printf("pps yes\n");
-            ReadPPSSnapshot(board, atoi(countpps), tstart);
-            // update last read time
-            priority_flag = 1;
-            clock_gettime(CLOCK_MONOTONIC_RAW, &ppslastreadtime);
-        }
-        //// read from sensors
-        clock_gettime(CLOCK_MONOTONIC_RAW, &curtime);
-        delta_us = (curtime.tv_sec - sensorlastreadtime.tv_sec) * 1000000000 + (curtime.tv_nsec - sensorlastreadtime.tv_nsec);
-        //printf("run sensor:");
-        if (delta_us > (1000000000 * atof(sensor_intervals)) && priority_flag == 0){
-            printf("sensor yes\n");
-            ReadSensorSnapshot();
-            // update last read time
-            clock_gettime(CLOCK_MONOTONIC_RAW, &sensorlastreadtime);
-        }
-
-        // update time and loop
-        time(&rawtime);
-        loopcount++;
-    }
-
-    // power off the correct power channel
-    char *channel = ini_get(config, "sensors.power", "output_channel");
-    int pwr_set_off = S826_DacDataWrite(board, atoi(channel), 0x0000, 0);
-    if (pwr_set_off < 0)
-        printf("Configure power data off code %d.", pwr_set_off);
-
-    // Close the API
-    S826_SystemClose();
+    // join back to main.
+    //pthread_join(debug_thread, NULL);
+    pthread_join(quad_thread, NULL);
+    pthread_join(pps_thread, NULL);
+    pthread_join(sensor_thread, NULL);
+    pthread_join(quad_write_thread, NULL);
+    pthread_join(pps_write_thread, NULL);
+    pthread_join(sensor_write_thread, NULL);
+    
+    // free malloc'ed data.
+    free(thread_args);
 }
+
+/*
+gcc -D_LINUX -Wall -Wextra -DOSTYPE_LINUX -c -no-pie readout.c ../vend/ini/ini.c
+gcc -D_LINUX readout.o ini.o -no-pie -o readout -L ../vend/sdk_826_linux_3.3.11/demo -l826_64 -lpthread
+gcc -D_LINUX -Wall -Wextra -DOSTYPE_LINUX -c -no-pie readout_serial.c ../vend/ini/ini.c
+gcc -D_LINUX readout_serial.o ini.o -no-pie -o readout_serial -L ../vend/sdk_826_linux_3.3.11/demo -l826_64 -lpthread
+*/
