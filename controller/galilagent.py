@@ -101,6 +101,7 @@ class GalilAgent(AgentParent):
                 traceback.print_tb(err.__traceback__)
                 retmsg = 'Serial connection to %s FAILED' % device
                 self.log.warn(retmsg)
+                self.log.warn('   Message = %s' % str(err))
         elif self.config['galil']['comtype'] in ['telnet']:
             # Open telnet
             host = self.config['galil']['host']
