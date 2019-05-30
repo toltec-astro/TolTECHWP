@@ -71,14 +71,16 @@ class InterUser(InterParent):
                     if len(resp):
                         self.log.debug('Got response <%s>' % resp)
                         print(resp)
-            # Else sent command
+            # Else send command
             else:
                 agentincmd = True
                 agent = ''
                 # Check if command starts with valid agent name
                 if command.find(' ')<0:
+                    # no space -> no agent
                     agentincmd = False
                 else:
+                    # get possibel agent name as first word of command
                     agent = command.split(' ')[0].strip().lower()
                 if agentincmd:
                     if not agent in self.agents:
