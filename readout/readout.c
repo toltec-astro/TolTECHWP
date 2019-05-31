@@ -1,6 +1,7 @@
 #define S826_CM_XS_CH0         2
 #define QUAD_BUFFER_LENGTH     8000
 #define BUFFER_LENGTH          20
+#define BUFSIZE                2048
 
 #include "../vend/ini/ini.h"
 #include "../vend/sdk_826_linux_3.3.11/demo/826api.h"
@@ -12,7 +13,11 @@
 #include <stdlib.h> 
 #include <signal.h>
 #include <pthread.h>
+#include <netdb.h>
+#include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 
 // storage parameters
@@ -30,6 +35,8 @@ int quad_in_ptr = 0;
 int quad_counter[QUAD_BUFFER_LENGTH];
 int quad_cpu_time[QUAD_BUFFER_LENGTH];
 float quad_card_time[QUAD_BUFFER_LENGTH];
+
+int shutdown_flag = 0;
 
 void ConfigureSensorPower(int board, ini_t *config)
 {
@@ -598,14 +605,117 @@ void *PPSBufferToDisk(void *input){
 }
 
 
-void *DebugThread(void *input){
+void *ControlThread(void *input){
+    
+    int sockfd;     /* socket */
+    int portno;     /* port to listen on */
+    int clientlen;      /* byte size of client's address */
+    struct sockaddr_in serveraddr;  /* server's addr */
+    struct sockaddr_in clientaddr;  /* client addr */
+    struct hostent *hostp;  /* client host info */
+    char *buf;      /* message buf */
+    char *hostaddrp;    /* dotted decimal host addr string */
+    int optval;     /* flag value for setsockopt */
+    int n;          /* message byte size */
 
+    /* 
+     * check command line arguments 
+     */
+    portno = 8787;
+
+    /* 
+     * socket: create the parent socket 
+     */
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0)
+        error("ERROR opening socket");
+
+    /* setsockopt: Handy debugging trick that lets 
+     * us rerun the server immediately after we kill it; 
+     * otherwise we have to wait about 20 secs. 
+     * Eliminates "ERROR on binding: Address already in use" error. 
+     */
+    optval = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int));
+
+    /*
+     * build the server's Internet address
+     */
+    bzero((char *)&serveraddr, sizeof(serveraddr));
+    serveraddr.sin_family = AF_INET;
+    serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serveraddr.sin_port = htons((unsigned short)portno);
+
+    /* 
+     * bind: associate the parent socket with a port 
+     */
+    if (bind(sockfd, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) < 0)
+        error("ERROR on binding");
+
+    /* 
+     * main loop: wait for a datagram, then echo it
+     */
+    clientlen = sizeof(clientaddr);
     while (1) {
-        printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
-            sensor_in_ptr, pps_in_ptr, quad_in_ptr      
-        );
-        sleep(1);
+
+        /*
+         * recvfrom: receive a UDP datagram from a client
+         */
+        buf = malloc(BUFSIZE);
+        memset(buf, 0, BUFSIZE);
+        n = recvfrom(sockfd, buf, BUFSIZE, 0,
+                 (struct sockaddr *)&clientaddr, &clientlen);
+        if (n < 0)
+            error("ERROR in recvfrom");
+
+        /* 
+         * gethostbyaddr: determine who sent the datagram
+         */
+        hostp = gethostbyaddr((const char *)&clientaddr.sin_addr.s_addr,
+                      sizeof(clientaddr.sin_addr.s_addr),
+                      AF_INET);
+        if (hostp == NULL)
+            error("ERROR on gethostbyaddr");
+        hostaddrp = inet_ntoa(clientaddr.sin_addr);
+        if (hostaddrp == NULL)
+            error("ERROR on inet_ntoa\n");
+        //printf("server received %d bytes\n", n);
+
+        
+        printf("server received command: %s \n", buf);
+        
+        if (strcmp(buf, "shutdown") == 0) {
+            free(buf);
+            printf("Shutdown Command Received\n");  
+            S826_SystemClose();
+            
+            char response[] = "Power Shutoff + System Closed!";
+            printf("%s \n", response);
+            n = sendto(sockfd, response, sizeof(response), 0, (struct sockaddr *)&clientaddr, clientlen);
+            //if (n < 0) --> handle send to erro
+            exit(0);    
+        }
+
+        if (strcmp(buf, "get_data") == 0) {
+            printf("\n--- Data Retrieval Initiated ---\n");
+            printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
+                sensor_in_ptr, pps_in_ptr, quad_in_ptr      
+            );      
+            printf("PPS: BufferPosition = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                pps_in_ptr, pps_id[pps_in_ptr], pps_cpu_time[pps_in_ptr], pps_card_time[pps_in_ptr]
+            );
+            printf("Sensors: %i: \t Time: %i \t Slot: %d \t Voltage: %f \n", 
+                sensor_in_ptr, sensor_cpu_time[sensor_in_ptr], sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]
+            );
+            printf("Quad: BufferPosition = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
+                quad_in_ptr, quad_counter[quad_in_ptr], quad_card_time[quad_in_ptr], quad_cpu_time[quad_in_ptr]
+            );  
+            printf("--- Data Retrieval Ended ---\n");
+        }
+        
+        free(buf);
     }
+
     
     return 0;
 
@@ -638,8 +748,12 @@ int main(int argc, char **argv){
     SystemOpenHandler();
     ConfigureSensorPower(board, config);
 
+    // TODO: iterate over threads, no need to init individually
+
     // define threads.
-    pthread_t quad_thread, pps_thread, sensor_thread, quad_write_thread, pps_write_thread, sensor_write_thread, debug_thread;
+    pthread_t control_thread;
+    pthread_t quad_thread, pps_thread, sensor_thread;
+    pthread_t quad_write_thread, pps_write_thread, sensor_write_thread; 
     
     // start reading threads
     pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
@@ -651,12 +765,11 @@ int main(int argc, char **argv){
     pthread_create(&pps_write_thread, NULL, PPSBufferToDisk, (void *)thread_args);
     pthread_create(&sensor_write_thread, NULL, SensorBufferToDisk, (void *)thread_args);
 
-
-    // debug thread
-    // pthread_create(&debug_thread, NULL, DebugThread, (void *)thread_args);    
+    pthread_create(&control_thread, NULL, ControlThread, (void *)thread_args);   
+     
 
     // join back to main.
-    //pthread_join(debug_thread, NULL);
+    pthread_join(control_thread, NULL);
     pthread_join(quad_thread, NULL);
     pthread_join(pps_thread, NULL);
     pthread_join(sensor_thread, NULL);
