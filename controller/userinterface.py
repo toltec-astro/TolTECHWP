@@ -48,11 +48,6 @@ class InterUser(InterParent):
                     print(f.read())
                 # Set command to empty to get all messages
                 command = ''
-            # If it's config -> print the configuration
-            if 'config' in command.lower()[:7]:
-                self.config.write(sys.stdout)
-                # Set command to empty to get all messages
-                command = ''                
             # Check if exit
             if 'exit' in resp.lower()[:5] or 'exit' in command.lower()[:10]:
                 self.exit = True
