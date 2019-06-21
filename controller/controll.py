@@ -41,19 +41,18 @@
       ./ Fill logging message receiver (listen to port) - make functions to use it
       ./ Add logging messages from agents and interfaces (query and response)
     * Galil:
-      * Use code from galilcomm.py, look at code from HAWC irc
-      * Set up file and connection configuration
-      * Make galilcom and reconnect functions (both use self.comm)
+      ./ Use code from galilcomm.py, look at code from HAWC irc
+      ./ Set up file and connection configuration
+      ./ Make galilcom and reconnect functions (both use self.comm)
         * checks number of commands and throws error if missing number of
           commands or ? received
         * to test: generate both of these with wrong commands
-      * Set up connection and forward messages
+      ./ Set up connection and forward messages
       * Error handling, reconnect 
-      * Allow (re)connect and disconnect command
-      * Require exit command for disconnect at end
-      * - - - -
-      * Make interface to talk to galil
-      * Make full galil interface loop (look at code from Steve on HAWC)
+      ./ Allow (re)connect and disconnect command
+      ./ Require exit command for disconnect at end
+      ./ Make interface to talk to galil
+      ./ Make full galil interface loop (look at code from Steve on HAWC)
       * Add initialization and regular comcheck (with warning if lost signal)
     * Readout:
       * Make list of commands
@@ -81,8 +80,10 @@ from distutils.command.config import config
 from agentparent import AgentParent
 from interparent import InterParent
 from userinterface import InterUser
+from socketinterface import InterSocket
 from loggercontrol import LoggerControl
 from galilagent import GalilAgent
+from configagent import ConfigAgent
 
 def hwpcontrol(confilename):
     """ Run the HWP control
@@ -93,11 +94,17 @@ def hwpcontrol(confilename):
     # Make interfaces and agents
     logctrl = LoggerControl(config, 'Log')
     inusr = InterUser(config, 'User')
+    insock = InterSocket(config,'Socket')
+    agconf = ConfigAgent(config, 'Conf')
     agresp = AgentParent(config, 'Echo')
     aggal = GalilAgent(config, 'Galil')
     # Register agents with interfaces
     inusr.addagent('Echo',agresp.queue)
     inusr.addagent('Galil',aggal.queue)
+    inusr.addagent('Conf',agconf.queue)
+    insock.addagent('Echo',agresp.queue)
+    insock.addagent('Galil',aggal.queue)
+    insock.addagent('Conf',agconf.queue)
     # Run them as threads (both as daemons such that they shut down on exit)
     logth = threading.Thread(target = logctrl)
     logth.daemon = True
@@ -105,12 +112,18 @@ def hwpcontrol(confilename):
     agrth.daemon = True
     aggth = threading.Thread(target = aggal)
     aggth.daemon = True
+    agcon = threading.Thread(target = agconf)
+    agcon.daemon = True
     inuth = threading.Thread(target = inusr)
     inuth.daemon = True
+    insth = threading.Thread(target = insock)
+    insth.daemon = True
     logth.start()
     agrth.start()
     inuth.start()
     aggth.start()
+    agcon.start()
+    insth.start()
     # Wait and do some stuff
     time.sleep(2)
     agresp.queue.put(('Do It',inusr.queue))

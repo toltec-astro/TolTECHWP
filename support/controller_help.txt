@@ -1,8 +1,11 @@
 == Help information for controller ==
 
-Enter commands here: Format is recipient followed by space then
-    by the command to send.
+Enter commands here: Format is recipient (agent) name 
+    followed by space then by the command to send.
     
+    To send command to the same agent, omit the agent
+    name but press <return> twice.
+
 Special Commands:
     help: displays this message
     exit: will quit the controller application
