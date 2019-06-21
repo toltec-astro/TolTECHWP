@@ -281,10 +281,10 @@ void *SensorThread(void *input){
     char *sensor_count = ini_get(((struct p_args*)input)->config, "sensors", "sensor_num");
     int sens_cnt = atoi(sensor_count);
 
-    // is there a programmatic way to grab this?
+    // TODO: is there a programmatic way to grab this?
     // !(0xFFFF<< N)
     // uint slotlist = 0x0007;
-    //uint slotlist = !(0xFFFF << sens_cnt);
+    // uint slotlist = !(0xFFFF << sens_cnt);
     uint slotlist = 0x0007;
 
     int errcode;             // errcode 
@@ -333,27 +333,6 @@ void *SensorThread(void *input){
 
             // next spot in the buffer
             sensor_in_ptr++;
-
-            // if bottom is full
-            // if (sensor_in_ptr == BUFFER_LENGTH / 2) {
-            //     // if bottom flag was NOT flipped back by 
-            //     // the read head, note this
-            //     if (sensor_bot_flag == 1) {
-            //         printf("SENSOR-BOTTOM: Read did not finish and was overwritten.");
-            //     }
-            //     sensor_bot_flag = 1;
-            //     printf("BOTTOM IS READY");
-            // // if top is full
-            // } else if (sensor_in_ptr == BUFFER_LENGTH) {
-            //     // if top flag was NOT flipped back by 
-            //     // the read head, note this
-            //     if (sensor_top_flag == 1) {
-            //         printf("SENSOR-TOP: Read did not finish and was overwritten.");
-            //     }
-            //     // inform ready to be read
-            //     sensor_top_flag = 1;
-            //     printf("TOP IS READY");
-            // }
 
             // reset write in head to start
             if (sensor_in_ptr > BUFFER_LENGTH - 1){
@@ -466,17 +445,29 @@ void *QuadThread(void *input){
 void *QuadBufferToDisk(void *input){
 
 
+    // get file path
+    char *savefilepath = ini_get(((struct p_args*)input)->config, "savefilepath", "path");
+    
+    // generate file name
     char fname[200];
     time_t save_date;
     time(&save_date);
     strftime(fname, 100, "quad_data_%y-%m-%d_%H-%M.txt", localtime(&save_date));
 
-    char txt_out_buf[500];
-    FILE *outfile;
-    //outfile = fopen("quad_test.txt", "wt");
-    outfile = fopen(fname, "wt");
+    // construct final location
+    char full_path[200];
+    sprintf(full_path, "%s%s", savefilepath, fname);
 
+    // set location 
+    FILE *outfile;
+    outfile = fopen(full_path, "wt");
+
+    // text out buffer
+    char txt_out_buf[500];
     int cycle = 0;
+
+    // print header
+    fprintf(outfile, "buffer_id, count, cardcounter, computertime\n");
 
     while (1) {
         // if the bottom is ready  printf("Quad Bottom: %i, Quad Top: %i \n", quad_bot_flag, quad_top_flag);
@@ -486,11 +477,6 @@ void *QuadBufferToDisk(void *input){
             
             for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {
 
-                // verbose
-                // sprintf(txt_out_buf, "Quad: Buffer ID = %i,\t Count = %d,\t CardTime = %.3f,\t CPUTime = %i \n", 
-                //       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
-                // );
-                
                 sprintf(txt_out_buf, "%i, %d, %.3f, %i \n", 
                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
                 );
@@ -503,10 +489,6 @@ void *QuadBufferToDisk(void *input){
         // read the top
         if ((quad_in_ptr < QUAD_BUFFER_LENGTH/2) && (cycle == 1)){
             for (int i = QUAD_BUFFER_LENGTH/2; i < QUAD_BUFFER_LENGTH; i++) {
-                // verbose
-                // sprintf(txt_out_buf, "Quad: Buffer ID = %i,\t Count = %d,\t CardTime = %.3f,\t CPUTime = %i \n", 
-                //       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
-                // );
 
                 sprintf(txt_out_buf, "%i, %d, %.3f, %i \n", 
                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
@@ -523,17 +505,29 @@ void *QuadBufferToDisk(void *input){
 
 void *SensorBufferToDisk(void *input){
 
+    // get file path
+    char *savefilepath = ini_get(((struct p_args*)input)->config, "savefilepath", "path");
+    
+    // generate file name
     char fname[200];
     time_t save_date;
     time(&save_date);
     strftime(fname, 100, "sensor_data_%y-%m-%d_%H-%M.txt", localtime(&save_date));
 
-    char txt_out_buf[500];
-    FILE *outfile;
-    //outfile = fopen("sensor_test.txt", "wt");
-    outfile = fopen(fname, "wt");
+    // construct final location
+    char full_path[200];
+    sprintf(full_path, "%s%s", savefilepath, fname);
 
+    // set location 
+    FILE *outfile;
+    outfile = fopen(full_path, "wt");
+
+    // text out buffer
+    char txt_out_buf[500];
     int cycle = 0;
+
+    // print header
+    fprintf(outfile, "buffer_id, sensor_id, sensor_voltage_volts, computertime\n");
 
     while (1) {
         
@@ -541,13 +535,9 @@ void *SensorBufferToDisk(void *input){
         if ((sensor_in_ptr > BUFFER_LENGTH/2) && (cycle == 0)){
             
             for (int i = 0; i < BUFFER_LENGTH/2; i++) {
-                // verbose mode
-                // sprintf(txt_out_buf, "Sensors: %i: \t Time: %i \t Slot: %d \t Voltage: %f \n", 
-                //       i, sensor_cpu_time[i], sensor_id[i], sensor_voltage[i]
-                // );
 
-                sprintf(txt_out_buf, "%i, %i, %d, %f \n", 
-                      i, sensor_cpu_time[i], sensor_id[i], sensor_voltage[i]
+                sprintf(txt_out_buf, "%i, %i, %f, %d \n", 
+                      i, sensor_id[i], sensor_voltage[i], sensor_cpu_time[i]
                 );
                 fprintf(outfile, "%s", txt_out_buf);
                 continue;            
@@ -558,14 +548,10 @@ void *SensorBufferToDisk(void *input){
         // read the top
         if ((sensor_in_ptr < BUFFER_LENGTH/2) && (cycle == 1)){
             for (int i = BUFFER_LENGTH/2; i < BUFFER_LENGTH; i++) {
-                
-                // verbose mode
-                // sprintf(txt_out_buf, "Sensors: %i: \t Time: %i \t Slot: %d \t Voltage: %f \n", 
-                //       i, sensor_cpu_time[i], sensor_id[i], sensor_voltage[i]
-                // );
+           
 
-                sprintf(txt_out_buf, "%i, %i, %d, %f \n", 
-                      i, sensor_cpu_time[i], sensor_id[i], sensor_voltage[i]
+                sprintf(txt_out_buf, "%i, %i, %f, %d  \n", 
+                      i, sensor_id[i], sensor_voltage[i], sensor_cpu_time[i]
                 );
                 fprintf(outfile, "%s", txt_out_buf);
                 continue;
@@ -579,22 +565,29 @@ void *SensorBufferToDisk(void *input){
 
 void *PPSBufferToDisk(void *input){
 
-    // char txt_out_buf[500];
-    // FILE *outfile;
-    // outfile = fopen("pps_test.txt", "wt");
-
-
+    // get file path
+    char *savefilepath = ini_get(((struct p_args*)input)->config, "savefilepath", "path");
+    
+    // generate file name
     char fname[200];
     time_t save_date;
     time(&save_date);
     strftime(fname, 100, "pps_data_%y-%m-%d_%H-%M.txt", localtime(&save_date));
 
-    char txt_out_buf[500];
-    FILE *outfile;
-    //outfile = fopen("pps_test.txt", "wt");
-    outfile = fopen(fname, "wt");
+    // construct final location
+    char full_path[200];
+    sprintf(full_path, "%s%s", savefilepath, fname);
 
+    // set location 
+    FILE *outfile;
+    outfile = fopen(full_path, "wt");
+
+    // text out buffer
+    char txt_out_buf[500];
     int cycle = 0;
+
+    // print header
+    fprintf(outfile, "buffer_id, count, cardcounter, computertime\n");
 
     while (1) {
         
@@ -603,13 +596,8 @@ void *PPSBufferToDisk(void *input){
             
             for (int i = 0; i < BUFFER_LENGTH/2; i++) {
                 
-                // verbose mode
-                // sprintf(txt_out_buf, "PPS: BufferPosition = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
-                //       i, pps_id[i], pps_cpu_time[i], pps_card_time[i]
-                // );
-
-                sprintf(txt_out_buf, "%i, %d, %i, %f \n", 
-                      i, pps_id[i], pps_cpu_time[i], pps_card_time[i]
+                sprintf(txt_out_buf, "%i, %d, %f, %i \n", 
+                      i, pps_id[i], pps_card_time[i], pps_cpu_time[i]
                 );
 
                 fprintf(outfile, "%s", txt_out_buf);
@@ -622,13 +610,8 @@ void *PPSBufferToDisk(void *input){
         if ((pps_in_ptr < BUFFER_LENGTH/2) && (cycle == 1)){
             for (int i = BUFFER_LENGTH/2; i < BUFFER_LENGTH; i++) {
 
-                // verbose mode
-                // sprintf(txt_out_buf, "PPS: BufferPosition = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
-                //       i, pps_id[i], pps_cpu_time[i], pps_card_time[i]
-                // );
-                
-                sprintf(txt_out_buf, "%i, %d, %i, %f \n", 
-                      i, pps_id[i], pps_cpu_time[i], pps_card_time[i]
+                sprintf(txt_out_buf, "%i, %d, %f, %i \n", 
+                      i, pps_id[i], pps_card_time[i], pps_cpu_time[i]
                 );
 
                 fprintf(outfile, "%s", txt_out_buf);
@@ -720,6 +703,8 @@ void *ControlThread(void *input){
         //printf("server received %d bytes\n", n);
 
         
+        //TODO: interogate command
+
         printf("server received command: %s \n", buf);
         
         if (strcmp(buf, "shutdown") == 0) {
@@ -786,7 +771,7 @@ int main(int argc, char **argv){
     SystemOpenHandler();
     ConfigureSensorPower(board, config);
 
-    // TODO: iterate over when initing threads, no need to init individually
+    // TODO: iterate over when initing threads, no need to init individually?
 
     // define threads.
     pthread_t control_thread;
