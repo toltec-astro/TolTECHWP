@@ -15,6 +15,7 @@
 #include <signal.h>
 #include <pthread.h>
 #include <netdb.h>
+#include <math.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -447,20 +448,20 @@ void *QuadThread(void *input){
 
 
 void *GeneratePacket(void *input){
-
-    // text out buffer
     int cycle = 0;
 
     // packet info
-    char packetname[200];
     time_t packettime;  
+    char packetname[200];   
 
     // data packet buffer
+    // (divide by size of an [uint/int/float])
     uint packet_buffer[PACKET_SIZE / 4];
         
-    // pre buffer
+    // pre buffer (in units of 4 bytes)
     uint prepackbuffer[2];
 
+    // TODO: REPEATING LOGIC (you can do better)
     while (1) {
         // read the bottom
         if ((quad_in_ptr > QUAD_BUFFER_LENGTH/2) && (cycle == 0)){
@@ -471,13 +472,52 @@ void *GeneratePacket(void *input){
             printf("%s\n", packetname);
 
             // dump this data in
-            for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {
+            for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {                
                 packet_buffer[i * 2] = quad_counter[i];
                 packet_buffer[(i * 2) + 1] = quad_card_time[i];
-
                 continue;
             }
             cycle = 1;
+
+            // TODO:
+            // TODO:
+            // TODO:
+            // TODO:
+            // PPS: grab the last four
+            // write in pointer is: pps_in_ptr - 1(after writing in)
+            // pps_id[], pps_card_time[]
+            int i_index, pre_modulo;
+            for (int i = 1; i < 5; i++){
+
+                // potentially could be done better using modulo math
+                if (pps_in_ptr - i < 0){
+                    i_index = BUFFER_LENGTH + (pps_in_ptr - i);
+                } else {
+                    i_index = (pps_in_ptr - i);
+                }
+                printf("%d: %u, %u \n", i_index, pps_id[i_index], pps_card_time[i_index]);
+            }       
+
+            //printf("    Last: %u, %u \n", pps_id[pps_in_ptr - 1], pps_card_time[pps_in_ptr - 1]);
+            //printf("2nd Last: %u, %u \n", pps_id[pps_in_ptr - 2], pps_card_time[pps_in_ptr - 2]);
+            //printf("3rd Last: %u, %u \n", pps_id[pps_in_ptr - 3], pps_card_time[pps_in_ptr - 3]);
+            //printf("4th Last: %u, %u \n", pps_id[pps_in_ptr - 4], pps_card_time[pps_in_ptr - 4]);
+            
+
+            // zero point: grab the last four
+            // yikes, gotta do this
+
+            // sensors: grab the last four for each sensor
+            // sensor_cpu_time
+            for (int i = 1; i < 13; i++){
+                if (sensor_in_ptr - i < 0){
+                    i_index = BUFFER_LENGTH + (sensor_in_ptr - i);
+                } else {
+                    i_index = (sensor_in_ptr - i);
+                }
+                printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
+                continue;
+            }
             
             FILE *f = fopen(packetname, "wb");
             fwrite(packet_buffer, sizeof(char), sizeof(packet_buffer), f);
@@ -526,6 +566,7 @@ void *QuadBufferToDisk(void *input){
     // print header
     fprintf(outfile, "buffer_id, count, cardcounter, computertime\n");
 
+    // TODO: REPEATING LOGIC (you can do better)
     while (1) {
         // if the bottom is ready  printf("Quad Bottom: %i, Quad Top: %i \n", quad_bot_flag, quad_top_flag);
         
@@ -538,9 +579,6 @@ void *QuadBufferToDisk(void *input){
                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
                 );
                 fprintf(outfile, "%s", txt_out_buf);
-                //printf("Quad: %d, %d, %d, %d \n", 
-                //      sizeof(i), sizeof(quad_counter[i]), sizeof(quad_card_time[i]), sizeof(quad_cpu_time[i])
-                //);
                 continue;
             }
             cycle = 1;
@@ -554,9 +592,6 @@ void *QuadBufferToDisk(void *input){
                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
                 );
                 fprintf(outfile, "%s", txt_out_buf);
-                //printf("Quad: %d, %d, %d, %d \n", 
-                //      sizeof(i), sizeof(quad_counter[i]), sizeof(quad_card_time[i]), sizeof(quad_cpu_time[i])
-                //);
                 continue;
             }
             cycle = 0;
@@ -592,6 +627,7 @@ void *SensorBufferToDisk(void *input){
     // print header
     fprintf(outfile, "buffer_id, sensor_id, sensor_voltage_volts, computertime\n");
 
+    // TODO: REPEATING LOGIC (you can do better)
     while (1) {
         
         // read the bottom
@@ -603,9 +639,6 @@ void *SensorBufferToDisk(void *input){
                       i, sensor_id[i], sensor_voltage[i], sensor_cpu_time[i]
                 );
                 fprintf(outfile, "%s", txt_out_buf);
-                //printf("Sensor: %d, %d, %d, %d \n", 
-                //      sizeof(i), sizeof(sensor_id[i]), sizeof(sensor_voltage[i]), sizeof(sensor_cpu_time[i])
-                //);
                 continue;            
             }
             cycle = 1;
@@ -614,15 +647,10 @@ void *SensorBufferToDisk(void *input){
         // read the top
         if ((sensor_in_ptr < BUFFER_LENGTH/2) && (cycle == 1)){
             for (int i = BUFFER_LENGTH/2; i < BUFFER_LENGTH; i++) {
-           
-
                 sprintf(txt_out_buf, "%i, %i, %f, %d  \n", 
                       i, sensor_id[i], sensor_voltage[i], sensor_cpu_time[i]
                 );
                 fprintf(outfile, "%s", txt_out_buf);
-                //printf("Sensor: %d, %d, %d, %d \n", 
-                //      sizeof(i), sizeof(sensor_id[i]), sizeof(sensor_voltage[i]), sizeof(sensor_cpu_time[i])
-                //);
                 continue;
             }
             cycle = 0;
@@ -658,6 +686,7 @@ void *PPSBufferToDisk(void *input){
     // print header
     fprintf(outfile, "buffer_id, count, cardcounter, computertime\n");
 
+    // TODO: REPEATING LOGIC (you can do better)
     while (1) {
         
         // read the bottom
@@ -685,9 +714,6 @@ void *PPSBufferToDisk(void *input){
                 sprintf(txt_out_buf, "%d, %d, %u, %u \n", 
                       i, pps_id[i], pps_card_time[i], pps_cpu_time[i]
                 );
-                //printf("PPS: %d, %d, %d, %d \n", 
-                //      sizeof(i), sizeof(pps_id[i]), sizeof(pps_card_time[i]), sizeof(pps_cpu_time[i])
-                //);
                 fprintf(outfile, "%s", txt_out_buf);
                 continue;
             }
