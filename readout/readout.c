@@ -470,7 +470,6 @@ void *GeneratePacket(void *input){
             for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {                
                 packet_buffer[i * 2] = quad_counter[i];
                 packet_buffer[(i * 2) + 1] = quad_card_time[i];
-                continue;
             }
             cycle = 1;
 
@@ -481,7 +480,7 @@ void *GeneratePacket(void *input){
             // PPS: grab the last four
             // write in pointer is: pps_in_ptr - 1(after writing in)
             // pps_id[], pps_card_time[]
-            int i_index, pre_modulo;
+            int i_index;
             int pps_start_position = (PACKET_SIZE/4) - 9;
             for (int i = 1; i < 5; i++){
                 // this is where the data is (potentially could be done better using modulo math)
@@ -493,41 +492,48 @@ void *GeneratePacket(void *input){
 
                 // this is where to put the data
                 packet_buffer[((i - 1) * 2 + pps_start_position)] = pps_id[i_index];
-                packet_buffer[((i - 1) * 2 + pps_start_position + 1)] = pps_card_time[i_index];
-                
-//              printf("pps_id: %d, card_time: %d \n", , );
-//              printf("Packet Location: %d| %d: %u, %u \n", 
-//                  (i + pps_start_position - 1) 
-//                  , i_index, pps_id[i_index], pps_card_time[i_index]);
+                packet_buffer[((i - 1) * 2 + pps_start_position + 1)] = pps_card_time[i_index];             
+                printf("%d: %u, %u \n", 
+                   i_index, pps_id[i_index], pps_card_time[i_index]);           
             }       
-
-            //printf("    Last: %u, %u \n", pps_id[pps_in_ptr - 1], pps_card_time[pps_in_ptr - 1]);
-            //printf("2nd Last: %u, %u \n", pps_id[pps_in_ptr - 2], pps_card_time[pps_in_ptr - 2]);
-            //printf("3rd Last: %u, %u \n", pps_id[pps_in_ptr - 3], pps_card_time[pps_in_ptr - 3]);
-            //printf("4th Last: %u, %u \n", pps_id[pps_in_ptr - 4], pps_card_time[pps_in_ptr - 4]);
-            
 
             // ZERO POINT
             // grab the last four
             // yikes, gotta do this
+            int zeropt_start_position = (PACKET_SIZE / 4) - 17;
+            for (int i = 1; i < 5; i++){
+                // this is where the data is (potentially could be done better using modulo math)
+                if (pps_in_ptr - i < 0){
+                    i_index = BUFFER_LENGTH + (pps_in_ptr - i);
+                } else {
+                    i_index = (pps_in_ptr - i);
+                }
+
+                packet_buffer[((i - 1) * 2 + zeropt_start_position)] = 711;
+                packet_buffer[((i - 1) * 2 + zeropt_start_position + 1)] = 712;             
+            }
 
             // SENSORS
             // grab the last four for each sensor
             // sensor_cpu_time
+            int sensor_start_position = (PACKET_SIZE / 4) - 53;
             for (int i = 1; i < 13; i++){
                 if (sensor_in_ptr - i < 0){
                     i_index = BUFFER_LENGTH + (sensor_in_ptr - i);
                 } else {
                     i_index = (sensor_in_ptr - i);
                 }
+                packet_buffer[((i - 1) * 3 + sensor_start_position)] = sensor_cpu_time[i_index];
+                packet_buffer[((i - 1) * 3 + sensor_start_position + 1)] = sensor_id[i_index];
+                packet_buffer[((i - 1) * 3 + sensor_start_position + 2)] = sensor_voltage[i_index];
+
                 printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
-                continue;
             }
             
             // TIMESTAMP
             // get and add timestamp at the end
             time(&packettime);
-            packet_buffer[(PACKET_SIZE / 4)-1] = packettime;
+            packet_buffer[(PACKET_SIZE / 4) - 1] = packettime;
 
             // generate file name
             strftime(packetname, 100, "%y-%m-%d_%H-%M-%S_quad_data.data", localtime(&packettime));
@@ -542,7 +548,7 @@ void *GeneratePacket(void *input){
 
             time(&packettime);
             strftime(packetname, 100, "%y-%m-%d_%H-%M-%S_quad_data.txt", localtime(&packettime));
-            printf("%s\n", packetname);
+            //printf("%s\n", packetname);
 
             for (int i = QUAD_BUFFER_LENGTH/2; i < QUAD_BUFFER_LENGTH; i++) {
 
