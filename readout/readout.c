@@ -466,11 +466,6 @@ void *GeneratePacket(void *input){
         // read the bottom
         if ((quad_in_ptr > QUAD_BUFFER_LENGTH/2) && (cycle == 0)){
 
-            // generate file name
-            time(&packettime);
-            strftime(packetname, 100, "%y-%m-%d_%H-%M-%S_quad_data.data", localtime(&packettime));
-            printf("%s\n", packetname);
-
             // dump this data in
             for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {                
                 packet_buffer[i * 2] = quad_counter[i];
@@ -487,15 +482,23 @@ void *GeneratePacket(void *input){
             // write in pointer is: pps_in_ptr - 1(after writing in)
             // pps_id[], pps_card_time[]
             int i_index, pre_modulo;
+            int pps_start_position = (PACKET_SIZE/4) - 9;
             for (int i = 1; i < 5; i++){
-
-                // potentially could be done better using modulo math
+                // this is where the data is (potentially could be done better using modulo math)
                 if (pps_in_ptr - i < 0){
                     i_index = BUFFER_LENGTH + (pps_in_ptr - i);
                 } else {
                     i_index = (pps_in_ptr - i);
                 }
-                printf("%d: %u, %u \n", i_index, pps_id[i_index], pps_card_time[i_index]);
+
+                // this is where to put the data
+                packet_buffer[((i - 1) * 2 + pps_start_position)] = pps_id[i_index];
+                packet_buffer[((i - 1) * 2 + pps_start_position + 1)] = pps_card_time[i_index];
+                
+//              printf("pps_id: %d, card_time: %d \n", , );
+//              printf("Packet Location: %d| %d: %u, %u \n", 
+//                  (i + pps_start_position - 1) 
+//                  , i_index, pps_id[i_index], pps_card_time[i_index]);
             }       
 
             //printf("    Last: %u, %u \n", pps_id[pps_in_ptr - 1], pps_card_time[pps_in_ptr - 1]);
@@ -504,10 +507,12 @@ void *GeneratePacket(void *input){
             //printf("4th Last: %u, %u \n", pps_id[pps_in_ptr - 4], pps_card_time[pps_in_ptr - 4]);
             
 
-            // zero point: grab the last four
+            // ZERO POINT
+            // grab the last four
             // yikes, gotta do this
 
-            // sensors: grab the last four for each sensor
+            // SENSORS
+            // grab the last four for each sensor
             // sensor_cpu_time
             for (int i = 1; i < 13; i++){
                 if (sensor_in_ptr - i < 0){
@@ -519,6 +524,14 @@ void *GeneratePacket(void *input){
                 continue;
             }
             
+            // TIMESTAMP
+            // get and add timestamp at the end
+            time(&packettime);
+            packet_buffer[(PACKET_SIZE / 4)-1] = packettime;
+
+            // generate file name
+            strftime(packetname, 100, "%y-%m-%d_%H-%M-%S_quad_data.data", localtime(&packettime));
+            printf("%s %u\n", packetname, packettime);
             FILE *f = fopen(packetname, "wb");
             fwrite(packet_buffer, sizeof(char), sizeof(packet_buffer), f);
             fclose(f);          
@@ -874,7 +887,7 @@ int main(int argc, char **argv){
     // TODO: iterate over when initing threads, no need to init individually?
 
     // define threads.
-    pthread_t control_thread, test_thread;
+    pthread_t control_thread, packet_thread;
     pthread_t quad_thread, pps_thread, sensor_thread;
     pthread_t quad_write_thread, pps_write_thread, sensor_write_thread; 
     
@@ -889,7 +902,7 @@ int main(int argc, char **argv){
     pthread_create(&sensor_write_thread, NULL, SensorBufferToDisk, (void *)thread_args);
     pthread_create(&control_thread, NULL, ControlThread, (void *)thread_args);   
 
-    pthread_create(&test_thread, NULL, GeneratePacket, (void *)thread_args);   
+    pthread_create(&packet_thread, NULL, GeneratePacket, (void *)thread_args);   
      
     // join back to main.
     pthread_join(control_thread, NULL);
@@ -900,7 +913,7 @@ int main(int argc, char **argv){
     pthread_join(pps_write_thread, NULL);
     pthread_join(sensor_write_thread, NULL);
 
-    pthread_join(test_thread, NULL);
+    pthread_join(packet_thread, NULL);
     
     // free malloc'ed data.
     free(thread_args);
