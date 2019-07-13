@@ -490,7 +490,7 @@ void *GeneratePacket(void *input){
                     i_index = (pps_in_ptr - i);
                 }
 
-                // this is where to put the data
+                // this is where to put the data (HTONL)
                 packet_buffer[((i - 1) * 2 + pps_start_position)] = pps_id[i_index];
                 packet_buffer[((i - 1) * 2 + pps_start_position + 1)] = pps_card_time[i_index];             
                 printf("%d: %u, %u \n", 
@@ -897,7 +897,7 @@ int main(int argc, char **argv){
     pthread_t quad_thread, pps_thread, sensor_thread;
     pthread_t quad_write_thread, pps_write_thread, sensor_write_thread; 
     
-    // start reading threads
+    // start reading to buffer threads
     pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
     pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
     pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);   
@@ -920,7 +920,6 @@ int main(int argc, char **argv){
     pthread_join(sensor_write_thread, NULL);
 
     pthread_join(packet_thread, NULL);
-    
     // free malloc'ed data.
     free(thread_args);
 }
