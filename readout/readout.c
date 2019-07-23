@@ -21,9 +21,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-
-
-
 // storage parameters
 int sensor_in_ptr = 0;
 int sensor_id[BUFFER_LENGTH];
@@ -448,6 +445,21 @@ void *QuadThread(void *input){
 
 
 void *GeneratePacket(void *input){
+
+    //////
+    int sockfd;                             /* socket */
+    int portno;                             /* destination port */
+    struct sockaddr_in destaddr;            /* destination address */
+    int n;                              
+
+    portno = 1213;
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    bzero((char *)&destaddr, sizeof(destaddr));
+    destaddr.sin_family = AF_INET;
+    destaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    destaddr.sin_port = htons((unsigned short)portno);
+    //////
+
     int cycle = 0;
 
     // packet info
@@ -540,10 +552,12 @@ void *GeneratePacket(void *input){
             printf("%s %u\n", packetname, packettime);
             FILE *f = fopen(packetname, "wb");
             fwrite(packet_buffer, sizeof(char), sizeof(packet_buffer), f);
-            fclose(f);          
+            fclose(f);  
+            n = sendto(sockfd, packet_buffer, sizeof(packet_buffer), 0, (struct sockaddr *)&destaddr, sizeof(destaddr));        
         }
 
         // read the top
+        // WRAP IT IN A FUNCTION (PARAMETERIZE )
         if ((quad_in_ptr < QUAD_BUFFER_LENGTH/2) && (cycle == 1)){
 
             time(&packettime);
@@ -747,20 +761,17 @@ void *PPSBufferToDisk(void *input){
 
 void *ControlThread(void *input){
     
-    int sockfd;     /* socket */
-    int portno;     /* port to listen on */
-    int clientlen;      /* byte size of client's address */
-    struct sockaddr_in serveraddr;  /* server's addr */
-    struct sockaddr_in clientaddr;  /* client addr */
-    struct hostent *hostp;  /* client host info */
-    char *buf;      /* message buf */
-    char *hostaddrp;    /* dotted decimal host addr string */
-    int optval;     /* flag value for setsockopt */
-    int n;          /* message byte size */
+    int sockfd;                 /* socket */
+    int portno;                 /* port to listen on */
+    int clientlen;              /* byte size of client's address */
+    struct sockaddr_in serveraddr;      /* server's addr */
+    struct sockaddr_in clientaddr;      /* client addr */
+    struct hostent *hostp;          /* client host info */
+    char *buf;                  /* message buf */
+    char *hostaddrp;            /* dotted decimal host addr string */
+    int optval;                 /* flag value for setsockopt */
+    int n;                      /* message byte size */
 
-    /* 
-     * check command line arguments 
-     */
     portno = 8787;
 
     /* 
@@ -768,12 +779,12 @@ void *ControlThread(void *input){
      */
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0)
-        error("ERROR opening socket");
+        error("Error Opening Socket");
 
     /* setsockopt: Handy debugging trick that lets 
      * us rerun the server immediately after we kill it; 
      * otherwise we have to wait about 20 secs. 
-     * Eliminates "ERROR on binding: Address already in use" error. 
+     * Eliminates "Error on binding: Address already in use" error. 
      */
     optval = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int));
@@ -790,7 +801,7 @@ void *ControlThread(void *input){
      * bind: associate the parent socket with a port 
      */
     if (bind(sockfd, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) < 0)
-        error("ERROR on binding");
+        error("Error on binding");
 
     /* 
      * main loop: wait for a datagram, then echo it
@@ -822,10 +833,9 @@ void *ControlThread(void *input){
         //printf("server received %d bytes\n", n);
 
         
-        //TODO: interogate command
+        //TODO: interrogate command
 
-        printf("server received command: %s \n", buf);
-        
+        printf("server received command: %s \n", buf); 
         if (strcmp(buf, "shutdown") == 0) {
             free(buf);
             printf("Shutdown Command Received\n");  
@@ -838,6 +848,7 @@ void *ControlThread(void *input){
             exit(0);    
         }
 
+        // TODO: WHY DOES THIS LOOK LIKE A MESS?!?
         if (strcmp(buf, "get_data") == 0) {
             printf("\n--- Data Retrieval Initiated ---\n");
             printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
@@ -860,9 +871,33 @@ void *ControlThread(void *input){
 
     
     return 0;
-
 }
 
+
+void *PublishThread(void *input){
+    int sockfd;                         /* socket */
+    int portno;                         /* destination port */
+    struct sockaddr_in destaddr;            /* destination address */
+    int n;                              
+
+    // TOOD: put this in a config
+    // TOOD:  have the listener server also pull from that config
+    portno = 1212;
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    bzero((char *)&destaddr, sizeof(destaddr));
+    destaddr.sin_family = AF_INET;
+    destaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    destaddr.sin_port = htons((unsigned short)portno);
+
+    char response[200];
+        
+    while (1) {
+    sprintf(response, "BEGIN %i, %i, %d, %f END", sensor_in_ptr, sensor_cpu_time[sensor_in_ptr], sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]);
+        n = sendto(sockfd, response, sizeof(response), 0, (struct sockaddr *)&destaddr, sizeof(destaddr));
+    printf("\n%i %i %d %f\n", sensor_in_ptr, sensor_cpu_time[sensor_in_ptr], sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]);        
+    sleep(1);
+    }
+}
 
 int main(int argc, char **argv){
     // signal handler for abrupt/any close
@@ -891,11 +926,12 @@ int main(int argc, char **argv){
     ConfigureSensorPower(board, config);
 
     // TODO: iterate over when initing threads, no need to init individually?
+    // TODO: reevaluate the necessity of the write to disk threads --> maybe remove them for now.
 
     // define threads.
-    pthread_t control_thread, packet_thread;
+    pthread_t control_thread, packet_thread;//, publish_thread;
     pthread_t quad_thread, pps_thread, sensor_thread;
-    pthread_t quad_write_thread, pps_write_thread, sensor_write_thread; 
+    //pthread_t quad_write_thread, pps_write_thread, sensor_write_thread; 
     
     // start reading to buffer threads
     pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
@@ -903,21 +939,23 @@ int main(int argc, char **argv){
     pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);   
 
     // start the writing threads
-    pthread_create(&quad_write_thread, NULL, QuadBufferToDisk, (void *)thread_args);
-    pthread_create(&pps_write_thread, NULL, PPSBufferToDisk, (void *)thread_args);
-    pthread_create(&sensor_write_thread, NULL, SensorBufferToDisk, (void *)thread_args);
+    //pthread_create(&quad_write_thread, NULL, QuadBufferToDisk, (void *)thread_args);
+    //pthread_create(&pps_write_thread, NULL, PPSBufferToDisk, (void *)thread_args);
+    //pthread_create(&sensor_write_thread, NULL, SensorBufferToDisk, (void *)thread_args);
     pthread_create(&control_thread, NULL, ControlThread, (void *)thread_args);   
 
     pthread_create(&packet_thread, NULL, GeneratePacket, (void *)thread_args);   
+    //pthread_create(&publish_thread, NULL, PublishThread, (void *)thread_args);   
      
     // join back to main.
     pthread_join(control_thread, NULL);
     pthread_join(quad_thread, NULL);
     pthread_join(pps_thread, NULL);
     pthread_join(sensor_thread, NULL);
-    pthread_join(quad_write_thread, NULL);
-    pthread_join(pps_write_thread, NULL);
-    pthread_join(sensor_write_thread, NULL);
+    //pthread_join(quad_write_thread, NULL);
+    //pthread_join(pps_write_thread, NULL);
+    //pthread_join(sensor_write_thread, NULL);
+    //pthread_join(publish_thread, NULL);
 
     pthread_join(packet_thread, NULL);
     // free malloc'ed data.
