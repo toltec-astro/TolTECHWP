@@ -44,22 +44,27 @@
       ./ Use code from galilcomm.py, look at code from HAWC irc
       ./ Set up file and connection configuration
       ./ Make galilcom and reconnect functions (both use self.comm)
-        * checks number of commands and throws error if missing number of
-          commands or ? received
-        * to test: generate both of these with wrong commands
       ./ Set up connection and forward messages
-      * Error handling, reconnect 
       ./ Allow (re)connect and disconnect command
       ./ Require exit command for disconnect at end
       ./ Make interface to talk to galil
       ./ Make full galil interface loop (look at code from Steve on HAWC)
-      * Add initialization and regular comcheck (with warning if lost signal)
+      * Error handling, reconnect 
+      * Check number of command and report error if missing number of : or reports
+        error if ?
+      * Add initialization check and regular comcheck (with warning if lost signal)
+      * Regularly set galil internal variable for galil watchdog to ABort after
+        set time.
     * Readout:
       * Make list of commands
       * Make command receiver which sends commands to the readout
     * Telecscope Control System
       * Make list of commands
       * Add interface for telescope control system
+    * Updates:
+      * Make sure galil response is properly formatted
+      * Parse galil response for errors and report error messages
+      * Report detailed commands sent to galil in interface (not only log)
     * Idea (optional but maybe useful for debug): webserver interface
       * For one user only
       * For multiple users (could also do slackbot)
