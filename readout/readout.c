@@ -502,8 +502,8 @@ void *GeneratePacket(void *input){
                 // this is where to put the data (HTONL)
                 packet_buffer[((i - 1) * 2 + pps_start_position)] = pps_id[i_index];
                 packet_buffer[((i - 1) * 2 + pps_start_position + 1)] = pps_card_time[i_index];             
-                printf("%d: %u, %u \n", 
-                   i_index, pps_id[i_index], pps_card_time[i_index]);           
+                // printf("%d: %u, %u \n", 
+                //    i_index, pps_id[i_index], pps_card_time[i_index]);           
             }       
 
             // ZERO POINT
@@ -535,7 +535,7 @@ void *GeneratePacket(void *input){
                 packet_buffer[((i - 1) * 3 + sensor_start_position + 1)] = sensor_id[i_index];
                 packet_buffer[((i - 1) * 3 + sensor_start_position + 2)] = sensor_voltage[i_index];
 
-                printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
+                //printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
             }
             
             /* TIMESTAMP */
