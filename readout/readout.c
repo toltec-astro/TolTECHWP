@@ -47,9 +47,9 @@ void ConfigureSensorPower(int board, ini_t *config)
     char *channel = ini_get(config, "sensors.power", "output_channel");
 
     // print data
-    // printf("range: %d\n", atoi(range));
-    // printf("voltage_setpoint: %d\n", (int)strtol(voltage_setpoint, NULL, 0));
-    // printf("channel: %d\n", atoi(channel));
+    // printf("voltage range: %d\n", atoi(range));
+    // printf("voltage setpoint: %d\n", (int)strtol(voltage_setpoint, NULL, 0));
+    // printf("voltage channel: %d\n", atoi(channel));
 
     // normal runmode / not safemode.
     int runmode = 0;
@@ -74,18 +74,16 @@ void ConfigureSensors(int board, ini_t *config)
     char sensor_id[30];
     for(int sens = 1; sens <= atoi(sens_count); ++sens)
     {
-        printf("sensor number: %d\n", sens);
-        
         //// construct the string
         sprintf(sensor_id, "sensors.details.%02d", sens);
-
-        printf("-------------\n");
-        printf("id: %s\n", sensor_id);
 
         // get the configuration settings
         char *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
         char *channel = ini_get(config, sensor_id, "sensor_chan");
         
+        printf("sensor number: %d\n", sens);
+        printf("-------------\n");
+        printf("id: %s\n", sensor_id);
         printf("timeslot: %d\n", atoi(timeslot));
         printf("channel: %d\n", atoi(channel));
 
@@ -156,11 +154,11 @@ void ConfigureTimerCounter(int board, ini_t *config)
     int timer_flags;
 
     int *datausec = ini_get(config, "intervals", "carddata_intervals");
-    printf("datausec: %d\n", atoi(datausec));  
+      
 
     int *counttime = ini_get(config, "counter.timer", "counter_num");
+    printf("datausec: %d\n", atoi(datausec));
     printf("counttime (2): %d\n", atoi(counttime));    
-
     printf("Configure Timer Counter. \n");
     timer_flags = S826_CounterModeWrite(board, atoi(counttime),  // Configure counter mode:
             S826_CM_K_1MHZ |                     // clock source = 1 MHz internal
