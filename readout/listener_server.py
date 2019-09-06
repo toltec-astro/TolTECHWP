@@ -48,7 +48,7 @@ def listen_UDP(ip='127.0.0.1', rec_port=1213):
     # bind listening port
     rec_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     rec_sock.bind((ip, rec_port))
-
+    print('Bound to {} {}...'.format(ip, rec_port))
     # recieve and print
     packet_size = 8192
     while True:
