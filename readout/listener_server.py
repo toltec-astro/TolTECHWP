@@ -61,7 +61,7 @@ def listen_UDP(ip='127.0.0.1', rec_port=1213):
         pps_data = data[packet_size-36:packet_size-4]
         zeropt_data = data[packet_size-68:packet_size-36]
         sensor_data = data[packet_size-212:packet_size-68]
-        parse_pps(pps_data)
+        print(parse_pps(pps_data))
         #quadrature_data = data[0:1600]
         #parse_quad(quadrature_data)
 
