@@ -53,8 +53,8 @@ def listen_UDP(ip='127.0.0.1', rec_port=1213):
     packet_size = 8192
     while True:
         data, addr = rec_sock.recvfrom(packet_size)
-        print('from:', str(addr))
-        print('response:', str(data))
+        # print('from:', str(addr))
+        # print('response:', str(data))
 
         # how data is stored
         unix_time = data[packet_size-4:]
