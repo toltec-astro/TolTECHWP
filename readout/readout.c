@@ -475,17 +475,13 @@ void *GeneratePacket(void *input){
         // read the bottom
         if ((quad_in_ptr > QUAD_BUFFER_LENGTH/2) && (cycle == 0)){
 
-            // put in the readout data.
+            // Put in the readout data.
             for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {                
                 packet_buffer[i * 2] = quad_counter[i];
                 packet_buffer[(i * 2) + 1] = quad_card_time[i];
             }
             cycle = 1;
 
-            // TODO:
-            // TODO:
-            // TODO:
-            // TODO:
             // PPS: grab the last four
             // write in pointer is: pps_in_ptr - 1(after writing in)
             // pps_id[], pps_card_time[]
@@ -584,8 +580,8 @@ void *GeneratePacket(void *input){
                 // this is where to put the data (HTONL)
                 packet_buffer[((i - 1) * 2 + pps_start_position)] = pps_id[i_index];
                 packet_buffer[((i - 1) * 2 + pps_start_position + 1)] = pps_card_time[i_index];             
-                printf("%d: %u, %u \n", 
-                   i_index, pps_id[i_index], pps_card_time[i_index]);           
+                // printf("%d: %u, %u \n", 
+                //    i_index, pps_id[i_index], pps_card_time[i_index]);           
             }       
 
             // ZERO POINT
@@ -617,7 +613,7 @@ void *GeneratePacket(void *input){
                 packet_buffer[((i - 1) * 3 + sensor_start_position + 1)] = sensor_id[i_index];
                 packet_buffer[((i - 1) * 3 + sensor_start_position + 2)] = sensor_voltage[i_index];
 
-                printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
+               // printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
             }
             
             /* TIMESTAMP */
