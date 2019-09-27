@@ -8,6 +8,7 @@
 
 import sys
 import queue
+import time
 from interparent import InterParent
 #from __builtin__ import False
 
@@ -26,7 +27,7 @@ class InterUser(InterParent):
         while not self.exit:
             # Get response and print
             try:
-                resp = self.queue.get(timeout=0.2)
+                resp = self.queue.get(timeout=0.1)
             except queue.Empty:
                 resp = ''
             if len(resp):
@@ -43,9 +44,19 @@ class InterUser(InterParent):
                 # Set command to empty to get all messages
                 command = ''
             # If it's help -> print help message
-            if 'help' in command.lower()[:5]:
+            if 'help' in command.lower()[:4]:
                 with open(self.config['userinterface']['helpfile'],'rt') as f:
                     print(f.read())
+                # Print all help messages
+                if 'help all' in command.lower()[:8]:
+                    print('== Asking all agents for help: ==')
+                    for a in self.agents:
+                        self.sendtask(a + ' help')
+                # Set command to empty to get all messages
+                command = ''
+            # If it's config -> print the configuration
+            if 'config' in command.lower()[:7]:
+                self.config.write(sys.stdout)
                 # Set command to empty to get all messages
                 command = ''
             # Check if exit
@@ -53,14 +64,15 @@ class InterUser(InterParent):
                 self.exit = True
                 # Set command to empty to get all messages
                 command = ''
-            # Empty command -> empty queue
+            # Empty command -> empty the queue
             if not len(command):
                 resp = ' '
                 while len(resp):
                     if 'exit' in resp.lower()[:5]:
                         self.exit = True
                     try:
-                        resp = self.queue.get(timeout=1.0)
+                        time.sleep(1.0)
+                        resp = self.queue.get(timeout=0.1)
                     except queue.Empty:
                         resp = ''
                     if len(resp):
@@ -72,10 +84,10 @@ class InterUser(InterParent):
                 agent = ''
                 # Check if command starts with valid agent name
                 if command.find(' ')<0:
-                    # no space -> no agent
+                    # No space -> No agent
                     agentincmd = False
                 else:
-                    # get possibel agent name as first word of command
+                    # get possible agent name as first word of command
                     agent = command.split(' ')[0].strip().lower()
                 if agentincmd:
                     if not agent in self.agents:

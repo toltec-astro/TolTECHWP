@@ -47,7 +47,7 @@ class InterSocket(InterParent):
                 self.sendtask(command)
                 # Wait for response
                 try:
-                    response = self.queue.get(timeout = 0.5)
+                    response = self.queue.get(timeout = 0.1)
                 except queue.Empty:
                     response = ''
                 # Return response

@@ -8,6 +8,7 @@ Enter commands here: Format is recipient (agent) name
 
 Special Commands:
     help: displays this message
+    help all: will request help messages from all agents
     exit: will quit the controller application
     status: will list all available recipients (agents)
     config: will print the current configuration
