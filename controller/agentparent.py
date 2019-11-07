@@ -1,7 +1,7 @@
 """ TolTEC HWP Control Program - Agent Parent
     =========================================
     
-    Tis is the parent object for all agents for the
+    This is the parent object for all agents for the
     TolTEC HWP control program.
     
     Agents get command or request messages from interfaces

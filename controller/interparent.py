@@ -15,7 +15,7 @@
     Each communications consists of a message and a queue for
     the agent to put response messages.
     
-    Interfaces are callable object to be started as a thread.
+    Interfaces are callable objects to be started as a thread.
     
     InterParent has a call function which will sent sample
     messages to all registered agents.
@@ -35,7 +35,7 @@ class InterParent():
         self.name = name
         self.queue = queue.Queue() # Queue object for responses
         self.config = config # configuration
-        self.agents = {} # dictionary for agent queues
+        self.agents = {} # dictionary for agent queues (use addagent)
         self.exit = False # Indicates if loop should exit
         self.log = logging.getLogger('Interface.'+self.name)
         

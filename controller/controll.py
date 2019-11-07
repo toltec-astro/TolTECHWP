@@ -61,6 +61,12 @@
     * Telecscope Control System
       * Make list of commands
       * Add interface for telescope control system
+    ./ Socket interface
+    * Server Interface:
+      * Make object and thread
+      * Make simple server thread (responds with galil status)
+      * Make post message window and get response (and timeout) and rest of queue
+      * Add to list last log messages (make autoupdate, use HAWC code)
     * Updates:
       * Make sure galil response is properly formatted
       * Parse galil response for errors and report error messages
@@ -86,6 +92,7 @@ from agentparent import AgentParent
 from interparent import InterParent
 from userinterface import InterUser
 from socketinterface import InterSocket
+from webinterface import InterWeb
 from loggercontrol import LoggerControl
 from galilagent import GalilAgent
 from configagent import ConfigAgent
@@ -100,6 +107,7 @@ def hwpcontrol(confilename):
     logctrl = LoggerControl(config, 'Log')
     inusr = InterUser(config, 'User')
     insock = InterSocket(config,'Socket')
+    inweb = InterWeb(config,'Web')
     agconf = ConfigAgent(config, 'Conf')
     agresp = AgentParent(config, 'Echo')
     aggal = GalilAgent(config, 'Galil')
@@ -110,6 +118,9 @@ def hwpcontrol(confilename):
     insock.addagent('Echo',agresp.queue)
     insock.addagent('Galil',aggal.queue)
     insock.addagent('Conf',agconf.queue)
+    inweb.addagent('Echo',agresp.queue)
+    inweb.addagent('Galil',aggal.queue)
+    inweb.addagent('Conf',agconf.queue)
     # Run them as threads (both as daemons such that they shut down on exit)
     logth = threading.Thread(target = logctrl)
     logth.daemon = True
@@ -123,12 +134,15 @@ def hwpcontrol(confilename):
     inuth.daemon = True
     insth = threading.Thread(target = insock)
     insth.daemon = True
+    inwth = threading.Thread(target = inweb)
+    inwth.daemon = True
     logth.start()
     agrth.start()
     inuth.start()
     aggth.start()
     agcon.start()
     insth.start()
+    inwth.start()
     # Wait and do some stuff
     time.sleep(2)
     agresp.queue.put(('Do It',inusr.queue))
