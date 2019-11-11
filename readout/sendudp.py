@@ -16,7 +16,7 @@ def sendreceive_UDP(message, ip='127.0.0.1', port=8787, rec_port=5555):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.sendto(bytes(message, 'utf-8'), (ip, port))
 
-    # recieve and print
+    # receive and print
     data, addr = sock.recvfrom(4096)
     print('from:', str(addr))
     print('response:', str(data.decode("utf-8") ))

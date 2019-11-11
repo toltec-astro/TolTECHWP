@@ -1,7 +1,8 @@
 #define S826_CM_XS_CH0         2
-#define QUAD_BUFFER_LENGTH     8000
+#define QUAD_BUFFER_LENGTH     400
 #define BUFFER_LENGTH          20
 #define BUFSIZE                2048
+#define PACKET_SIZE            8192
 
 #include "../vend/ini/ini.h"
 #include "../vend/sdk_826_linux_3.3.11/demo/826api.h"
@@ -14,27 +15,27 @@
 #include <signal.h>
 #include <pthread.h>
 #include <netdb.h>
+#include <math.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-
 // storage parameters
 int sensor_in_ptr = 0;
 int sensor_id[BUFFER_LENGTH];
-int sensor_cpu_time[BUFFER_LENGTH];
+uint sensor_cpu_time[BUFFER_LENGTH];
 float sensor_voltage[BUFFER_LENGTH];
 
 int pps_in_ptr = 0;
-int pps_id[BUFFER_LENGTH];
-int pps_cpu_time[BUFFER_LENGTH];
-float pps_card_time[BUFFER_LENGTH];
+uint pps_id[BUFFER_LENGTH];
+uint pps_cpu_time[BUFFER_LENGTH];
+uint pps_card_time[BUFFER_LENGTH];
 
 int quad_in_ptr = 0;
-int quad_counter[QUAD_BUFFER_LENGTH];
-int quad_cpu_time[QUAD_BUFFER_LENGTH];
-float quad_card_time[QUAD_BUFFER_LENGTH];
+uint quad_counter[QUAD_BUFFER_LENGTH];
+uint quad_cpu_time[QUAD_BUFFER_LENGTH];
+uint quad_card_time[QUAD_BUFFER_LENGTH];
 
 int shutdown_flag = 0;
 
@@ -46,9 +47,9 @@ void ConfigureSensorPower(int board, ini_t *config)
     char *channel = ini_get(config, "sensors.power", "output_channel");
 
     // print data
-    // printf("range: %d\n", atoi(range));
-    // printf("voltage_setpoint: %d\n", (int)strtol(voltage_setpoint, NULL, 0));
-    // printf("channel: %d\n", atoi(channel));
+    // printf("voltage range: %d\n", atoi(range));
+    // printf("voltage setpoint: %d\n", (int)strtol(voltage_setpoint, NULL, 0));
+    // printf("voltage channel: %d\n", atoi(channel));
 
     // normal runmode / not safemode.
     int runmode = 0;
@@ -73,18 +74,16 @@ void ConfigureSensors(int board, ini_t *config)
     char sensor_id[30];
     for(int sens = 1; sens <= atoi(sens_count); ++sens)
     {
-        printf("sensor number: %d\n", sens);
-        
         //// construct the string
         sprintf(sensor_id, "sensors.details.%02d", sens);
-
-        printf("-------------\n");
-        printf("id: %s\n", sensor_id);
 
         // get the configuration settings
         char *timeslot = ini_get(config, sensor_id, "sensor_timeslot");
         char *channel = ini_get(config, sensor_id, "sensor_chan");
         
+        printf("sensor number: %d\n", sens);
+        printf("-------------\n");
+        printf("id: %s\n", sensor_id);
         printf("timeslot: %d\n", atoi(timeslot));
         printf("channel: %d\n", atoi(channel));
 
@@ -155,11 +154,11 @@ void ConfigureTimerCounter(int board, ini_t *config)
     int timer_flags;
 
     int *datausec = ini_get(config, "intervals", "carddata_intervals");
-    printf("datausec: %d\n", atoi(datausec));  
+      
 
     int *counttime = ini_get(config, "counter.timer", "counter_num");
+    printf("datausec: %d\n", atoi(datausec));
     printf("counttime (2): %d\n", atoi(counttime));    
-
     printf("Configure Timer Counter. \n");
     timer_flags = S826_CounterModeWrite(board, atoi(counttime),  // Configure counter mode:
             S826_CM_K_1MHZ |                     // clock source = 1 MHz internal
@@ -251,7 +250,7 @@ void *PPSThread(void *input){
             pps_card_time[pps_in_ptr] = tstamp;
 
             if (debug == 1) {
-                printf("PPS: BufferPosition = %i \t Count = %d \t CPUTime = %i \t RawCardTime = %f \n", 
+                printf("PPS: BufferPosition = %d \t Count = %d \t CPUTime = %d \t RawCardTime = %u \n", 
                      pps_in_ptr, pps_id[pps_in_ptr], pps_cpu_time[pps_in_ptr], pps_card_time[pps_in_ptr]);
             }
     
@@ -326,7 +325,7 @@ void *SensorThread(void *input){
             
             // print out data if debug
             if (debug == 1) {
-                printf("Sensors: %i \t Time: %i \t Slot: %d \t Voltage: %f \n", sensor_in_ptr, 
+                printf("Sensors: %d \t Time: %u \t Slot: %u \t Voltage: %f \n", sensor_in_ptr, 
                     sensor_cpu_time[sensor_in_ptr], sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]
                 );
             }
@@ -417,7 +416,7 @@ void *QuadThread(void *input){
             quad_card_time[quad_in_ptr] = tstamp;
 
             if (debug == 1) {
-                printf("Quad: Buffer ID = %i, Count = %d, CardTime = %.3f, CPUTime = %i \n", 
+                printf("Quad: Buffer ID = %d, Count = %d, CardTime = %u, CPUTime = %u \n", 
                    quad_in_ptr, quad_counter[quad_in_ptr], quad_card_time[quad_in_ptr], quad_cpu_time[quad_in_ptr]);  
             }
             
@@ -442,9 +441,197 @@ void *QuadThread(void *input){
     return 0;
 }
 
+
+void *GeneratePacket(void *input){
+
+    //////
+    int sockfd;                             /* socket */
+    int portno;                             /* destination port */
+    struct sockaddr_in destaddr;            /* destination address */
+    int n;                              
+
+    portno = 1213;
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    bzero((char *)&destaddr, sizeof(destaddr));
+    destaddr.sin_family = AF_INET;
+    destaddr.sin_addr.s_addr = htonl(INADDR_ANY); // inet_addr("10.32.40.213");
+    destaddr.sin_port = htons((unsigned short)portno);
+
+    int cycle = 0;
+
+    // packet info
+    time_t packettime;  
+    char packetname[200];   
+    // data packet buffer
+    // (divide by size of an [uint/int/float])
+    uint packet_buffer[PACKET_SIZE / 4];
+    // pre buffer (in units of 4 bytes)
+    // uint prepackbuffer[2];
+
+    // TODO: REPEATING LOGIC (you can do better)
+    while (1) {
+        // read the bottom
+        if ((quad_in_ptr > QUAD_BUFFER_LENGTH/2) && (cycle == 0)){
+
+            // Put in the readout data.
+            for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {                
+                packet_buffer[i * 2] = quad_counter[i];
+                packet_buffer[(i * 2) + 1] = quad_card_time[i];
+            }
+            cycle = 1;
+
+            // PPS: grab the last four
+            // write in pointer is: pps_in_ptr - 1(after writing in)
+            // pps_id[], pps_card_time[]
+            int i_index;
+            int pps_start_position = (PACKET_SIZE/4) - 9;
+            for (int i = 1; i < 5; i++){
+                // this is where the data is (potentially could be done better using modulo math)
+                if (pps_in_ptr - i < 0){
+                    i_index = BUFFER_LENGTH + (pps_in_ptr - i);
+                } else {
+                    i_index = (pps_in_ptr - i);
+                }
+
+                // this is where to put the data (HTONL)
+                packet_buffer[((i - 1) * 2 + pps_start_position)] = pps_id[i_index];
+                packet_buffer[((i - 1) * 2 + pps_start_position + 1)] = pps_card_time[i_index];             
+                // printf("%d: %u, %u \n", 
+                //    i_index, pps_id[i_index], pps_card_time[i_index]);           
+            }       
+
+            // ZERO POINT
+            // grab the last four
+            int zeropt_start_position = (PACKET_SIZE / 4) - 17;
+            for (int i = 1; i < 5; i++){
+                // this is where the data is (potentially could be done better using modulo math)
+                if (pps_in_ptr - i < 0){
+                    i_index = BUFFER_LENGTH + (pps_in_ptr - i);
+                } else {
+                    i_index = (pps_in_ptr - i);
+                }
+
+                packet_buffer[((i - 1) * 2 + zeropt_start_position)]     = 711;
+                packet_buffer[((i - 1) * 2 + zeropt_start_position + 1)] = 712;             
+            }
+
+            // SENSORS
+            // grab the last four for each sensor
+            // sensor_cpu_time
+            int sensor_start_position = (PACKET_SIZE / 4) - 53;
+            for (int i = 1; i < 13; i++){
+                if (sensor_in_ptr - i < 0){
+                    i_index = BUFFER_LENGTH + (sensor_in_ptr - i);
+                } else {
+                    i_index = (sensor_in_ptr - i);
+                }
+                packet_buffer[((i - 1) * 3 + sensor_start_position)]     = sensor_cpu_time[i_index];
+                packet_buffer[((i - 1) * 3 + sensor_start_position + 1)] = sensor_id[i_index];
+                packet_buffer[((i - 1) * 3 + sensor_start_position + 2)] = sensor_voltage[i_index];
+
+                //printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
+            }
+            
+            /* TIMESTAMP */
+            // get and package the timestamp at the end
+            time(&packettime);
+            packet_buffer[(PACKET_SIZE / 4) - 1] = packettime;
+
+            // generate file name
+            strftime(packetname, 100, "%y-%m-%d_%H-%M-%S_quad_data.data", localtime(&packettime));
+            printf("%s %u\n", packetname, packettime);
+            FILE *f = fopen(packetname, "wb");
+            fwrite(packet_buffer, sizeof(char), sizeof(packet_buffer), f);
+            fclose(f);  
+            n = sendto(sockfd, packet_buffer, sizeof(packet_buffer), 0, (struct sockaddr *)&destaddr, sizeof(destaddr));        
+        }
+
+        // read the top
+        // WRAP IT IN A FUNCTION (PARAMETERIZE )
+        if ((quad_in_ptr < QUAD_BUFFER_LENGTH/2) && (cycle == 1)){
+
+            time(&packettime);
+            strftime(packetname, 100, "%y-%m-%d_%H-%M-%S_quad_data.txt", localtime(&packettime));
+
+            for (int i = QUAD_BUFFER_LENGTH/2; i < QUAD_BUFFER_LENGTH; i++) {
+                packet_buffer[(i * 2)]     = quad_counter[i];
+                packet_buffer[(i * 2) + 1] = quad_card_time[i];
+            }
+            cycle = 0;
+            // TODO:
+            // TODO:
+            // TODO:
+            // TODO:
+            // PPS: grab the last four
+            // write in pointer is: pps_in_ptr - 1(after writing in)
+            // pps_id[], pps_card_time[]
+            int i_index;
+            int pps_start_position = (PACKET_SIZE/4) - 9;
+            for (int i = 1; i < 5; i++){
+                // this is where the data is (potentially could be done better using modulo math)
+                if (pps_in_ptr - i < 0){
+                    i_index = BUFFER_LENGTH + (pps_in_ptr - i);
+                } else {
+                    i_index = (pps_in_ptr - i);
+                }
+
+                // this is where to put the data (HTONL)
+                packet_buffer[((i - 1) * 2 + pps_start_position)] = pps_id[i_index];
+                packet_buffer[((i - 1) * 2 + pps_start_position + 1)] = pps_card_time[i_index];             
+                // printf("%d: %u, %u \n", 
+                //    i_index, pps_id[i_index], pps_card_time[i_index]);           
+            }       
+
+            // ZERO POINT
+            // grab the last four
+            int zeropt_start_position = (PACKET_SIZE / 4) - 17;
+            for (int i = 1; i < 5; i++){
+                // this is where the data is (potentially could be done better using modulo math)
+                if (pps_in_ptr - i < 0){
+                    i_index = BUFFER_LENGTH + (pps_in_ptr - i);
+                } else {
+                    i_index = (pps_in_ptr - i);
+                }
+
+                packet_buffer[((i - 1) * 2 + zeropt_start_position)]     = 711;
+                packet_buffer[((i - 1) * 2 + zeropt_start_position + 1)] = 712;             
+            }
+
+            // SENSORS
+            // grab the last four for each sensor
+            // sensor_cpu_time
+            int sensor_start_position = (PACKET_SIZE / 4) - 53;
+            for (int i = 1; i < 13; i++){
+                if (sensor_in_ptr - i < 0){
+                    i_index = BUFFER_LENGTH + (sensor_in_ptr - i);
+                } else {
+                    i_index = (sensor_in_ptr - i);
+                }
+                packet_buffer[((i - 1) * 3 + sensor_start_position)]     = sensor_cpu_time[i_index];
+                packet_buffer[((i - 1) * 3 + sensor_start_position + 1)] = sensor_id[i_index];
+                packet_buffer[((i - 1) * 3 + sensor_start_position + 2)] = sensor_voltage[i_index];
+
+               // printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
+            }
+            
+            /* TIMESTAMP */
+            // get and package the timestamp at the end
+            time(&packettime);
+            packet_buffer[(PACKET_SIZE / 4) - 1] = packettime;
+
+            // generate file name
+            strftime(packetname, 100, "%y-%m-%d_%H-%M-%S_quad_data.data", localtime(&packettime));
+            printf("%s %u\n", packetname, packettime);
+            FILE *f = fopen(packetname, "wb");
+            fwrite(packet_buffer, sizeof(char), sizeof(packet_buffer), f);
+            fclose(f);  
+            n = sendto(sockfd, packet_buffer, sizeof(packet_buffer), 0, (struct sockaddr *)&destaddr, sizeof(destaddr));     
+        }
+    } 
+    return 0;
+}
+
 void *QuadBufferToDisk(void *input){
-
-
     // get file path
     char *savefilepath = ini_get(((struct p_args*)input)->config, "savefilepath", "path");
     
@@ -452,7 +639,7 @@ void *QuadBufferToDisk(void *input){
     char fname[200];
     time_t save_date;
     time(&save_date);
-    strftime(fname, 100, "quad_data_%y-%m-%d_%H-%M.txt", localtime(&save_date));
+    strftime(fname, 100, "%y-%m-%d_%H-%M_quad_data.txt", localtime(&save_date));
 
     // construct final location
     char full_path[200];
@@ -469,6 +656,7 @@ void *QuadBufferToDisk(void *input){
     // print header
     fprintf(outfile, "buffer_id, count, cardcounter, computertime\n");
 
+    // TODO: REPEATING LOGIC (you can do better)
     while (1) {
         // if the bottom is ready  printf("Quad Bottom: %i, Quad Top: %i \n", quad_bot_flag, quad_top_flag);
         
@@ -477,7 +665,7 @@ void *QuadBufferToDisk(void *input){
             
             for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {
 
-                sprintf(txt_out_buf, "%i, %d, %.3f, %i \n", 
+                sprintf(txt_out_buf, "%d, %d, %u, %u \n", 
                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
                 );
                 fprintf(outfile, "%s", txt_out_buf);
@@ -490,7 +678,7 @@ void *QuadBufferToDisk(void *input){
         if ((quad_in_ptr < QUAD_BUFFER_LENGTH/2) && (cycle == 1)){
             for (int i = QUAD_BUFFER_LENGTH/2; i < QUAD_BUFFER_LENGTH; i++) {
 
-                sprintf(txt_out_buf, "%i, %d, %.3f, %i \n", 
+                sprintf(txt_out_buf, "%d, %d, %u, %u \n", 
                       i, quad_counter[i], quad_card_time[i], quad_cpu_time[i]
                 );
                 fprintf(outfile, "%s", txt_out_buf);
@@ -512,7 +700,7 @@ void *SensorBufferToDisk(void *input){
     char fname[200];
     time_t save_date;
     time(&save_date);
-    strftime(fname, 100, "sensor_data_%y-%m-%d_%H-%M.txt", localtime(&save_date));
+    strftime(fname, 100, "%y-%m-%d_%H-%M_sensor_data.txt", localtime(&save_date));
 
     // construct final location
     char full_path[200];
@@ -529,6 +717,7 @@ void *SensorBufferToDisk(void *input){
     // print header
     fprintf(outfile, "buffer_id, sensor_id, sensor_voltage_volts, computertime\n");
 
+    // TODO: REPEATING LOGIC (you can do better)
     while (1) {
         
         // read the bottom
@@ -548,8 +737,6 @@ void *SensorBufferToDisk(void *input){
         // read the top
         if ((sensor_in_ptr < BUFFER_LENGTH/2) && (cycle == 1)){
             for (int i = BUFFER_LENGTH/2; i < BUFFER_LENGTH; i++) {
-           
-
                 sprintf(txt_out_buf, "%i, %i, %f, %d  \n", 
                       i, sensor_id[i], sensor_voltage[i], sensor_cpu_time[i]
                 );
@@ -572,7 +759,7 @@ void *PPSBufferToDisk(void *input){
     char fname[200];
     time_t save_date;
     time(&save_date);
-    strftime(fname, 100, "pps_data_%y-%m-%d_%H-%M.txt", localtime(&save_date));
+    strftime(fname, 100, "%y-%m-%d_%H-%M_pps_data.txt", localtime(&save_date));
 
     // construct final location
     char full_path[200];
@@ -589,6 +776,7 @@ void *PPSBufferToDisk(void *input){
     // print header
     fprintf(outfile, "buffer_id, count, cardcounter, computertime\n");
 
+    // TODO: REPEATING LOGIC (you can do better)
     while (1) {
         
         // read the bottom
@@ -596,11 +784,14 @@ void *PPSBufferToDisk(void *input){
             
             for (int i = 0; i < BUFFER_LENGTH/2; i++) {
                 
-                sprintf(txt_out_buf, "%i, %d, %f, %i \n", 
+                sprintf(txt_out_buf, "%d, %d, %u, %u \n", 
                       i, pps_id[i], pps_card_time[i], pps_cpu_time[i]
                 );
 
                 fprintf(outfile, "%s", txt_out_buf);
+                //printf("PPS: %d, %d, %d, %d \n", 
+                //      sizeof(i), sizeof(pps_id[i]), sizeof(pps_card_time[i]), sizeof(pps_cpu_time[i])
+                //);
                 continue;            
             }
             cycle = 1;
@@ -610,10 +801,9 @@ void *PPSBufferToDisk(void *input){
         if ((pps_in_ptr < BUFFER_LENGTH/2) && (cycle == 1)){
             for (int i = BUFFER_LENGTH/2; i < BUFFER_LENGTH; i++) {
 
-                sprintf(txt_out_buf, "%i, %d, %f, %i \n", 
+                sprintf(txt_out_buf, "%d, %d, %u, %u \n", 
                       i, pps_id[i], pps_card_time[i], pps_cpu_time[i]
                 );
-
                 fprintf(outfile, "%s", txt_out_buf);
                 continue;
             }
@@ -628,20 +818,17 @@ void *PPSBufferToDisk(void *input){
 
 void *ControlThread(void *input){
     
-    int sockfd;     /* socket */
-    int portno;     /* port to listen on */
-    int clientlen;      /* byte size of client's address */
-    struct sockaddr_in serveraddr;  /* server's addr */
-    struct sockaddr_in clientaddr;  /* client addr */
-    struct hostent *hostp;  /* client host info */
-    char *buf;      /* message buf */
-    char *hostaddrp;    /* dotted decimal host addr string */
-    int optval;     /* flag value for setsockopt */
-    int n;          /* message byte size */
+    int sockfd;                         /* socket */
+    int portno;                         /* port to listen on */
+    int clientlen;                      /* byte size of client's address */
+    struct sockaddr_in serveraddr;      /* server's addr */
+    struct sockaddr_in clientaddr;      /* client addr */
+    struct hostent *hostp;              /* client host info */
+    char *buf;                          /* message buf */
+    char *hostaddrp;                    /* dotted decimal host addr string */
+    int optval;                         /* flag value for setsockopt */
+    int n;                              /* message byte size */
 
-    /* 
-     * check command line arguments 
-     */
     portno = 8787;
 
     /* 
@@ -649,12 +836,12 @@ void *ControlThread(void *input){
      */
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0)
-        error("ERROR opening socket");
+        error("Error Opening Socket");
 
     /* setsockopt: Handy debugging trick that lets 
      * us rerun the server immediately after we kill it; 
      * otherwise we have to wait about 20 secs. 
-     * Eliminates "ERROR on binding: Address already in use" error. 
+     * Eliminates "Error on binding: Address already in use" error. 
      */
     optval = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int));
@@ -671,7 +858,7 @@ void *ControlThread(void *input){
      * bind: associate the parent socket with a port 
      */
     if (bind(sockfd, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) < 0)
-        error("ERROR on binding");
+        error("Error on binding");
 
     /* 
      * main loop: wait for a datagram, then echo it
@@ -687,7 +874,7 @@ void *ControlThread(void *input){
         n = recvfrom(sockfd, buf, BUFSIZE, 0,
                  (struct sockaddr *)&clientaddr, &clientlen);
         if (n < 0)
-            error("ERROR in recvfrom");
+            error("error in recvfrom");
 
         /* 
          * gethostbyaddr: determine who sent the datagram
@@ -703,10 +890,9 @@ void *ControlThread(void *input){
         //printf("server received %d bytes\n", n);
 
         
-        //TODO: interogate command
+        //TODO: interrogate command
 
-        printf("server received command: %s \n", buf);
-        
+        printf("server received command: %s \n", buf); 
         if (strcmp(buf, "shutdown") == 0) {
             free(buf);
             printf("Shutdown Command Received\n");  
@@ -719,6 +905,7 @@ void *ControlThread(void *input){
             exit(0);    
         }
 
+        // TODO: WHY DOES THIS LOOK LIKE A MESS?!?
         if (strcmp(buf, "get_data") == 0) {
             printf("\n--- Data Retrieval Initiated ---\n");
             printf("Sensor Buffer Position: %i \t PPS Buffer Position: %i \t Quad Buffer Position: %i \n", 
@@ -741,9 +928,32 @@ void *ControlThread(void *input){
 
     
     return 0;
-
 }
 
+
+void *PublishThread(void *input){
+    int sockfd;                             /* socket */
+    int portno;                             /* destination port */
+    struct sockaddr_in destaddr;            /* destination address */
+    int n;                              
+
+    // TOOD:  put this in a config
+    // TOOD:  have the listener server also pull from that config
+    portno = 1212;
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    bzero((char *)&destaddr, sizeof(destaddr));
+    destaddr.sin_family = AF_INET;
+    destaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    destaddr.sin_port = htons((unsigned short)portno);
+
+    char response[200];
+    while (1) {
+        sprintf(response, "BEGIN %i, %i, %d, %f END", sensor_in_ptr, sensor_cpu_time[sensor_in_ptr], sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]);
+            n = sendto(sockfd, response, sizeof(response), 0, (struct sockaddr *)&destaddr, sizeof(destaddr));
+        printf("\n%i %i %d %f\n", sensor_in_ptr, sensor_cpu_time[sensor_in_ptr], sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]);        
+        sleep(1);
+    }
+}
 
 int main(int argc, char **argv){
     // signal handler for abrupt/any close
@@ -772,32 +982,39 @@ int main(int argc, char **argv){
     ConfigureSensorPower(board, config);
 
     // TODO: iterate over when initing threads, no need to init individually?
+    // TODO: can you pass them each a different function
+    // TODO: reevaluate the necessity of the write to disk threads --> maybe remove them for now.
 
     // define threads.
-    pthread_t control_thread;
+    pthread_t control_thread, packet_thread;//, publish_thread;
     pthread_t quad_thread, pps_thread, sensor_thread;
-    pthread_t quad_write_thread, pps_write_thread, sensor_write_thread; 
+    //pthread_t quad_write_thread, pps_write_thread, sensor_write_thread; 
     
-    // start reading threads
+    // start reading to buffer threads
     pthread_create(&quad_thread, NULL, QuadThread, (void *)thread_args);
     pthread_create(&pps_thread, NULL, PPSThread, (void *)thread_args);
     pthread_create(&sensor_thread, NULL, SensorThread, (void *)thread_args);   
 
     // start the writing threads
-    pthread_create(&quad_write_thread, NULL, QuadBufferToDisk, (void *)thread_args);
-    pthread_create(&pps_write_thread, NULL, PPSBufferToDisk, (void *)thread_args);
-    pthread_create(&sensor_write_thread, NULL, SensorBufferToDisk, (void *)thread_args);
+    //pthread_create(&quad_write_thread, NULL, QuadBufferToDisk, (void *)thread_args);
+    //pthread_create(&pps_write_thread, NULL, PPSBufferToDisk, (void *)thread_args);
+    //pthread_create(&sensor_write_thread, NULL, SensorBufferToDisk, (void *)thread_args);
     pthread_create(&control_thread, NULL, ControlThread, (void *)thread_args);   
+
+    pthread_create(&packet_thread, NULL, GeneratePacket, (void *)thread_args);   
+    //pthread_create(&publish_thread, NULL, PublishThread, (void *)thread_args);   
      
     // join back to main.
     pthread_join(control_thread, NULL);
     pthread_join(quad_thread, NULL);
     pthread_join(pps_thread, NULL);
     pthread_join(sensor_thread, NULL);
-    pthread_join(quad_write_thread, NULL);
-    pthread_join(pps_write_thread, NULL);
-    pthread_join(sensor_write_thread, NULL);
-    
+    //pthread_join(quad_write_thread, NULL);
+    //pthread_join(pps_write_thread, NULL);
+    //pthread_join(sensor_write_thread, NULL);
+    //pthread_join(publish_thread, NULL);
+
+    pthread_join(packet_thread, NULL);
     // free malloc'ed data.
     free(thread_args);
 }
