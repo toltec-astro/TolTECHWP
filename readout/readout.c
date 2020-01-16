@@ -452,7 +452,8 @@ void *SensorThread(void *input){
             burstnum = ((unsigned int)slotval[slot] >> 24);
             voltage = (float)((float)adcdata / (float)(0x7FFF)) * 10;
 
-            printf('Voltage: V=%f, mV=%i \n', voltage, (int)(voltage * 100));
+
+            printf('Voltage: V=%f, mV=%i \n', voltage, (int)voltage * 100);
             // update buffer
             sensor_id[sensor_in_ptr] = slot;
             sensor_cpu_time[sensor_in_ptr] = time(NULL); 
