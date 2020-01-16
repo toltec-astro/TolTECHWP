@@ -526,6 +526,7 @@ void *QuadThread(void *input){
     int dcount = 1;
     uint tstart;
     uint counts, tstamp, reason;
+    printf("QuadThread - Begin.\n");
 
     int board = ((struct p_args*)input)->board;
 
