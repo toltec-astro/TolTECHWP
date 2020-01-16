@@ -664,7 +664,7 @@ printf("%s\n", str); // prints "192.0.2.33"
             int pps_start_position = (PACKET_SIZE/4) - 9;
             for (int i = 1; i < 5; i++){
                 if (pps_in_ptr - i < 0){
-                    i_index = BUFFER_LENGTH + (pps_in_ptr - i);
+                    i_index = PPS_BUFFER_LENGTH + (pps_in_ptr - i);
                 } else {
                     i_index = (pps_in_ptr - i);
                 }
