@@ -64,7 +64,7 @@ if __name__ == '__main__':
     
     packet_size = 8192    
 
-    binarydumps = glob.glob('/*')
+    binarydumps = glob.glob('*.data')
     
     for dump in binarydumps:
 
