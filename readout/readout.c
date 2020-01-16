@@ -39,9 +39,9 @@ uint zeropoint_cpu_time[ZEROPT_BUFFER_LENGTH];
 uint zeropoint_card_time[ZEROPT_BUFFER_LENGTH];
 
 int pps_in_ptr = 0;
-uint pps_id[BUFFER_LENGTH];
-uint pps_cpu_time[BUFFER_LENGTH];
-uint pps_card_time[BUFFER_LENGTH];
+uint pps_id[PPS_BUFFER_LENGTH];
+uint pps_cpu_time[PPS_BUFFER_LENGTH];
+uint pps_card_time[PPS_BUFFER_LENGTH];
 
 int quad_in_ptr = 0;
 uint quad_counter[QUAD_BUFFER_LENGTH];
@@ -471,7 +471,7 @@ void *SensorThread(void *input){
             if (sensor_in_ptr > SENSOR_BUFFER_LENGTH - 1){
                 sensor_in_ptr = 0;
                 if (debug == 1) {
-                    printf("SensorThread - Reset to Sensor Buffer beginning %i! \n", BUFFER_LENGTH - 1);
+                    printf("SensorThread - Reset to Sensor Buffer beginning %i! \n", SENSOR_BUFFER_LENGTH - 1);
                 }
             }
         };
@@ -567,7 +567,7 @@ void *QuadThread(void *input){
             if (quad_in_ptr > QUAD_BUFFER_LENGTH - 1){
                 quad_in_ptr = 0;
                 if (debug == 1) {
-                    printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
+                    printf("Reset to beginning %i! \n", QUAD_BUFFER_LENGTH - 1);
                 }
             }
 
