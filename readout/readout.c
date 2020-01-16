@@ -584,6 +584,23 @@ void *QuadThread(void *input){
 
 
 void *GeneratePacket(void *input){
+/*
+// IPv4 demo of inet_ntop() and inet_pton()
+
+struct sockaddr_in sa;
+char str[INET_ADDRSTRLEN];
+
+// store this IP address in sa:
+inet_pton(AF_INET, "192.0.2.33", &(sa.sin_addr));
+
+// now get it back and print it
+inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN);
+
+printf("%s\n", str); // prints "192.0.2.33"
+    //bzero((char *)&destaddr, sizeof(destaddr));
+    //destaddr.sin_family = AF_INET;
+    //destaddr.sin_addr.s_addr = htonl(INADDR_ANY); // inet_addr("10.32.40.213");
+*/
     char destination_ip[] = "localhost";
 
     int sockfd;                             /* socket */
@@ -600,6 +617,7 @@ void *GeneratePacket(void *input){
     printf("GeneratePacket - Packet Destination - %s::%i\n", ip_str, portno);
 
     int cycle = 0;
+    int sendingpacket = 0;
 
     // packet info
     time_t packettime;  
@@ -615,87 +633,100 @@ void *GeneratePacket(void *input){
         // Quadrature Readout Data.
         // Put in the quadrature readout data.
         // quad_counter[], quad_card_time[]
-
-        // read the top
-        if ((quad_in_ptr < QUAD_BUFFER_LENGTH/2) && (cycle == 1)) {
+        if ((quad_in_ptr < QUAD_BUFFER_LENGTH/2) && (cycle == 1) && (sendingpacket == 0)) {
             for (int i = QUAD_BUFFER_LENGTH/2; i < QUAD_BUFFER_LENGTH; i++) {
                 packet_buffer[(i * 2)]     = quad_counter[i];
                 packet_buffer[(i * 2) + 1] = quad_card_time[i];
             }
             cycle = 0;
+            sendingpacket = 1;
+            printf("GeneratePacket - Packed the bottom half.\n");
         }
 
         // read the bottom
-        if ((quad_in_ptr > QUAD_BUFFER_LENGTH/2) && (cycle == 0)){
+        if ((quad_in_ptr > QUAD_BUFFER_LENGTH/2) && (cycle == 0) && (sendingpacket == 0)){
             for (int i = 0; i < QUAD_BUFFER_LENGTH/2; i++) {                
                 packet_buffer[i * 2] = quad_counter[i];
                 packet_buffer[(i * 2) + 1] = quad_card_time[i];
             }
             cycle = 1;
+            sendingpacket = 1;
+            printf("GeneratePacket - Packed the top half.\n");
         }
 
-        // PPS: grab the last four (starting with the most recent)
-        // write in pointer is: pps_in_ptr - 1 (after writing in)
-        // pps_id[], pps_card_time[]
-        int i_index;
-        int pps_start_position = (PACKET_SIZE/4) - 9;
-        for (int i = 1; i < 5; i++){
-            if (pps_in_ptr - i < 0){
-                i_index = PPS_BUFFER_LENGTH + (pps_in_ptr - i);
-            } else {
-                i_index = (pps_in_ptr - i);
+        // Packet ready to be made
+        if (sendingpacket == 1) {
+
+            // PPS: grab the last four (starting with the most recent)
+            // write in pointer is: pps_in_ptr - 1 (after writing in)
+            // pps_id[], pps_card_time[]
+            int i_index;
+            int pps_start_position = (PACKET_SIZE/4) - 9;
+            for (int i = 1; i < 5; i++){
+                if (pps_in_ptr - i < 0){
+                    i_index = BUFFER_LENGTH + (pps_in_ptr - i);
+                } else {
+                    i_index = (pps_in_ptr - i);
+                }
+
+                packet_buffer[((i - 1) * 2 + pps_start_position)]     = pps_id[i_index];
+                packet_buffer[((i - 1) * 2 + pps_start_position + 1)] = pps_card_time[i_index];  
+                         
+            }      
+            printf("GeneratePacket - Packed PPS\n");      
+
+            // ZERO POINT
+            // grab the last four
+            // zeropoint_id[], zeropoint_card_time[]
+            int zeropt_start_position = (PACKET_SIZE / 4) - 17;
+            for (int i = 1; i < 5; i++){
+                if (zeropoint_in_ptr - i < 0){
+                    i_index = ZEROPT_BUFFER_LENGTH + (zeropoint_in_ptr - i);
+                } else {
+                    i_index = (zeropoint_in_ptr - i);
+                }
+
+                packet_buffer[((i - 1) * 2 + zeropt_start_position)]     = zeropoint_id[i_index];
+                packet_buffer[((i - 1) * 2 + zeropt_start_position + 1)] = zeropoint_card_time[i_index];                  
             }
+            printf("GeneratePacket - Packed zero point\n");
 
-            packet_buffer[((i - 1) * 2 + pps_start_position)]     = pps_id[i_index];
-            packet_buffer[((i - 1) * 2 + pps_start_position + 1)] = pps_card_time[i_index];                
-        }       
+            // SENSORS
+            // grab the last four for each sensor (4 * 16)
+            // sensor_cpu_time[], sensor_id[], sensor_voltage[]
+            int sensor_start_position = (PACKET_SIZE / 4) - 209; //53
+            for (int i = 1; i < 65; i++){
+                if (sensor_in_ptr - i < 0){
+                    i_index = SENSOR_BUFFER_LENGTH + (sensor_in_ptr - i);
+                } else {
+                    i_index = (sensor_in_ptr - i);
+                }
+                packet_buffer[((i - 1) * 3 + sensor_start_position)]     = sensor_cpu_time[i_index];
+                packet_buffer[((i - 1) * 3 + sensor_start_position + 1)] = sensor_id[i_index];
+                packet_buffer[((i - 1) * 3 + sensor_start_position + 2)] = sensor_voltage[i_index];
 
-        // ZERO POINT
-        // grab the last four
-        // zeropoint_id[], zeropoint_card_time[]
-        int zeropt_start_position = (PACKET_SIZE / 4) - 17;
-        for (int i = 1; i < 5; i++){
-            if (zeropoint_in_ptr - i < 0){
-                i_index = ZEROPT_BUFFER_LENGTH + (zeropoint_in_ptr - i);
-            } else {
-                i_index = (zeropoint_in_ptr - i);
+                 
+                //printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
             }
+            printf("GeneratePacket - Packed sensors\n");
+            // TIMESTAMP
+            // get and package the timestamp at the end
+            time(&packettime);
+            packet_buffer[(PACKET_SIZE / 4) - 1] = packettime;
+            printf("GeneratePacket - Stamping time\n"); 
 
-            packet_buffer[((i - 1) * 2 + zeropt_start_position)]     = zeropoint_id[i_index];
-            packet_buffer[((i - 1) * 2 + zeropt_start_position + 1)] = zeropoint_card_time[i_index];  
+            // generate and save
+            strftime(packetname, 100, "%y-%m-%d_%H-%M-%S_quad_data.data", localtime(&packettime));
+            //printf("%s %u\n", packetname, packettime);
+            FILE *f = fopen(packetname, "wb");
+            fwrite(packet_buffer, sizeof(char), sizeof(packet_buffer), f);
+            fclose(f); 
+
+            // send packet 
+            n = sendto(sockfd, packet_buffer, sizeof(packet_buffer), 0, (struct sockaddr *)&destaddr, sizeof(destaddr));
+            sendingpacket = 0;
+            printf("GeneratePacket - %u - Packet Sent\n", packettime);
         }
-
-        // SENSORS
-        // grab the last four for each sensor (4 * 16)
-        // sensor_cpu_time[], sensor_id[], sensor_voltage[]
-        int sensor_start_position = (PACKET_SIZE / 4) - 209; //53
-        for (int i = 1; i < 65; i++){
-            if (sensor_in_ptr - i < 0){
-                i_index = SENSOR_BUFFER_LENGTH + (sensor_in_ptr - i);
-            } else {
-                i_index = (sensor_in_ptr - i);
-            }
-            packet_buffer[((i - 1) * 3 + sensor_start_position)]     = sensor_cpu_time[i_index];
-            packet_buffer[((i - 1) * 3 + sensor_start_position + 1)] = sensor_id[i_index];
-            packet_buffer[((i - 1) * 3 + sensor_start_position + 2)] = sensor_voltage[i_index];
-
-    
-            //printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
-        }
-        // TIMESTAMP */
-        // get and package the timestamp at the end
-        time(&packettime);
-        packet_buffer[(PACKET_SIZE / 4) - 1] = packettime;
-
-        // generate and save
-        strftime(packetname, 100, "%y-%m-%d_%H-%M-%S_quad_data.data", localtime(&packettime));
-        printf("%s %u\n", packetname, packettime);
-        FILE *f = fopen(packetname, "wb");
-        fwrite(packet_buffer, sizeof(char), sizeof(packet_buffer), f);
-        fclose(f); 
-
-        // send packet 
-        n = sendto(sockfd, packet_buffer, sizeof(packet_buffer), 0, (struct sockaddr *)&destaddr, sizeof(destaddr));
     } 
     return 0;
 }
