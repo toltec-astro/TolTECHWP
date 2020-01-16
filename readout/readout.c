@@ -31,7 +31,7 @@
 int sensor_in_ptr = 0;
 int sensor_id[SENSOR_BUFFER_LENGTH];
 uint sensor_cpu_time[SENSOR_BUFFER_LENGTH];
-int sensor_voltage[SENSOR_BUFFER_LENGTH];
+float sensor_voltage[SENSOR_BUFFER_LENGTH];
 
 int zeropoint_in_ptr = 0;
 uint zeropoint_id[ZEROPT_BUFFER_LENGTH];
@@ -455,9 +455,7 @@ void *SensorThread(void *input){
             // update buffer
             sensor_id[sensor_in_ptr] = slot;
             sensor_cpu_time[sensor_in_ptr] = time(NULL); 
-            printf('Voltage: %f \n', voltage);
             sensor_voltage[sensor_in_ptr] = voltage;
-            //sensor_voltage[sensor_in_ptr] = (int)(voltage * 1000); // convert to mVs
             
             // print out data if debug
             if (debug == 1) {
@@ -682,7 +680,7 @@ void *GeneratePacket(void *input){
             packet_buffer[((i - 1) * 3 + sensor_start_position + 2)] = sensor_voltage[i_index];
 
     
-            printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
+            //printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
         }
         // TIMESTAMP */
         // get and package the timestamp at the end
