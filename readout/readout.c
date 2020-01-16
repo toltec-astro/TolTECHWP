@@ -31,7 +31,7 @@
 int sensor_in_ptr = 0;
 int sensor_id[SENSOR_BUFFER_LENGTH];
 uint sensor_cpu_time[SENSOR_BUFFER_LENGTH];
-float sensor_voltage[SENSOR_BUFFER_LENGTH];
+int sensor_voltage[SENSOR_BUFFER_LENGTH];
 
 int zeropoint_in_ptr = 0;
 uint zeropoint_id[ZEROPT_BUFFER_LENGTH];
@@ -455,7 +455,8 @@ void *SensorThread(void *input){
             // update buffer
             sensor_id[sensor_in_ptr] = slot;
             sensor_cpu_time[sensor_in_ptr] = time(NULL); 
-            sensor_voltage[sensor_in_ptr] = voltage;
+            //sensor_voltage[sensor_in_ptr] = voltage;
+            sensor_voltage[sensor_in_ptr] = (int)(voltage * 1000); // convert to mVs
             
             // print out data if debug
             if (debug == 1) {
