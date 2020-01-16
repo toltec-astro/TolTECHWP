@@ -455,6 +455,7 @@ void *SensorThread(void *input){
             // update buffer
             sensor_id[sensor_in_ptr] = slot;
             sensor_cpu_time[sensor_in_ptr] = time(NULL); 
+            printf('Voltage: %f \n', voltage);
             //sensor_voltage[sensor_in_ptr] = voltage;
             sensor_voltage[sensor_in_ptr] = (int)(voltage * 1000); // convert to mVs
             
