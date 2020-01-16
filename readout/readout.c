@@ -80,7 +80,7 @@ void ConfigureSensorPower(int board, ini_t *config)
     
         printf("ConfigureSensorPower - Output Channel %i - Power Configured\n", channel);
         sprintf(logmsg, "Output Channel %i - Power Configured\n", channel);
-    logInfo(scope, logmsg);
+        //logInfo(scope, logmsg);
     }
 }
 
@@ -526,7 +526,7 @@ void *QuadThread(void *input){
     int dcount = 1;
     uint tstart;
     uint counts, tstamp, reason;
-    printf("QuadThread - Begin.\n");
+
 
     int board = ((struct p_args*)input)->board;
 
