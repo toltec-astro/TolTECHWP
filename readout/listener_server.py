@@ -64,13 +64,13 @@ if __name__ == '__main__':
     
     packet_size = 8192    
 
-    binarydumps = glob.glob('sample_data/*')
+    binarydumps = glob.glob('/*')
     
     for dump in binarydumps:
 
         with open(dump, 'rb') as packet_dump:
             data = packet_dump.read()
-            txtfile = dump.replace('.data', '.txt').replace('sample_data', 'parsed_txt')
+            txtfile = dump.replace('.data', '.txt')
 
             if len(data) != 0:                
                 with open(txtfile, 'w') as parsed_dump:
