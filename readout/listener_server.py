@@ -3,43 +3,6 @@ import socket
 import glob
 import struct
 
-class Packet(object):
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def split4(array):
-        """ because everything is four bytes """
-        return [array[i:i+4] for i in range(0, len(array), 4)]    
-
-    def parse_sensor(sensor_data):
-        sensor_data = split_4(sensor_data)
-    
-        computer_time = [struct.unpack("=I", _pt)[0] for _pt in sensor_data[0::3]]
-        sensor_id = [struct.unpack("=I", _pt)[0] for _pt in sensor_data[1::3]]
-        voltage = [struct.unpack("=f", _pt)[0] for _pt in sensor_data[2::3]]
-        
-        return computer_time, sensor_id, voltage
-
-    def parse_pps(pps_data):
-        pps_data = split_4(pps_data)
-        pps_id = [struct.unpack("=I", _pt)[0] for _pt in pps_data[0::2]]
-        pps_cnter = [struct.unpack("=I", _pt)[0] for _pt in pps_data[1::2]]
-
-        return pps_id, pps_cnter
-    def parse_zeropt(zeropt_data):
-        zeropt_data = split_4(zeropt_data)
-        zeropt_id = [struct.unpack("=I", _pt)[0] for _pt in zeropt_data[0::2]]
-        zeropt_cnter = [struct.unpack("=I", _pt)[0] for _pt in zeropt_data[1::2]]
-
-        return zeropt_id, zeropt_cnter
-
-    def parse_quad(quadrature_data):
-        quadrature_data = split_4(quadrature_data)
-        quadrature_data_value = [struct.unpack("=I", _pt)[0] for _pt in quadrature_data[0::2]]
-        quadrature_data_cnter = [struct.unpack("=I", _pt)[0] for _pt in quadrature_data[1::2]]
-
-        return quadrature_data_value, quadrature_data_cnter
 
 def split_4(array):
     return [array[i:i+4] for i in range(0, len(array), 4)]    

@@ -1,6 +1,6 @@
 #define S826_CM_XS_CH0         2
 #define QUAD_BUFFER_LENGTH     400
-#define BUFFER_LENGTH          40
+#define PPS_BUFFER_LENGTH      40
 #define ZEROPT_BUFFER_LENGTH   100
 #define SENSOR_BUFFER_LENGTH   150
 #define BUFSIZE                2048
@@ -345,7 +345,7 @@ void *PPSThread(void *input){
             pps_in_ptr++;
             
             // reset write-in head to start
-            if (pps_in_ptr > BUFFER_LENGTH - 1){
+            if (pps_in_ptr > PPS_BUFFER_LENGTH - 1){
                 pps_in_ptr = 0;
                 //if (debug == 1){
                 //    printf("Reset to beginning %i! \n", BUFFER_LENGTH - 1);
@@ -640,7 +640,7 @@ void *GeneratePacket(void *input){
         int pps_start_position = (PACKET_SIZE/4) - 9;
         for (int i = 1; i < 5; i++){
             if (pps_in_ptr - i < 0){
-                i_index = BUFFER_LENGTH + (pps_in_ptr - i);
+                i_index = PPS_BUFFER_LENGTH + (pps_in_ptr - i);
             } else {
                 i_index = (pps_in_ptr - i);
             }
