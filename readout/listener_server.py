@@ -12,7 +12,7 @@ def parse_sensordata(sensor_data):
     
     computer_time = [struct.unpack("=I", _pt)[0] for _pt in sensor_data[0::3]]
     sensor_id = [struct.unpack("=I", _pt)[0] for _pt in sensor_data[1::3]]
-    voltage = [struct.unpack("=f", _pt)[0] for _pt in sensor_data[2::3]]
+    voltage = [struct.unpack("=I", _pt)[0] for _pt in sensor_data[2::3]]
     
     return computer_time, sensor_id, voltage
 
