@@ -461,8 +461,8 @@ void *SensorThread(void *input){
             sensor_voltage[sensor_in_ptr] = mV;
             
             // print out data if debug
-            if (debug == 1) {
-                printf("SensorThread - Channel: %d \t Time: %u \t Slot: %u \t Voltage: %f \n", slot, 
+            if (debug == 0) {
+                printf("SensorThread - Channel: %d \t Time: %u \t Slot: %u \t Voltage: %i \n", slot, 
                     sensor_cpu_time[sensor_in_ptr], sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]
                 );
             }
