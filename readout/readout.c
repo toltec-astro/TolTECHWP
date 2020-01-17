@@ -458,7 +458,7 @@ void *SensorThread(void *input){
             // update buffer
             sensor_id[sensor_in_ptr] = slot;
             sensor_cpu_time[sensor_in_ptr] = time(NULL); 
-            sensor_voltage[sensor_in_ptr] = voltage;
+            sensor_voltage[sensor_in_ptr] = mV;
             
             // print out data if debug
             if (debug == 1) {
