@@ -604,7 +604,7 @@ printf("%s\n", str); // prints "192.0.2.33"
     //destaddr.sin_family = AF_INET;
     //destaddr.sin_addr.s_addr = htonl(INADDR_ANY); // inet_addr("10.32.40.213");
 */
-    char destination_ip[] = "224.0.0.251";
+    char destination_ip[] = "165.124.85.73";
 
     int sockfd;                             /* socket */
     int portno;                             /* destination port */
