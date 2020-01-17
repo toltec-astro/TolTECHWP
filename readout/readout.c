@@ -709,7 +709,11 @@ printf("%s\n", str); // prints "192.0.2.33"
                 packet_buffer[((i - 1) * 3 + sensor_start_position + 2)] = sensor_voltage[i_index];
 
                  
-                printf("%d|%u %u| %i \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
+                printf("%d|%u %u| %i \n", i_index, 
+                    packet_buffer[((i - 1) * 3 + sensor_start_position)], 
+                    packet_buffer[((i - 1) * 3 + sensor_start_position + 1)], 
+                    packet_buffer[((i - 1) * 3 + sensor_start_position + 2)] 
+                    );
             }
             printf("GeneratePacket - Packed sensors\n");
             // TIMESTAMP
