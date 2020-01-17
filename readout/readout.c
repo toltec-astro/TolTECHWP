@@ -461,7 +461,7 @@ void *SensorThread(void *input){
             sensor_voltage[sensor_in_ptr] = mV;
             
             // print out data if debug
-            if (debug == 0) {
+            if (debug == 1) {
                 printf("SensorThread - Channel: %d \t Time: %u \t Slot: %u \t Voltage: %i \n", slot, 
                     sensor_cpu_time[sensor_in_ptr], sensor_id[sensor_in_ptr], sensor_voltage[sensor_in_ptr]
                 );
@@ -709,7 +709,7 @@ printf("%s\n", str); // prints "192.0.2.33"
                 packet_buffer[((i - 1) * 3 + sensor_start_position + 2)] = sensor_voltage[i_index];
 
                  
-                //printf("%d|%u %u| %0.3f \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
+                printf("%d|%u %u| %i \n", i_index, sensor_cpu_time[i_index], sensor_id[i_index], sensor_voltage[i_index]);
             }
             printf("GeneratePacket - Packed sensors\n");
             // TIMESTAMP
