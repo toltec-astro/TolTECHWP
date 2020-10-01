@@ -27,7 +27,7 @@ class InterUser(InterParent):
         while not self.exit:
             # Get response and print
             try:
-                resp = self.queue.get(timeout=0.1)
+                resp = self.respqueue.get(timeout=0.1)
             except queue.Empty:
                 resp = ''
             if len(resp):
@@ -72,7 +72,7 @@ class InterUser(InterParent):
                         self.exit = True
                     try:
                         time.sleep(1.0)
-                        resp = self.queue.get(timeout=0.1)
+                        resp = self.respqueue.get(timeout=0.1)
                     except queue.Empty:
                         resp = ''
                     if len(resp):

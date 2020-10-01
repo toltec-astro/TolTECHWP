@@ -56,7 +56,7 @@ class InterWeb(InterParent):
         while len(resp):
             try:
                 time.sleep(1.0)
-                resp = self.queue.get(timeout=0.1)
+                resp = self.respqueue.get(timeout=0.1)
             except queue.Empty:
                 resp = ''
             if len(resp):

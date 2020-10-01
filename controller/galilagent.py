@@ -37,8 +37,10 @@ class GalilAgent(AgentParent):
     def __init__(self, config, name = ''):
         """ Constructor: Set up variables
         """
+        # Call the parent constructor
+        
         self.name = name
-        self.queue = queue.Queue() # Queue object for querries
+        self.comqueue = queue.Queue() # Queue object for querries
         self.config = config # configuration
         self.log = logging.getLogger('Agent.'+self.name)
         self.exit = False # Indicates that loop should exit
@@ -128,7 +130,7 @@ class GalilAgent(AgentParent):
             # Look for task
             datainterval = float(self.config['galil']['datainterval'])
             try:
-                task, respqueue = self.queue.get(timeout = datainterval)
+                task, respqueue = self.comqueue.get(timeout = datainterval)
                 task = task.strip()
             except queue.Empty:
                 task = ''
@@ -155,10 +157,10 @@ class GalilAgent(AgentParent):
                     retmsg = 'Connection closed'
                 else:
                     retmsg = 'Already closed'
-            # setup
+            # configure
             elif 'conf' in task.lower():
                 retmsg = self.command(self.config['galil']['confcomm'])
-            # init
+            # initialize
             elif 'init' in task.lower():
                 retmsg = self.command(self.config['galil']['initcomm'])
             # start
