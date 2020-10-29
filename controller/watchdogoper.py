@@ -19,6 +19,7 @@ helpmsg = """Watchdog Operator: Monitors system values
 import sys
 import queue
 import time
+import subprocess
 from operatorparent import OperatorParent
 
 class WatchdogOper(OperatorParent):
@@ -33,12 +34,17 @@ class WatchdogOper(OperatorParent):
         super().__init__(config, name)
         # Flag to enable / disable watchdog
         self.enabled = True
+        # Flat to shut down the motor
+        self.shutdown = False
         # Variables for Pressure
         self.presslast = 100.0
         self.presskip = 0
         # Variables for Motor status
         self.galilast = ''
         self.galilskip = 0
+        # Variables for Temperature
+        self.templast = 300.0
+        self.tempskip = 0
     
     def __call__(self):
         """ Object call: Runs a loop forever, handles and
@@ -72,6 +78,13 @@ class WatchdogOper(OperatorParent):
             elif 'disable' in task.lower():
                 self.enabled = False
                 retmsg = 'Disabled'
+            elif 'clear' in task.lower():
+                self.shutdown = False
+                self.presskip = 0
+                self.tempskip = 0
+                self.presslast = self.config[self.name]['plimit']+1
+                self.templast = self.config[self.name]['tlimit']-1
+                retmsg = 'Flags cleared'
             elif 'status' in task.lower():
                 retmsg = "Watchdog Status: "
                 if self.enabled: retmsg+="Enabled"
@@ -109,10 +122,41 @@ class WatchdogOper(OperatorParent):
                     self.log.debug("Got response <%s>" % resp)
                 except queue.Empty:
                      resp = ''
-                
-            # Decide if shutdown needed (only if on)
+            ### Load sensor data from log file
+            # Get sensors data
+            sub = subprocess.Popen('tail -n 20 /data/toltec/readout/sensors/data')
+            rawsensors = sub.stdout.read()
+            # Go through lines, search for values
+            pnew = 0
+            tnew = 0
+            for l in rawsensors.split('\n'):
+                try:
+                    if '9\t' in l[:2]:
+                        pnew = float(l.split()[2])
+                    if '8\t' in l[:2]:
+                        tnew = float(l.split()[2])
+                except:
+                    self.log.warn("Couldn't read sensor line <%s>" % l)
+            # Update values
+            self.presskip += 1
+            self.tempskip += 1
+            if pnew > 0:
+                self.presslast = pnew
+                self.presskip = 0
+            if tnew > 0:
+                self.templast = tnew
+                self.tempskip = 0
+            ### Decide if shutdown needed (only if on)
+            # Compare values
+            if self.presslast < self.config[self.name]['plimit']:
+                self.shutdown = True
+            if self.templast > self.config[self.name]['tlimit']:
+                self.shutdown = True
+            # Shut down if unable to read values
+            if self.presskip > 3: self.shutdown = True
+            if self.tempskip > 3: self.shutdown = True
             # Send requests (only if on)
-            if self.enabled:
+            if self.shutdown and self.enabled:
                 self.sendtask('galil MOA')
             # Sleep
-            time.sleep(2.0)
+            time.sleep(1.0)

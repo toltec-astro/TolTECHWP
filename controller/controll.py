@@ -25,20 +25,25 @@
     * Standard way to handle agents which take long time to respond?
 
     2DO:
+    * Watchdog:
+      * Set up for getting pressure information -> Stop motor if below 80psi
+        * where to find channel which is pressure? A: Not in config, it's hardcoded.
+      * check clear function
+      * Set up for getting temperature information -> Stop motor if above 50C
+      * Use fake file to check if values trigger shutdown in testing mode
+      * Set up for getting info from galil (if connected and motor is moving or not)
+        * What do I need from galil? Know if it works, know if error, MOA and speed
+        * Possible to get error flags from galil and respond to them?
     * Galil:
-      * Make status variables and command
+      * Make status variables and command (speed, 
       * Make sure init happens 
-      * Error handling, reconnect 
+      * Error handling, reconnect
       * Make abort function
       * Check number of command and report error if missing number of : or reports
         error if ?
       * Add initialization check and regular comcheck (with warning if lost signal)
       * Regularly set galil internal variable for galil watchdog to ABort after
         set time.
-    * Watchdog:
-      * Set up for getting info from galil (if connected and motor is moving or not)
-      * Set up for getting pressure information -> Stop motor if below 80psi
-      * Set up for getting temperature information -> Stop motor if above 50C
     * Readout:
       * Make list of commands
       * Make command receiver which sends commands to the readout
