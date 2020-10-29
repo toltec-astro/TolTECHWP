@@ -25,31 +25,20 @@
     * Standard way to handle agents which take long time to respond?
 
     2DO:
-    ./ Make this text
-    ./ First version
-      ./ Copy text from HAWC autoreduce (make a queue from sample interface to galil)
-      ./ Make parent interface and parent agent test with queues and messages
-      ./ Make main code with function for interface and for galil (just this file)
-      ./ Make interface and agent parents own files - look at HAWC files first
-      ./ Make interface user child (make all die on it) - look at HAWC inter and blimp first
-      ./ Run tests with config file library: how to open, access and print config
-      ./ Add loading config file use it for greeting in user interface
-      ./ Get help file text in config file
-      ./ Make conf command to list config file
-    ./ Logging:
-      ./ Make logging message receiver (with queue for stop? but no response)
-      ./ Fill logging message receiver (listen to port) - make functions to use it
-      ./ Add logging messages from agents and interfaces (query and response)
+    * Watchdog:
+      * Set up for getting pressure information -> Stop motor if below 80psi
+        * where to find channel which is pressure? A: Not in config, it's hardcoded.
+      * check clear function
+      * Set up for getting temperature information -> Stop motor if above 50C
+      * Use fake file to check if values trigger shutdown in testing mode
+      * Set up for getting info from galil (if connected and motor is moving or not)
+        * What do I need from galil? Know if it works, know if error, MOA and speed
+        * Possible to get error flags from galil and respond to them?
     * Galil:
-      ./ Use code from galilcomm.py, look at code from HAWC irc
-      ./ Set up file and connection configuration
-      ./ Make galilcom and reconnect functions (both use self.comm)
-      ./ Set up connection and forward messages
-      ./ Allow (re)connect and disconnect command
-      ./ Require exit command for disconnect at end
-      ./ Make interface to talk to galil
-      ./ Make full galil interface loop (look at code from Steve on HAWC)
-      * Error handling, reconnect 
+      * Make status variables and command (speed, 
+      * Make sure init happens 
+      * Error handling, reconnect
+      * Make abort function
       * Check number of command and report error if missing number of : or reports
         error if ?
       * Add initialization check and regular comcheck (with warning if lost signal)
@@ -61,7 +50,6 @@
     * Telecscope Control System
       * Make list of commands
       * Add interface for telescope control system
-    ./ Socket interface
     * Server Interface:
       * Make object and thread
       * Make simple server thread (responds with galil status)
@@ -74,6 +62,8 @@
     * Idea (optional but maybe useful for debug): webserver interface
       * For one user only
       * For multiple users (could also do slackbot)
+      * All interfaces should print messages at info and higher level
+        (each inter collects last 10 messages in FIFO queue - purge when printed out)
 
 """
 
@@ -90,12 +80,14 @@ import configparser
 from distutils.command.config import config
 from agentparent import AgentParent
 from interparent import InterParent
+#from operatorparent import OperatorParent
 from userinterface import InterUser
 from socketinterface import InterSocket
 from webinterface import InterWeb
 from loggercontrol import LoggerControl
 from galilagent import GalilAgent
 from configagent import ConfigAgent
+from watchdogoper import WatchdogOper
 
 def hwpcontrol(confilename):
     """ Run the HWP control
@@ -108,46 +100,28 @@ def hwpcontrol(confilename):
     inusr = InterUser(config, 'User')
     insock = InterSocket(config,'Socket')
     inweb = InterWeb(config,'Web')
+    opwat = WatchdogOper(config,'Watch')
     agconf = ConfigAgent(config, 'Conf')
     agresp = AgentParent(config, 'Echo')
     aggal = GalilAgent(config, 'Galil')
     # Register agents with interfaces
-    inusr.addagent('Echo',agresp.queue)
-    inusr.addagent('Galil',aggal.queue)
-    inusr.addagent('Conf',agconf.queue)
-    insock.addagent('Echo',agresp.queue)
-    insock.addagent('Galil',aggal.queue)
-    insock.addagent('Conf',agconf.queue)
-    inweb.addagent('Echo',agresp.queue)
-    inweb.addagent('Galil',aggal.queue)
-    inweb.addagent('Conf',agconf.queue)
-    # Run them as threads (both as daemons such that they shut down on exit)
-    logth = threading.Thread(target = logctrl)
-    logth.daemon = True
-    agrth = threading.Thread(target = agresp)
-    agrth.daemon = True
-    aggth = threading.Thread(target = aggal)
-    aggth.daemon = True
-    agcon = threading.Thread(target = agconf)
-    agcon.daemon = True
-    inuth = threading.Thread(target = inusr)
-    inuth.daemon = True
-    insth = threading.Thread(target = insock)
-    insth.daemon = True
-    inwth = threading.Thread(target = inweb)
-    inwth.daemon = True
-    logth.start()
-    agrth.start()
-    inuth.start()
-    aggth.start()
-    agcon.start()
-    insth.start()
-    inwth.start()
+    for agent in [agresp, aggal, agconf, opwat]:
+        inusr.addagent(agent)
+        insock.addagent(agent)
+        inweb.addagent(agent)
+        opwat.addagent(agent)
+    # Run items as threads (as daemons such that they shut down on exit)
+    threads = {}
+    for item in [logctrl, agresp, aggal, agconf, opwat, inusr, insock, inweb]:
+        thread = threading.Thread(target = item)
+        thread.daemon = True
+        thread.start()
+        threads[item.name] = thread
     # Wait and do some stuff
     time.sleep(2)
-    agresp.queue.put(('Do It',inusr.queue))
+    agresp.comqueue.put(('Do It',inusr.respqueue))
     # Join with User Interface thread
-    inuth.join()
+    threads['User'].join()
 
 if __name__ == '__main__':
     """ Main function for calling command line. Passes the configuration file
@@ -167,4 +141,37 @@ where
     hwpcontrol(Config_FilePathName)
     print("That's All Folks!")
 
-#
+""" Completed Tasks:
+    * Make this text
+    * First version
+      * Copy text from HAWC autoreduce (make a queue from sample interface to galil)
+      * Make parent interface and parent agent test with queues and messages
+      * Make main code with function for interface and for galil (just this file)
+      * Make interface and agent parents own files - look at HAWC files first
+    * Make interface user child (make all die on it) - look at HAWC inter and blimp first
+      * Run tests with config file library: how to open, access and print config
+      * Add loading config file use it for greeting in user interface
+      * Get help file text in config file
+      * Make conf command to list config file
+    * Logging:
+      * Make logging message receiver (with queue for stop? but no response)
+      * Fill logging message receiver (listen to port) - make functions to use it
+      * Add logging messages from agents and interfaces (query and response)
+    * Galil:
+      * Use code from galilcomm.py, look at code from HAWC irc
+      * Set up file and connection configuration
+      * Make galilcom and reconnect functions (both use self.comm)
+      * Set up connection and forward messages
+      * Allow (re)connect and disconnect command
+      * Require exit command for disconnect at end
+      * Make interface to talk to galil
+      * Make full galil interface loop (look at code from Steve on HAWC)
+    * Watchdog:
+      * Rename comqueue and respqueue (command queue for agents, response queue for interfaces)
+      * Make operator - interface and agent at the same time 
+      * Set it up and test operator (be an echo and periodically send messages to galil)
+      * Set up variable, then status, on and off commands
+      * Set up communication with galil (check MOA)
+    * Socket interface
+
+"""

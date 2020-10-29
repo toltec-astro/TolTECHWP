@@ -1,8 +1,8 @@
-""" TolTEC HWP Control Program - Interface parent
-    =============================================
+""" Control Program - Interface parent
+    ==================================
     
     This is the parent object for all interfaces for the
-    TolTEC HWP control program.
+    control program.
     
     Interfaces are responsible for communication between
     the parts of the program acting on the hardware (agents)
@@ -33,11 +33,11 @@ class InterParent():
         """ Constructor: Set up variables
         """
         self.name = name
-        self.queue = queue.Queue() # Queue object for responses
+        self.respqueue = queue.Queue() # Queue object for responses
         self.config = config # configuration
         self.agents = {} # dictionary for agent queues (use addagent)
-        self.exit = False # Indicates if loop should exit
         self.log = logging.getLogger('Interface.'+self.name)
+        self.exit = False # Indicates if loop should exit
         
     def __call__(self):
         """ Object call: Runs a loop that runs forever and generates
@@ -47,7 +47,7 @@ class InterParent():
         while not self.exit:
             # get response (try again every 10s)
             try:
-                resp = self.queue.get(timeout=3)
+                resp = self.respqueue.get(timeout=3)
                 self.log.debug('Got response <%s>' % resp)
             except queue.Empty:
                 resp = ''
@@ -60,10 +60,10 @@ class InterParent():
             if random.random() < 0.1 and len(resp) == 0 :
                 self.sendtask('Noone Do Something!')
     
-    def addagent(self, name, aqueue):
+    def addagent(self, agent):
         """ AddAgent: registers an agent with the interface
         """
-        self.agents[name.strip().lower()] = aqueue
+        self.agents[agent.name.strip().lower()] = agent.comqueue
         
     def sendtask(self, task):
         """ Forwards tasks in the format "Agent Task"
@@ -72,14 +72,14 @@ class InterParent():
         try:
             agent, tsk = task.split(' ',1)
         except:
-            self.queue.put('Invalid Task: %s' % task)
+            self.respqueue.put('Invalid Task: %s' % task)
             return
         tsk = tsk.strip()
         agent = agent.strip().lower()
         # Check if agent is registered else send error to queue
         if not agent in self.agents:
-            self.queue.put('Invalid Agent: %s' % agent)
+            self.respqueue.put('Invalid Agent: %s' % agent)
         else:
             # Send task to agent
-            self.agents[agent].put((tsk, self.queue))
+            self.agents[agent].put((tsk, self.respqueue))
 

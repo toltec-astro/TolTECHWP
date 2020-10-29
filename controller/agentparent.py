@@ -1,8 +1,8 @@
-""" TolTEC HWP Control Program - Agent Parent
-    =========================================
+""" Control Program - Agent Parent
+    ==============================
     
     This is the parent object for all agents for the
-    TolTEC HWP control program.
+    control program.
     
     Agents get command or request messages from interfaces
     and act upon / respond to them. Each message consists
@@ -26,7 +26,7 @@ class AgentParent():
         """ Constructor: Set up variables
         """
         self.name = name
-        self.queue = queue.Queue() # Queue object for querries
+        self.comqueue = queue.Queue() # Queue object for querries
         self.config = config # configuration
         self.log = logging.getLogger('Agent.'+self.name)
         self.exit = False # Indicates that loop should exit
@@ -37,7 +37,7 @@ class AgentParent():
         # Loop
         while not self.exit:
             # Look for task
-            task, respqueue = self.queue.get()
+            task, respqueue = self.comqueue.get()
             self.log.debug("Agent %s - Handling Task <%s>" % (self.name, task) )
             # Check if it's exit
             if 'exit' in task.lower():

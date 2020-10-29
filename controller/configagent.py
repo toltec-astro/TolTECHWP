@@ -31,7 +31,7 @@ class ConfigAgent(AgentParent):
         """ Constructor: Set up variables
         """
         self.name = name.lower()
-        self.queue = queue.Queue() # Queue object for querries
+        self.comqueue = queue.Queue() # Queue object for querries
         self.config = config # configuration
         self.log = logging.getLogger('Agent.'+self.name)
         self.exit = False # Indicates that loop should exit
@@ -44,7 +44,7 @@ class ConfigAgent(AgentParent):
         while not self.exit:
             ### Look for task
             try:
-                task, respqueue = self.queue.get(timeout = 0.1)
+                task, respqueue = self.comqueue.get(timeout = 0.1)
                 task = task.strip()
             except queue.Empty:
                 task = ''
