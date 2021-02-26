@@ -105,6 +105,9 @@ def hwpcontrol(confilename):
     agconf = ConfigAgent(config, 'Conf')
     agresp = AgentParent(config, 'Echo')
     aggal = GalilAgent(config, 'Galil')
+
+    readou = ReadoutAgent(config, 'Readout')
+
     # Register agents with interfaces
     for agent in [agresp, aggal, agconf, opwat]:
         inusr.addagent(agent)
