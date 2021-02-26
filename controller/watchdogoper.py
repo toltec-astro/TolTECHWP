@@ -34,7 +34,7 @@ class WatchdogOper(OperatorParent):
         """
         super().__init__(config, name)
         # Flag to enable / disable watchdog
-        self.enabled = True
+        self.enabled = False
         # Flat to shut down the motor
         self.shutdown = False
         # Variables for Pressure

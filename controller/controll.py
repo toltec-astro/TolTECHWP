@@ -88,6 +88,7 @@ from loggercontrol import LoggerControl
 from galilagent import GalilAgent
 from configagent import ConfigAgent
 from watchdogoper import WatchdogOper
+from readoutagent import ReadoutAgent
 
 def hwpcontrol(confilename):
     """ Run the HWP control
