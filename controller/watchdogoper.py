@@ -124,7 +124,7 @@ class WatchdogOper(OperatorParent):
                      resp = ''
             ### Load sensor data from log file
             # Get sensors data
-            ssub = subprocess.Popen(['tail', '-n 20', '/data/toltec/readout/sensors/data'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            sub = subprocess.Popen(['tail', '-n 20', '/data/toltec/readout/sensors/data'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             output, _ = sub.communicate()
             rawsensors = output.decode()
 
