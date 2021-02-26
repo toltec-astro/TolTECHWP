@@ -14,7 +14,8 @@ helpmsg = """Watchdog Operator: Monitors system values
     exit - shuts down operator
     status - report system status
     enable - enables watchdog
-    disable - disables watchdog"""
+    disable - disables watchdog
+    clear - clears any raised problems"""
 
 import sys
 import queue
@@ -80,10 +81,11 @@ class WatchdogOper(OperatorParent):
                 retmsg = 'Disabled'
             elif 'clear' in task.lower():
                 self.shutdown = False
+                self.galilskip = 0
                 self.presskip = 0
                 self.tempskip = 0
-                self.presslast = self.config['watch']['plimit']+1
-                self.templast = self.config['watch']['tlimit']-1
+                self.presslast = float(self.config[self.name.lower()]['plimit'])+1
+                self.templast = float(self.config[self.name.lower()]['tlimit'])-1
                 retmsg = 'Flags cleared'
             elif 'status' in task.lower():
                 retmsg = "Watchdog Status: "
@@ -93,12 +95,16 @@ class WatchdogOper(OperatorParent):
                 if self.galilskip: retmsg += ", missing %d responses" % self.galilskip
                 retmsg += "\n  Pressure = %f" % self.presslast
                 if self.presskip: retmsg += ", missing %d responses" % self.presskip
+                retmsg += "\n  Temperature = %f" % self.templast
+                if self.tempskip: retmsg += ", missing %d responses" % self.tempskip
+                if self.shutdown: retmsg += "\n Shutdown Active"
+                else: retmsg += "\n Shutdown Off"
             elif len(task):
                 retmsg = "Invalid Command <%s>" % task
             # Send return message
             if len(retmsg):
                 self.log.debug("sending: <%s>" % retmsg)
-                respqueue.put("%s: %s" % ('watch', retmsg))
+                respqueue.put("%s: %s" % (self.name, retmsg))
             ### Check responses
             # Increase all skips by 1
             self.presskip += 1
@@ -111,6 +117,7 @@ class WatchdogOper(OperatorParent):
                  resp = ''
             while len(resp):
                 # Treat response
+                print(resp)
                 if resp.startswith('Galil:'):
                     self.galilskip = 0
                     self.galilast = resp[7:]
@@ -124,41 +131,51 @@ class WatchdogOper(OperatorParent):
                      resp = ''
             ### Load sensor data from log file
             # Get sensors data
-            sub = subprocess.Popen(['tail', '-n 20', '/data/toltec/readout/sensors/data'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            output, _ = sub.communicate()
-            rawsensors = output.decode()
-
+            sub = subprocess.Popen(['tail','-n','20','/data/toltec/readout/sensors/data'],
+                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            rawsensors, stderr = sub.communicate()
             # Go through lines, search for values
-            pnew = 0
-            tnew = 0
-            for l in rawsensors.split('\n'):
+            pnew = -1
+            tnew = -1
+            for l in rawsensors.decode().split('\n'):
+                #print(l)
                 try:
-                    if '9\t' in l[:2]:
-                        pnew = float(l.split()[2])
-                    if '8\t' in l[:2]:
-                        tnew = float(l.split()[2])
+                    if '10\t' in l[:3]:
+                        pnew = float(l.split()[1])
+                    if '0\t' in l[:2]:
+                        tnew = float(l.split()[1])
                 except:
                     self.log.warn("Couldn't read sensor line <%s>" % l)
             # Update values
             self.presskip += 1
             self.tempskip += 1
-            if pnew > 0:
+            if pnew >= 0:
                 self.presslast = pnew
                 self.presskip = 0
-            if tnew > 0:
+            if tnew >= 0:
                 self.templast = tnew
                 self.tempskip = 0
             ### Decide if shutdown needed (only if on)
             # Compare values
-            if self.presslast < self.config['watch']['plimit']:
+            if self.presslast < float(self.config[self.name.lower()]['plimit']):
+                if not self.shutdown:
+                    self.log.warn('Shutting down due to low pressure P=%f' % self.presslast)
                 self.shutdown = True
-            if self.templast > self.config['watch']['tlimit']:
+            if self.templast > float(self.config[self.name.lower()]['tlimit']):
+                if not self.shutdown:
+                    self.log.warn('Shutting down due to high temperature T=%f' % self.templast)
                 self.shutdown = True
             # Shut down if unable to read values
-            if self.presskip > 3: self.shutdown = True
-            if self.tempskip > 3: self.shutdown = True
+            if self.presskip > 3:
+                if not self.shutdown:
+                    self.log.warn('Shutting down due to missing P values')
+                self.shutdown = True
+            if self.tempskip > 3:
+                if not self.shutdown:
+                    self.log.warn('Shutting down due to missing T values')
+                self.shutdown = True
             # Send requests (only if on)
             if self.shutdown and self.enabled:
-                self.sendtask('galil MOA')
+                self.sendtask('galil AB')
             # Sleep
             time.sleep(1.0)
