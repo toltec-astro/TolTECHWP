@@ -114,7 +114,7 @@ def hwpcontrol(confilename):
         insock.addagent(agent)
         inweb.addagent(agent)
         opwat.addagent(agent)
-        readou.addagent(agent)
+        insock.addagent(agent)
     # Run items as threads (as daemons such that they shut down on exit)
     threads = {}
     for item in [logctrl, agresp, aggal, agconf, opwat, inusr, insock, inweb]:
