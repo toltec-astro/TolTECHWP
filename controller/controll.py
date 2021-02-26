@@ -109,11 +109,12 @@ def hwpcontrol(confilename):
     readou = ReadoutAgent(config, 'Readout')
 
     # Register agents with interfaces
-    for agent in [agresp, aggal, agconf, opwat]:
+    for agent in [agresp, aggal, agconf, opwat, readou]:
         inusr.addagent(agent)
         insock.addagent(agent)
         inweb.addagent(agent)
         opwat.addagent(agent)
+        readou.addagent(agent)
     # Run items as threads (as daemons such that they shut down on exit)
     threads = {}
     for item in [logctrl, agresp, aggal, agconf, opwat, inusr, insock, inweb]:
