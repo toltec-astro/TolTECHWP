@@ -25,6 +25,11 @@ Send Commands: nc -u localhost 8787
 View Logs : nc -kluvw 1 localhost 50773
 '''
 
+def mp_quad(thread):
+        """convert thread into a process """
+        thread.start()
+        thread.join()
+
 def readout():
 
     # load configuration file
@@ -35,7 +40,6 @@ def readout():
     # outbox queue (primarily for logging)
     outbox_queue = queue.Queue(maxsize=-1)
 
-    
     # configure board
     test_S826Board = S826Board(config)
     test_S826Board.configure()
@@ -78,12 +82,6 @@ def readout():
         queue  = quad_queue, 
         shutdown_queue = producer_shutdown_queue
     )
-
-    def mp_quad(thread):
-        """convert thread into a process """
-        thread.start()
-        thread.join()
-
     QuadratureThreadProcess = multiprocessing.Process(target=mp_quad, args=(QuadratureThread,))
     
     ZeroPointThread = ZeroPointProducerThread(
@@ -117,6 +115,8 @@ def readout():
     producers_list = [SensorThread, ZeroPointThread, PulsePerSecThread]
     control_threads = [DispatcherThread, ListenerThread]
 
+    
+    # start the quadrature readout process
     QuadratureThreadProcess.start()
     # start thread
     threads_list = producers_list + consumers_list + control_threads
@@ -131,15 +131,12 @@ def readout():
 
         # if all the producers are stopped:
         if np.sum([int(producer_thread.is_alive()) for producer_thread in producers_list]) == 0:
-
             # stop the consumers
             for thrd in consumers_list:
                 thrd.shutdown_flag = True
-            
             # if all the consumers have stopped
             if np.sum([int(thrd.is_alive()) for thrd in (consumers_list + control_threads)]) == 0:
                 main_control_shutdown_flag = True
-                
         time.sleep(0.1)
     
     # join all threads

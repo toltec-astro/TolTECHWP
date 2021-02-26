@@ -82,8 +82,8 @@ class WatchdogOper(OperatorParent):
                 self.shutdown = False
                 self.presskip = 0
                 self.tempskip = 0
-                self.presslast = self.config[self.name]['plimit']+1
-                self.templast = self.config[self.name]['tlimit']-1
+                self.presslast = self.config['watch']['plimit']+1
+                self.templast = self.config['watch']['tlimit']-1
                 retmsg = 'Flags cleared'
             elif 'status' in task.lower():
                 retmsg = "Watchdog Status: "
@@ -98,7 +98,7 @@ class WatchdogOper(OperatorParent):
             # Send return message
             if len(retmsg):
                 self.log.debug("sending: <%s>" % retmsg)
-                respqueue.put("%s: %s" % (self.name, retmsg))
+                respqueue.put("%s: %s" % ('watch', retmsg))
             ### Check responses
             # Increase all skips by 1
             self.presskip += 1
@@ -124,8 +124,10 @@ class WatchdogOper(OperatorParent):
                      resp = ''
             ### Load sensor data from log file
             # Get sensors data
-            sub = subprocess.Popen('tail -n 20 /data/toltec/readout/sensors/data')
-            rawsensors = sub.stdout.read()
+            ssub = subprocess.Popen(['tail', '-n 20', '/data/toltec/readout/sensors/data'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            output, _ = sub.communicate()
+            rawsensors = output.decode()
+
             # Go through lines, search for values
             pnew = 0
             tnew = 0
@@ -148,9 +150,9 @@ class WatchdogOper(OperatorParent):
                 self.tempskip = 0
             ### Decide if shutdown needed (only if on)
             # Compare values
-            if self.presslast < self.config[self.name]['plimit']:
+            if self.presslast < self.config['watch']['plimit']:
                 self.shutdown = True
-            if self.templast > self.config[self.name]['tlimit']:
+            if self.templast > self.config['watch']['tlimit']:
                 self.shutdown = True
             # Shut down if unable to read values
             if self.presskip > 3: self.shutdown = True

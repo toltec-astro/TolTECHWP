@@ -82,6 +82,13 @@ class DispatcherControlThread(threading.Thread):
         if cmd_package['cmd'] == 'exit':
             self.shutdown_threads()
             self.toggle_shutdown()
+            message_package = {
+                'ip': cmd_package['sender'][0], 
+                'port': cmd_package['sender'][1], 
+                'message': 'readout stopping...'
+            }
+            self.outbox_queue.put(message_package)
+
 
         if cmd_package['cmd'] == 'data':
             
