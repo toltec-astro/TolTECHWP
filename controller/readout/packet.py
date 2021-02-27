@@ -37,6 +37,7 @@ class UDPPackagingConsumerThread(threading.Thread):
 
     def rotating_save(self, dir):
         self.quadlog = logging.getLogger('QuadLogger')
+        self.quadlog.handlers = []
         if self.local_mode:
             self.quadhandler = logging.FileHandler(f'{dir}/debug_data.log', 'w')
         else:

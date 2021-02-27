@@ -19,6 +19,7 @@ import serial
 import telnetlib
 from agentparent import AgentParent
 
+import threading
 from readout.diagnostics import readout as hwpreadout
 
 class ReadoutAgent(AgentParent):
@@ -44,7 +45,8 @@ class ReadoutAgent(AgentParent):
         """ Function to start the HWP readout collecting
         """
         response = 'readout started'
-        hwpreadout(self.config)
+        readout_thread = threading.Thread(target=hwpreadout, args=(self.config,))
+        readout_thread.start()
         return response
 
     def stop(self):
