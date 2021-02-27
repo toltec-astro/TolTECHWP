@@ -30,12 +30,12 @@ def mp_quad(thread):
         thread.start()
         thread.join()
 
-def readout():
+def readout(config):
 
     # load configuration file
-    config = configparser.ConfigParser()
-    configfile = 'testconfig.ini'
-    config.read(configfile)
+    # config = configparser.ConfigParser()
+    # configfile = 'testconfig.ini'
+    # config.read(configfile)
 
     # outbox queue (primarily for logging)
     outbox_queue = queue.Queue(maxsize=-1)

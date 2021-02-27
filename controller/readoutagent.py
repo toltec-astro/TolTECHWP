@@ -19,7 +19,7 @@ import serial
 import telnetlib
 from agentparent import AgentParent
 
-import readout as hwpreadout
+from readout.diagnostics import readout as hwpreadout
 
 class ReadoutAgent(AgentParent):
     """ User Interface object: Receives commands from
@@ -44,7 +44,7 @@ class ReadoutAgent(AgentParent):
         """ Function to start the HWP readout collecting
         """
         response = 'readout started'
-        hwpreadout.diagnostics.readout()
+        hwpreadout(self.config)
         return response
 
     def stop(self):
