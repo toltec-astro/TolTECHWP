@@ -9,7 +9,7 @@ import queue
 import logging
 from distutils.util import strtobool
 
-from s826board import S826Board, errhandle
+from .s826board import S826Board, errhandle
 
 class QuadratureProducerThread(threading.Thread):
     """ Quadrature Producer Thread """

@@ -9,7 +9,7 @@ import logging
 import logging.handlers
 from distutils.util import strtobool
 
-from s826board import S826Board, errhandle
+from .s826board import S826Board, errhandle
 
 S826_WAIT_INFINITE = 0xFFFFFFFF
 

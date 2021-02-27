@@ -10,7 +10,7 @@ from distutils.util import strtobool
 
 # everything is in MHz (microseconds)
 
-from s826board import S826Board, errhandle
+from .s826board import S826Board, errhandle
 
 class ZeroPointProducerThread(threading.Thread):
     """ Zero Point Producer Thread """

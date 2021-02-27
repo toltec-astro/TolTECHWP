@@ -7,7 +7,7 @@ import numpy as np
 import queue
 import socket
 
-from s826board import S826Board, errhandle
+from .s826board import S826Board, errhandle
 
 # everything is in MHz (microseconds)
 class ListenerControlThread(threading.Thread):
