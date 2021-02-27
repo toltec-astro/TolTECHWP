@@ -37,14 +37,13 @@ class UDPPackagingConsumerThread(threading.Thread):
 
     def rotating_save(self, dir):
         self.quadlog = logging.getLogger('QuadLogger')
-        self.quadlog.handlers = []
         if self.local_mode:
             self.quadhandler = logging.FileHandler(f'{dir}/debug_data.log', 'w')
         else:
             self.quadhandler = logging.handlers.TimedRotatingFileHandler(f'{dir}/data', 
                 when='midnight', backupCount=5)
         self.quadlog.addHandler(self.quadhandler)
-        self.quadlog.setLevel(logging.INFO)
+        self.quadlog.setLevel(logging.DEBUG)
 
     def send_message(self, message, ip='127.0.0.1', port=8798):
         sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
