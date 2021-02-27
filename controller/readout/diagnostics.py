@@ -9,16 +9,16 @@ import secrets
 import numpy as np
 import multiprocessing
 
-from s826board import S826Board, errhandle
+from .s826board import S826Board, errhandle
 
-from pps     import PulsePerSecProducerThread
-from quad    import QuadratureProducerThread
-from zeropt  import ZeroPointProducerThread
-from packet  import UDPPackagingConsumerThread
-from sensors import SensorProducerThread
+from .pps     import PulsePerSecProducerThread
+from .quad    import QuadratureProducerThread
+from .zeropt  import ZeroPointProducerThread
+from .packet  import UDPPackagingConsumerThread
+from .sensors import SensorProducerThread
 
-from control import DispatcherControlThread, ListenerControlThread
-from outbox  import OutboxControlThread, shutdown_outbox_thread
+from .control import DispatcherControlThread, ListenerControlThread
+from .outbox  import OutboxControlThread, shutdown_outbox_thread
 
 '''
 Send Commands: nc -u localhost 8787
