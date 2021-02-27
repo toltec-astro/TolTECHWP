@@ -3,7 +3,7 @@
     
 """
 
-helpmsg = """Readout Agent: Communicates with the readout program
+helpmsg = """Communicates with the readout program
     exit - shuts down agent
 
     any galil command is send to the controller"""
@@ -18,6 +18,8 @@ import time
 import serial
 import telnetlib
 from agentparent import AgentParent
+
+import readout as hwpreadout
 
 class ReadoutAgent(AgentParent):
     """ User Interface object: Receives commands from
@@ -42,6 +44,7 @@ class ReadoutAgent(AgentParent):
         """ Function to start the HWP readout collecting
         """
         response = 'readout started'
+        hwpreadout.diagnostics.readout()
         return response
 
     def stop(self):
