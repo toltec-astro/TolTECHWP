@@ -30,7 +30,7 @@ def mp_quad(thread):
         thread.start()
         thread.join()
 
-def readout(config):
+def readout(config=None):
 
     # load configuration file
     # config = configparser.ConfigParser()
@@ -137,7 +137,7 @@ def readout(config):
             # if all the consumers have stopped
             if np.sum([int(thrd.is_alive()) for thrd in (consumers_list + control_threads)]) == 0:
                 main_control_shutdown_flag = True
-        time.sleep(0.1)
+        time.sleep(0.5)
     
     # join all threads
     QuadratureThreadProcess.join()
