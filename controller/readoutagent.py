@@ -52,7 +52,7 @@ class ReadoutAgent(AgentParent):
     def stop(self):
         """ Function to start the HWP readout collecting
         """
-        msg_to_send = 'stop'
+        msg_to_send = 'exit'
         
         readout_listener_port = int(self.config['readout.address']['port'])
         self.send_message(msg_to_send, port=readout_listener_port)
