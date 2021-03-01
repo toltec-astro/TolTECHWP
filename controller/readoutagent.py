@@ -4,7 +4,7 @@
 """
 
 helpmsg = """Communicates with the readout program
-    exit - shuts down agent
+    start - starts readout process
 
     any galil command is send to the controller"""
 
@@ -40,6 +40,7 @@ class ReadoutAgent(AgentParent):
         self.exit = False # Indicates that loop should exit
         self.comm = None # Variable for communication object (serial or Telnet)
                          # None if connection closed, 1 if open but simulgalil=1
+        self.readout_running = False
 
 
     def start(self):
@@ -90,6 +91,7 @@ class ReadoutAgent(AgentParent):
                 response = self.start()
                 self.readout_thread = threading.Thread(target=hwpreadout, args=(self.config,))
                 self.readout_thread.start()
+                self.readout_running = True
                 
                 retmsg = response
             # ends the data collection
@@ -97,10 +99,14 @@ class ReadoutAgent(AgentParent):
                 response = self.stop()
                 self.readout_thread.join()
                 retmsg = response
+                self.readout_running = False
 
             # exit
             elif 'exit' in task.lower():
-                self.exit = True
+                if self.readout_running = True:
+                    retmsg = "can't stop. readout running."
+                else:
+                    self.exit = True
             # help
             elif 'help' in task.lower():
                 retmsg = helpmsg
