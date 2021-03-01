@@ -45,9 +45,8 @@ class ReadoutAgent(AgentParent):
         """ Function to start the HWP readout collecting
         """
         response = 'readout started'
-        readout_thread = threading.Thread(target=hwpreadout, args=(self.config,))
-        readout_thread.start()
-        readout_thread.join()
+        self.readout_thread = threading.Thread(target=hwpreadout, args=(self.config,))
+        self.readout_thread.start()
         return response
 
     def stop(self):
@@ -57,7 +56,7 @@ class ReadoutAgent(AgentParent):
         
         readout_listener_port = int(config['readout.address']['port'])
         self.send_message(msg_to_send, port=readout_listener_port)
-        response = 'readout stopped'
+        response = f'readout stopped {readout_listener_port}'
         return response
 
     def send_message(self, message, ip='127.0.0.1', port=5555):
@@ -93,6 +92,7 @@ class ReadoutAgent(AgentParent):
             # ends the data collection
             elif 'stop' in task.lower():
                 response = self.stop()
+                self.readout_thread.join()
                 retmsg = response
             # exit
             elif 'exit' in task.lower():
