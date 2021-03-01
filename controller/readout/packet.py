@@ -81,7 +81,7 @@ class UDPPackagingConsumerThread(threading.Thread):
                     break
                 quad_data_list.append(quad_data)
                 self.quadlog.info(f'{quad_data[0]}\t{quad_data[1]}\t{quad_data[2]}')
-                print(self.quadlog.handlers = [])
+                print(self.quadlog.handlers)
                 exit()
             quad_export = np.array(quad_data_list, dtype=np.uint32).flatten()
 
