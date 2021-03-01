@@ -44,7 +44,8 @@ class UDPPackagingConsumerThread(threading.Thread):
                 when='midnight', backupCount=5)
         self.quadlog.handlers = []
         self.quadlog.addHandler(self.quadhandler)
-        self.quadlog.setLevel(logging.DEBUG)
+        self.quadlog.setLevel(logging.INFO)
+
 
     def send_message(self, message, ip='127.0.0.1', port=8798):
         sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
@@ -79,7 +80,9 @@ class UDPPackagingConsumerThread(threading.Thread):
                 except queue.Empty:
                     break
                 quad_data_list.append(quad_data)
-                self.quadlog.debug(f'{quad_data[0]}\t{quad_data[1]}\t{quad_data[2]}')
+                self.quadlog.info(f'{quad_data[0]}\t{quad_data[1]}\t{quad_data[2]}')
+                print(self.quadlog.handlers = [])
+                exit()
             quad_export = np.array(quad_data_list, dtype=np.uint32).flatten()
 
             # get the zeropt data (grab all)
