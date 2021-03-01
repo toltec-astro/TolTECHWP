@@ -7,7 +7,7 @@ helpmsg = """Communicates with the readout program
     start - starts readout process
     stop  - stops readout process
 
-    any galil command is send to the controller"""
+    this agent never dies, because it is special?"""
 
 
 # Preparation
@@ -107,7 +107,8 @@ class ReadoutAgent(AgentParent):
                 if self.readout_running is True:
                     retmsg = "can't stop. readout running."
                 else:
-                    self.exit = True
+                    retmsg = "readout not running, by this agent lives forever."
+#                    self.exit = True
             # help
             elif 'help' in task.lower():
                 retmsg = helpmsg
