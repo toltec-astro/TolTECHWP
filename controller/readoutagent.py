@@ -19,6 +19,7 @@ import serial
 import telnetlib
 from agentparent import AgentParent
 
+import socket
 import threading
 from readout.diagnostics import readout as hwpreadout
 
