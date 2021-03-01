@@ -89,11 +89,12 @@ class ReadoutAgent(AgentParent):
                 response = self.start()
                 self.readout_thread = threading.Thread(target=hwpreadout, args=(self.config,))
                 self.readout_thread.start()
-                self.readout_thread.join()
+                
                 retmsg = response
             # ends the data collection
             elif 'stop' in task.lower():
                 response = self.stop()
+                self.readout_thread.join()
                 retmsg = response
 
             # exit
