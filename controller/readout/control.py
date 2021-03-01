@@ -80,6 +80,7 @@ class DispatcherControlThread(threading.Thread):
     def handle_function(self, cmd_package):
         
         if cmd_package['cmd'] == 'exit':
+            print('shuttttting down')
             self.shutdown_threads()
             self.toggle_shutdown()
             message_package = {
