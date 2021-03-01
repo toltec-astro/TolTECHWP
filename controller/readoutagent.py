@@ -53,7 +53,7 @@ class ReadoutAgent(AgentParent):
         """
         msg_to_send = 'stop'
         
-        readout_listener_port = int(config['readout.address']['port'])
+        readout_listener_port = int(self.config['readout.address']['port'])
         self.send_message(msg_to_send, port=readout_listener_port)
         response = f'readout stopped {readout_listener_port}'
         return response
