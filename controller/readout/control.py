@@ -40,7 +40,7 @@ class ListenerControlThread(threading.Thread):
                 return
             # other wise continue to listen
 
-        print(f'Ending: {threading.current_thread().name}')
+        print(f'Ending (Listener): {threading.current_thread().name}')
 
     @staticmethod
     def make_socket(port, ip_add='127.0.0.1'):
@@ -75,7 +75,7 @@ class DispatcherControlThread(threading.Thread):
             cmd_package = self.queue.get()
             self.handle_function(cmd_package)
 
-        print(f'Ending: {threading.current_thread().name}')
+        print(f'Ending (Dispatcher): {threading.current_thread().name}')
 
     def handle_function(self, cmd_package):
         

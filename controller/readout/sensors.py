@@ -75,7 +75,7 @@ class SensorProducerThread(threading.Thread):
                 #self.sensorlog.info(f'{slot_num}\t{volt:08.5f}\t{timestamp}')
             #print(timestamp, avg_voltage_arr)            
 
-        print(f'Ending: {threading.current_thread().name}')
+        print(f'Ending (Sensors): {threading.current_thread().name}')
 
 if __name__ == '__main__':
 

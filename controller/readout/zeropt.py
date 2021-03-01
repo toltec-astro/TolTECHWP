@@ -92,7 +92,7 @@ class ZeroPointProducerThread(threading.Thread):
             # pause when there is blocking
             time.sleep(0.2)
 
-        print(f'Ending: {threading.current_thread().name}')
+        print(f'Ending (Zeropt): {threading.current_thread().name}')
 
 if __name__ == '__main__':
 

@@ -135,7 +135,7 @@ class UDPPackagingConsumerThread(threading.Thread):
             #binarypackage = f'{int(time.time())} Packet Size Sent: {packet_size} Packets Sent: {self.packets_sent}\n'.encode('UTF-8')
             #self.send_message(binarypackage, port=self.dest_port)
 
-        print(f'Ending: {threading.current_thread().name}')
+        print(f'Ending (Packet): {threading.current_thread().name}')
         print(f'Quadrature Queue Size: {self.quad_queue.qsize()}')
         
 
