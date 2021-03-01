@@ -54,8 +54,16 @@ class ReadoutAgent(AgentParent):
         """ Function to start the HWP readout collecting
         """
         msg_to_send = 'stop'
+        
+        readout_listener_port = int(config['readout.address']['port'])
+        self.send_message(msg_to_send, port=readout_listener_port)
         response = 'readout stopped'
         return response
+
+    def send_message(self, message, ip='127.0.0.1', port=5555):
+        sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
+        sock.sendto(f'{message}\n'.encode('UTF-8'), (ip, port))
+        sock.close()
     
     def __call__(self):
         """ Object call: Runs a loop that runs forever and forwards
