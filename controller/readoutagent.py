@@ -5,6 +5,7 @@
 
 helpmsg = """Communicates with the readout program
     start - starts readout process
+    stop  - stops readout process
 
     any galil command is send to the controller"""
 
@@ -113,5 +114,3 @@ class ReadoutAgent(AgentParent):
             if len(retmsg):
                 respqueue.put("%s: %s" % (self.name, retmsg))
         
-        ### on exit close connection
-        self.comm.close()
