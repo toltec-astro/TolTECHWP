@@ -106,7 +106,7 @@ def readout(config=None):
 
     # general control thread
     DispatcherThread = DispatcherControlThread(
-        config, command_queue, producers_list, outbox_queue=outbox_queue
+        config, command_queue, producers_list, outbox_queue=outbox_queue, multiprocesses=[QuadratureThreadProcess]
     )
     ListenerThread = ListenerControlThread(
         config, command_queue, queue.Queue(maxsize=-1)

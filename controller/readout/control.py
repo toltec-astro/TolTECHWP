@@ -53,13 +53,14 @@ class ListenerControlThread(threading.Thread):
 class DispatcherControlThread(threading.Thread):
     """ Dispatcher Control Thread """
 
-    def __init__(self, config, queue, producer_threads, **kwargs):
+    def __init__(self, config, queue, producer_threads, multiprocesses, **kwargs):
         self.__dict__.update(**kwargs)
 
         threading.Thread.__init__(self)
         self.queue     = queue
         self.shutdown_flag  = False
         self.producer_threads = producer_threads
+        self.multiprocesses = multiprocesses
 
     def toggle_shutdown(self):
         self.shutdown_flag = True
@@ -67,6 +68,8 @@ class DispatcherControlThread(threading.Thread):
     def shutdown_threads(self):
         for thrd in self.producer_threads:
             thrd.shutdown_flag = True
+        for mps in self.multiprocesses:
+            mps.terminate()
 
     def run(self):
         print(f'Starting: {threading.current_thread().name}')
