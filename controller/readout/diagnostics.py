@@ -129,14 +129,18 @@ def readout(config=None):
     main_control_shutdown_flag = False
     while not main_control_shutdown_flag:
 
-        # if all the producers are stopped:
-        if np.sum([int(producer_thread.is_alive()) for producer_thread in producers_list]) == 0:
-            # stop the consumers
-            for thrd in consumers_list:
-                thrd.shutdown_flag = True
-            # if all the consumers have stopped
-            if np.sum([int(thrd.is_alive()) for thrd in (consumers_list + control_threads)]) == 0:
-                main_control_shutdown_flag = True
+        # # if all the producers are stopped:
+        # if np.sum([int(producer_thread.is_alive()) for producer_thread in producers_list]) == 0:
+        #     # stop the consumers
+        #     for thrd in consumers_list:
+        #         thrd.shutdown_flag = True
+        #     # if all the consumers have stopped
+        #     if np.sum([int(thrd.is_alive()) for thrd in (consumers_list + control_threads)]) == 0:
+        #         main_control_shutdown_flag = True
+
+        for thrd in threads_list:
+            thrd.shutdown_flag = True
+            main_control_shutdown_flag = True
         time.sleep(0.5)
     
     # join all threads
