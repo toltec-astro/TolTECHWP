@@ -103,7 +103,7 @@ class ReadoutAgent(AgentParent):
 
             # exit
             elif 'exit' in task.lower():
-                if self.readout_running = True:
+                if self.readout_running is True:
                     retmsg = "can't stop. readout running."
                 else:
                     self.exit = True
