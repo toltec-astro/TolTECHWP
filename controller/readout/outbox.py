@@ -18,7 +18,7 @@ class OutboxControlThread(threading.Thread):
         threading.Thread.__init__(self)
         self.outbox_queue = outbox_queue
         self.logging_ip   = config['logging']['ip']
-        self.logging_port = 5464#int(config['logging']['port'])
+        self.logging_port = int(config['logging']['port'])
 
         self.shutdown_flag = False
         self.token = token

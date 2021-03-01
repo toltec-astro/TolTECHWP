@@ -47,6 +47,7 @@ class ReadoutAgent(AgentParent):
         response = 'readout started'
         readout_thread = threading.Thread(target=hwpreadout, args=(self.config,))
         readout_thread.start()
+        readout_thread.join()
         return response
 
     def stop(self):

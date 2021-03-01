@@ -42,6 +42,7 @@ class UDPPackagingConsumerThread(threading.Thread):
         else:
             self.quadhandler = logging.handlers.TimedRotatingFileHandler(f'{dir}/data', 
                 when='midnight', backupCount=5)
+        self.quadlog.handlers = []
         self.quadlog.addHandler(self.quadhandler)
         self.quadlog.setLevel(logging.DEBUG)
 
