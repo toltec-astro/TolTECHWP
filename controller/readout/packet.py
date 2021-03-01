@@ -73,7 +73,7 @@ class UDPPackagingConsumerThread(threading.Thread):
 
             # get the quadrature data
             quad_data_list = []
-            quad_packet_allocation = 400
+            quad_packet_allocation = 800
             while len(quad_data_list) < quad_packet_allocation:
                 try:
                     quad_data = self.quad_queue.get(timeout=1)
