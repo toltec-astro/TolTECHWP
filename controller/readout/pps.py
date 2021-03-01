@@ -68,7 +68,7 @@ class PulsePerSecProducerThread(threading.Thread):
                 #print((tstamp.value, counts.value, int(time.time())))
                 self.queue.put((tstamp.value, counts.value, int(time.time())))
                 self.counter += 1
-                self.ppslog.info(f'{tstamp.value}\t{counts.value}\t{int(time.time())}')          
+                #self.ppslog.info(f'{tstamp.value}\t{counts.value}\t{int(time.time())}')          
                 
                 # if an overflow occurred, record it
                 if errcode == -15:

@@ -72,7 +72,7 @@ class SensorProducerThread(threading.Thread):
             timestamp = int(time.time())
             for slot_num, volt in zip(slotpylist, avg_voltage_arr):
                 self.queue.put((slot_num, volt, timestamp))
-                self.sensorlog.info(f'{slot_num}\t{volt:08.5f}\t{timestamp}')
+                #self.sensorlog.info(f'{slot_num}\t{volt:08.5f}\t{timestamp}')
             #print(timestamp, avg_voltage_arr)            
 
         print(f'Ending: {threading.current_thread().name}')

@@ -80,9 +80,7 @@ class UDPPackagingConsumerThread(threading.Thread):
                 except queue.Empty:
                     break
                 quad_data_list.append(quad_data)
-                self.quadlog.info(f'{quad_data[0]}\t{quad_data[1]}\t{quad_data[2]}')
-                print(self.quadlog.handlers)
-                exit()
+                #self.quadlog.info(f'{quad_data[0]}\t{quad_data[1]}\t{quad_data[2]}')
             quad_export = np.array(quad_data_list, dtype=np.uint32).flatten()
 
             # get the zeropt data (grab all)

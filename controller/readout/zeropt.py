@@ -68,7 +68,7 @@ class ZeroPointProducerThread(threading.Thread):
                 # insert value into queue
                 
                 self.queue.put((tstamp.value, counts.value, int(time.time())))
-                self.zeroptlog.info(f'{tstamp.value}\t{counts.value}\t{int(time.time())}')
+                #self.zeroptlog.info(f'{tstamp.value}\t{counts.value}\t{int(time.time())}')
                 self.counter += 1
                 if self.counter > 3:
                     #prev_tstamp, prev_counts, _ = self.queue.queue[-2]
