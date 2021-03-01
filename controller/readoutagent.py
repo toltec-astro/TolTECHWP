@@ -47,6 +47,7 @@ class ReadoutAgent(AgentParent):
         response = 'readout started'
         self.readout_thread = threading.Thread(target=hwpreadout, args=(self.config,))
         self.readout_thread.start()
+        self.readout_thread.join()
         return response
 
     def stop(self):
@@ -92,7 +93,7 @@ class ReadoutAgent(AgentParent):
             # ends the data collection
             elif 'stop' in task.lower():
                 response = self.stop()
-                self.readout_thread.join()
+                
                 retmsg = response
             # exit
             elif 'exit' in task.lower():
