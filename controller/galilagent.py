@@ -12,10 +12,11 @@ helpmsg = """Galil Agent: Communicates to Galil motor controller
     close - closes connection to galil
     conf - sends the config commands to the galil
     init - initializes the motor (do this after config)
-    start - start motor movement
-    stop - stop motor movement
+    start - start continuous motor movement
+    stop - stop motor movement using deceleration
     off - shuts motor off
-    any galil command is send to the controller"""
+    abort - interrupts HWP motion and shuts down the motor
+    any other command is directly send to the controller"""
 
 
 # Preparation
@@ -172,6 +173,9 @@ class GalilAgent(AgentParent):
             # stop
             elif 'off' in task.lower():
                 retmsg = self.command(self.config['galil']['offcomm'])
+            # abort
+            elif 'abort' in task.lower():
+                retmsg = self.command(self.config['galil']['abortcomm'])
             # Else it's a galil command
             elif len(task):
                 retmsg = self.command(task)
