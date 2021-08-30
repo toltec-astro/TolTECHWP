@@ -12,9 +12,11 @@ helpmsg = """Galil Agent: Communicates to Galil motor controller
     close - closes connection to galil
     conf - sends the config commands to the galil
     init - initializes the motor (do this after config)
-    start - start continuous motor movement
+    start - start currently set motor movement
     stop - stop motor movement using deceleration
+    rotate [frequency] - sets rotation speed
     move [angle] - move by specified angle (only works if motor is stopped)
+    goto [angle] - go to certain position (requires recent index)
     off - shuts motor off
     abort - interrupts HWP motion and shuts down the motor
     index - instructs the galil to search the index location (this sets the galil to zero)
@@ -189,6 +191,11 @@ class GalilAgent(AgentParent):
             elif 'index' in task.lower():
                 retmsg = self.command(self.config['galil']['indexcomm'])
                 self.indextime = time.time()
+            # rotate by Hz
+            elif 'rotate' in task.lower():
+                speed = float(task[5:].strip())*self,cntperev
+                comm = 'JGA=%d' % math.floor(freq)
+                retmsg = self.command(comm)
             # move by angle
             elif 'move' in task.lower():
                 distance = float(task[5:].strip())*self,cntperev/360.0
