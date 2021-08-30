@@ -20,6 +20,7 @@ helpmsg = """Galil Agent: Communicates to Galil motor controller
     off - shuts motor off
     abort - interrupts HWP motion and shuts down the motor
     index - instructs the galil to search the index location (this sets the galil to zero)
+    status - current system information
     any other command is directly send to the controller"""
 
 
@@ -54,6 +55,9 @@ class GalilAgent(AgentParent):
                          # None if connection closed, 1 if open but simulgalil=1
         self.indextime = 0.0 # Unix timestamp of last index operation
         self.cntperev = 1 # encoder counts per revolution / is set below
+        self.pos = 0 # Position
+        self.speed = 0 # Velocity
+        self.motoroff = 0 # Flag is motor is unpowered i.e. response of MOA
     
     def read(self):
         """ Function to read from galil (depends on readout method)
@@ -193,7 +197,7 @@ class GalilAgent(AgentParent):
                 self.indextime = time.time()
             # rotate by Hz
             elif 'rotate' in task.lower():
-                speed = float(task[5:].strip())*self,cntperev
+                speed = float(task[6:].strip())*self,cntperev
                 comm = 'JGA=%d' % math.floor(freq)
                 retmsg = self.command(comm)
             # move by angle
@@ -217,6 +221,15 @@ class GalilAgent(AgentParent):
                     retmsg = self.command(comm)
                 else:
                     retmsg = "Error: Outdated Index time, INDEX the rotator before GOTO"
+            # Status
+            elif 'status' in task.lower():
+                if self.comm != None:
+                    retmsg = 'Connected to the controller'
+                    retmsg += '\nPosition = %f' % self.pos
+                    retmsg += '\nSpeed = %f' % self.speed
+                    retmsg += '\nMotoOff = %d' % self.motoroff
+                else:
+                    retmsg = "No command connection to the controller"
             # Else it's a galil command
             elif len(task):
                 retmsg = self.command(task)
@@ -233,6 +246,18 @@ class GalilAgent(AgentParent):
                 rtext = self.read().strip()
                 # Log the result
                 self.log.debug('Data: %s' % rtext)
+                try:
+                    # update velocity, position and motor status
+                    datas = [w.strip for w in rtext.split()]
+                    ind = vlist.index('_TPA')
+                    self.pos = float(datas[ind])
+                    ind = vilst.index('_TVA')
+                    self.speed = float(datas[ind])
+                    ind = vilst.index('_MOA')
+                    self.motoroff = float(datas[ind])
+                except:
+                    # Warning message if couldn't read all data
+                    self.log.warn('Error reading TPA, TVA or MOA')
             # Send return message
             if len(retmsg):
                 respqueue.put("%s: %s" % (self.name, retmsg))
