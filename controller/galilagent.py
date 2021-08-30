@@ -14,11 +14,11 @@ helpmsg = """Galil Agent: Communicates to Galil motor controller
     init - initializes the motor (do this after config)
     start - start currently set motor movement
     stop - stop motor movement using deceleration
+    off - shuts motor off
+    abort - interrupts HWP motion and shuts down the motor
     rotate [frequency] - sets rotation speed
     move [angle] - move by specified angle (only works if motor is stopped)
     goto [angle] - go to certain position (requires recent index)
-    off - shuts motor off
-    abort - interrupts HWP motion and shuts down the motor
     index - instructs the galil to search the index location (this sets the galil to zero)
     status - current system information
     any other command is directly send to the controller"""
@@ -139,7 +139,7 @@ class GalilAgent(AgentParent):
             user input.
         """
         ### Setup
-        self.cntperev = self.config['galil']['cntperev']
+        self.cntperev = float(self.config['galil']['cntperev'])
         self.pos = 0
         ### Command loop
         while not self.exit:
@@ -197,12 +197,13 @@ class GalilAgent(AgentParent):
                 self.indextime = time.time()
             # rotate by Hz
             elif 'rotate' in task.lower():
-                speed = float(task[6:].strip())*self,cntperev
+                print(task)
+                freq = float(task[6:].strip())*self.cntperev
                 comm = 'JGA=%d' % math.floor(freq)
                 retmsg = self.command(comm)
             # move by angle
             elif 'move' in task.lower():
-                distance = float(task[5:].strip())*self,cntperev/360.0
+                distance = float(task[5:].strip())*self.cntperev/360.0
                 comm = 'PRA=%d' % math.floor(distance)
                 retmsg = self.command(comm)
             # goto angle
@@ -225,9 +226,10 @@ class GalilAgent(AgentParent):
             elif 'status' in task.lower():
                 if self.comm != None:
                     retmsg = 'Connected to the controller'
-                    retmsg += '\nPosition = %f' % self.pos
-                    retmsg += '\nSpeed = %f' % self.speed
-                    retmsg += '\nMotoOff = %d' % self.motoroff
+                    retmsg += '\n       Position = %.0f counts  = %.3f deg' % (self.pos, self.pos*360/self.cntperev)
+                    retmsg += '\n       Speed = %.0f counts/s  = %.5f Hz' % (self.speed, self.speed/self.cntperev)
+                    retmsg += '\n       MotoOff = %d' % self.motoroff
+                    retmsg += '\n       Last index %.2f hours ago' % ((time.time()-self.indextime)/3600.0)
                 else:
                     retmsg = "No command connection to the controller"
             # Else it's a galil command
@@ -248,12 +250,12 @@ class GalilAgent(AgentParent):
                 self.log.debug('Data: %s' % rtext)
                 try:
                     # update velocity, position and motor status
-                    datas = [w.strip for w in rtext.split()]
+                    datas = [w.strip() for w in rtext.split()]
                     ind = vlist.index('_TPA')
                     self.pos = float(datas[ind])
-                    ind = vilst.index('_TVA')
+                    ind = vlist.index('_TVA')
                     self.speed = float(datas[ind])
-                    ind = vilst.index('_MOA')
+                    ind = vlist.index('_MOA')
                     self.motoroff = float(datas[ind])
                 except:
                     # Warning message if couldn't read all data
