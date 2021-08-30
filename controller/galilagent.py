@@ -14,8 +14,10 @@ helpmsg = """Galil Agent: Communicates to Galil motor controller
     init - initializes the motor (do this after config)
     start - start continuous motor movement
     stop - stop motor movement using deceleration
+    move [angle] - move by specified angle (only works if motor is stopped)
     off - shuts motor off
     abort - interrupts HWP motion and shuts down the motor
+    index - instructs the galil to search the index location (this sets the galil to zero)
     any other command is directly send to the controller"""
 
 
@@ -27,6 +29,7 @@ import logging
 import time
 import serial
 import telnetlib
+import math
 from agentparent import AgentParent
 
 # GalilAgent Object
@@ -47,6 +50,8 @@ class GalilAgent(AgentParent):
         self.exit = False # Indicates that loop should exit
         self.comm = None # Variable for communication object (serial or Telnet)
                          # None if connection closed, 1 if open but simulgalil=1
+        self.indextime = 0.0 # Unix timestamp of last index operation
+        self.cntperev = 1 # encoder counts per revolution / is set below
     
     def read(self):
         """ Function to read from galil (depends on readout method)
@@ -119,6 +124,8 @@ class GalilAgent(AgentParent):
         else:
             self.log.warn("Unable to connect, invalid ComType = %s" % 
                           self.config['galil']['comtype'])
+        # Reset indextime
+        self.indextime = 0.0
         return retmsg
     
     def __call__(self):
@@ -126,10 +133,12 @@ class GalilAgent(AgentParent):
             user input.
         """
         ### Setup
+        self.cntperev = self.config['galil']['cntperev']
+        self.pos = 0
         ### Command loop
         while not self.exit:
             # Look for task
-            datainterval = float(self.config['galil']['datainterval'])
+            datainterval = float(self.config['galil']['datainterval']) # get value in case it changed
             try:
                 task, respqueue = self.comqueue.get(timeout = datainterval)
                 task = task.strip()
@@ -176,6 +185,31 @@ class GalilAgent(AgentParent):
             # abort
             elif 'abort' in task.lower():
                 retmsg = self.command(self.config['galil']['abortcomm'])
+            # index
+            elif 'index' in task.lower():
+                retmsg = self.command(self.config['galil']['indexcomm'])
+                self.indextime = time.time()
+            # move by angle
+            elif 'move' in task.lower():
+                distance = float(task[5:].strip())*self,cntperev/360.0
+                comm = 'PRA=%d' % math.floor(distance)
+                retmsg = self.command(comm)
+            # goto angle
+            elif 'goto' in task.lower():
+                # check if reasonably recent index time is available
+                if time.time() - self.indextime < 10*3600:
+                    # get angle and get angle to travel
+                    angle = float(task[5:].strip())*self.cntperev/360.0
+                    deltangle = angle-self.pos
+                    while deltangle > self.cntperev/2:
+                        deltangle -= self.cntperev
+                    while deltangle < -self.cntperev/2:
+                        deltangle += self.cntperev
+                    # send the command
+                    comm = 'PRA=%d' % math.floor(deltangle)
+                    retmsg = self.command(comm)
+                else:
+                    retmsg = "Error: Outdated Index time, INDEX the rotator before GOTO"
             # Else it's a galil command
             elif len(task):
                 retmsg = self.command(task)
