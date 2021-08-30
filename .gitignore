@@ -107,3 +107,6 @@ venv.bak/
 .DS_Store
 .project
 .pydevproject
+
+# Emacs backup files
+*~
