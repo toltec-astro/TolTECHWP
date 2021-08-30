@@ -175,7 +175,9 @@ class GalilAgent(AgentParent):
                     retmsg = 'Already closed'
             # configure
             elif 'conf' in task.lower():
-                retmsg = self.command(self.config['galil']['confcomm'])
+                retmsg = self.command('RS')
+                time.sleep(0.5)
+                retmsg += self.command(self.config['galil']['confcomm'])
             # initialize
             elif 'init' in task.lower():
                 retmsg = self.command(self.config['galil']['initcomm'])
