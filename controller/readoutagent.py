@@ -108,7 +108,7 @@ class ReadoutAgent(AgentParent):
                     retmsg = "can't stop. readout running."
                 else:
                     retmsg = "readout not running, by this agent lives forever."
-#                    self.exit = True
+#                   self.exit = True
             # help
             elif 'help' in task.lower():
                 retmsg = helpmsg

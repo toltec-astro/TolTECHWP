@@ -2,7 +2,7 @@
 import ctypes
 import numpy as np
 
-SHARED_OBJECT_PATH = '/home/poluser/TolTECHWP/vend/sdk_826_linux_3.3.11/middleware/lib826_64.so'
+SHARED_OBJECT_PATH = '/home/poluser/TolTECHWP/vend/sdk_826_linux_3.3.12/middleware/lib826_64.so'
 
 def errhandle(errcode, name=None):
     # it doesn't really matter since you died anyway
