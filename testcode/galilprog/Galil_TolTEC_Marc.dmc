@@ -1,0 +1,116 @@
+# Connect with:
+# DMC-4183:  /dev/tty.usbserial-00002014 115200
+# DMC-30012 /dev/tty.usbserial-AO003IDA 115200
+
+# REM Galil Test code for TolTEC
+MO;CE;TP
+# REM Motor Off
+MO
+# REM Configuration command with quadrature
+CE
+# REM Get encoder reading
+TP;TE;TT
+
+# REM SETTINGS - DMC-30014
+TLA=5;TKA=9.9;OEA=1;ERA=6400;ACA=2048;DCA=2048;SPA=100000
+# REM TL (conservative do 1V, i.e. 1 * 0.2 = 0.2A )
+TLA=1
+# REM TK (conservative do 1.5V i.e. 1.5 * 0.2 = 0.3A )
+TKA=1.5
+# REM Off on error
+OEA=1
+# REM Set error limit (200 counts, i.e. 1mm)
+ERA=1000
+# REM Acceleration and settings (1024 is min)
+ACA=1024
+DCA=1024
+# REM Set sepped (200 counts are 1mm)
+SPA=200
+
+# REM SETTINGS - DMC-30012
+AGA=0;TLA=4;TKA=6;OEA=1;ERA=6400;ACA=2048;DCA=4096;SPA=20000
+# REM analog gain to 0.4Amp/V
+AGA=0
+# REM TL (conservative do 1V, i.e. 1 * 0.4 = 0.4A )
+TLA=1
+# REM TK (conservative do 1.5V i.e. 1.5 * 0.4 = 0.6A )
+TKA=1.5
+# REM Off on error
+OEA=1
+# REM Set error limit (200 counts, i.e. 1mm)
+ERA=1000
+# REM Acceleration and settings (1024 is min)
+ACA=1024
+DCA=1024
+# REM Set sepped (200 counts are 1mm)
+SPA=100000
+
+# REM SETUP - Only applied to DMC-30014
+BAA;BMA=6400
+# REM Configure Axis Brushless
+BAA
+# REM Set brushless modulo (counts per magnetic cycle)
+#          307000 counts / 96 poles = 3200
+BMA=6400
+# REM Initialize motor to controller using BX method (2V)
+#          this takes a while and can return errors
+BXA=-4
+#          you may have to run the following line instead
+BZA=4
+# REM Set up as servo
+SHA
+
+# REM SETTINGS - DMC-4183
+MTE=1;AGE=0;TLE=1.5;TKE=2;LDE=3;OE=1;ERE=3200;ACE=2048;DCE=2048;SPE=5000
+# REM Motor set
+MTE=1
+# REM Gain Set (to 0.4 A/V)
+AGE=0 
+# REM TL (conservative do 1.5V, i.e. 1.5 * 0.4 = 0.6A )
+TLA=1
+# REM TK (conservative do 2V i.e. 2 * 0.4 = 0.8A )
+TKA=1.5
+# REM LD set limits (all off)
+LDE=3
+# REM Off on error
+OEA=1
+# REM Set error limit (200 counts, i.e. 1mm)
+ERA=1000
+# REM Acceleration and settings (1024 is min)
+ACA=1024
+DCA=1024
+# REM Set sepped (200 counts are 1mm)
+SPA=200
+
+# REM MOVEMENT
+# REM Set movement distance (200 steps per mm)
+#         about 307'200 steps for full revolution, 2x 614400 5x 1536000
+
+# REM Power up and start
+SHA; BGA
+# JOGG in a certain direction 
+JGA=100000
+# REM Stop and Shut Down
+STA; MOA
+
+# REM DIRECTION CHECK
+MOA
+KIA=0;KPA=0;KDA=0;SH A
+OFA=4.5 --> No movement 
+(but periodic resistance - some magnetic force)
+
+# Check while running
+MG _TPA, _TEA, _TTA, _TVA, _MOA
+
+# Returns current I, P and D term
+MG _KIA, _KPA, _KDA
+# Set PID parameters
+KIA=0.001;KPA=6.0;KDA=32.0
+
+# REM TAF
+
+# Internet setup (for toltec network)
+# Switch dhcp off, set ip address, burn settings
+DH 0
+IA 192,168,0,222
+BN
