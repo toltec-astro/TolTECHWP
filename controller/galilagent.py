@@ -12,10 +12,16 @@ helpmsg = """Galil Agent: Communicates to Galil motor controller
     close - closes connection to galil
     conf - sends the config commands to the galil
     init - initializes the motor (do this after config)
-    start - start motor movement
-    stop - stop motor movement
+    start - start currently set motor movement
+    stop - stop motor movement using deceleration
     off - shuts motor off
-    any galil command is send to the controller"""
+    abort - interrupts HWP motion and shuts down the motor
+    rotate [frequency] - sets rotation speed
+    move [angle] - move by specified angle (only works if motor is stopped)
+    goto [angle] - go to certain position (requires recent index)
+    index - instructs the galil to search the index location (this sets the galil to zero)
+    status - current system information
+    any other command is directly send to the controller"""
 
 
 # Preparation
@@ -26,6 +32,7 @@ import logging
 import time
 import serial
 import telnetlib
+import math
 from agentparent import AgentParent
 
 # GalilAgent Object
@@ -46,6 +53,11 @@ class GalilAgent(AgentParent):
         self.exit = False # Indicates that loop should exit
         self.comm = None # Variable for communication object (serial or Telnet)
                          # None if connection closed, 1 if open but simulgalil=1
+        self.indextime = 0.0 # Unix timestamp of last index operation
+        self.cntperev = 1 # encoder counts per revolution / is set below
+        self.pos = 0 # Position
+        self.speed = 0 # Velocity
+        self.motoroff = 0 # Flag is motor is unpowered i.e. response of MOA
     
     def read(self):
         """ Function to read from galil (depends on readout method)
@@ -118,6 +130,8 @@ class GalilAgent(AgentParent):
         else:
             self.log.warn("Unable to connect, invalid ComType = %s" % 
                           self.config['galil']['comtype'])
+        # Reset indextime
+        self.indextime = 0.0
         return retmsg
     
     def __call__(self):
@@ -125,10 +139,12 @@ class GalilAgent(AgentParent):
             user input.
         """
         ### Setup
+        self.cntperev = float(self.config['galil']['cntperev'])
+        self.pos = 0
         ### Command loop
         while not self.exit:
             # Look for task
-            datainterval = float(self.config['galil']['datainterval'])
+            datainterval = float(self.config['galil']['datainterval']) # get value in case it changed
             try:
                 task, respqueue = self.comqueue.get(timeout = datainterval)
                 task = task.strip()
@@ -159,7 +175,9 @@ class GalilAgent(AgentParent):
                     retmsg = 'Already closed'
             # configure
             elif 'conf' in task.lower():
-                retmsg = self.command(self.config['galil']['confcomm'])
+                retmsg = self.command('RS')
+                time.sleep(0.5)
+                retmsg += self.command(self.config['galil']['confcomm'])
             # initialize
             elif 'init' in task.lower():
                 retmsg = self.command(self.config['galil']['initcomm'])
@@ -172,6 +190,50 @@ class GalilAgent(AgentParent):
             # stop
             elif 'off' in task.lower():
                 retmsg = self.command(self.config['galil']['offcomm'])
+            # abort
+            elif 'abort' in task.lower():
+                retmsg = self.command(self.config['galil']['abortcomm'])
+            # index
+            elif 'index' in task.lower():
+                retmsg = self.command(self.config['galil']['indexcomm'])
+                self.indextime = time.time()
+            # rotate by Hz
+            elif 'rotate' in task.lower():
+                print(task)
+                freq = float(task[6:].strip())*self.cntperev
+                comm = 'JGA=%d' % math.floor(freq)
+                retmsg = self.command(comm)
+            # move by angle
+            elif 'move' in task.lower():
+                distance = float(task[5:].strip())*self.cntperev/360.0
+                comm = 'PRA=%d' % math.floor(distance)
+                retmsg = self.command(comm)
+            # goto angle
+            elif 'goto' in task.lower():
+                # check if reasonably recent index time is available
+                if time.time() - self.indextime < 10*3600:
+                    # get angle and get angle to travel
+                    angle = float(task[5:].strip())*self.cntperev/360.0
+                    deltangle = angle-self.pos
+                    while deltangle > self.cntperev/2:
+                        deltangle -= self.cntperev
+                    while deltangle < -self.cntperev/2:
+                        deltangle += self.cntperev
+                    # send the command
+                    comm = 'PRA=%d' % math.floor(deltangle)
+                    retmsg = self.command(comm)
+                else:
+                    retmsg = "Error: Outdated Index time, INDEX the rotator before GOTO"
+            # Status
+            elif 'status' in task.lower():
+                if self.comm != None:
+                    retmsg = 'Connected to the controller'
+                    retmsg += '\n       Position = %.0f counts  = %.3f deg' % (self.pos, self.pos*360/self.cntperev)
+                    retmsg += '\n       Speed = %.0f counts/s  = %.5f Hz' % (self.speed, self.speed/self.cntperev)
+                    retmsg += '\n       MotoOff = %d' % self.motoroff
+                    retmsg += '\n       Last index %.2f hours ago' % ((time.time()-self.indextime)/3600.0)
+                else:
+                    retmsg = "No command connection to the controller"
             # Else it's a galil command
             elif len(task):
                 retmsg = self.command(task)
@@ -188,6 +250,18 @@ class GalilAgent(AgentParent):
                 rtext = self.read().strip()
                 # Log the result
                 self.log.debug('Data: %s' % rtext)
+                try:
+                    # update velocity, position and motor status
+                    datas = [w.strip() for w in rtext.split()]
+                    ind = vlist.index('_TPA')
+                    self.pos = float(datas[ind])
+                    ind = vlist.index('_TVA')
+                    self.speed = float(datas[ind])
+                    ind = vlist.index('_MOA')
+                    self.motoroff = float(datas[ind])
+                except:
+                    # Warning message if couldn't read all data
+                    self.log.warn('Error reading TPA, TVA or MOA')
             # Send return message
             if len(retmsg):
                 respqueue.put("%s: %s" % (self.name, retmsg))
