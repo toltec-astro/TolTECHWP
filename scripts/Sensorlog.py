@@ -17,15 +17,16 @@
 
 #### Settings
 # Serial port to connect to arduino
-serialport = '/dev/tty.usbmodem1421101'
+#serialport = '/dev/tty.usbmodem14201' # mac
+serialport = '/dev/tty.usbmodem1421101' # mac with USB extension
 # Serial transfer rate
 serialbaud = 19200
 # Command to get values
 readcmd = 'compress#'
 # Log file name (can contain strftime formatting)
-logfile = '/Users/berthoud/temp/ProTemp/TolTEC/data/complog%Y%M%D.txt'
+logfile = '/Users/berthoud/temp/ProTemp/TolTEC/data/complog%y%m%d.txt'
 # Logging rate in seconds
-lograte = 10
+lograte = 5
 
 #### Imports
 import serial
@@ -37,6 +38,9 @@ nextime = time.time() + lograte
 # Setup connection
 comm = serial.Serial(serialport,serialbaud,timeout=0.02)
 print(f"Opened serial connection with {serialport}")
+# Get backlog from serial port
+time.sleep(2.0)
+comm.read(1000)
 #### Main Loop
 while True:
     # Wait
@@ -56,7 +60,7 @@ while True:
     print(f"read {dataval}")
     # Add to logfile
     # On the fly converts strftime to current time
-    for outf as open(time.strftime(logfile),'wt'):
-        outext = time.strftime("%Y-%M-%D %h:%m%s ")+dataval
+    with open(time.strftime(logfile),'at') as outf:
+        outext = time.strftime("%y-%m-%d %H:%M:%S ")+dataval+'\n'
         outf.write(outext)
         outf.close()
