@@ -4,27 +4,18 @@
 
     Configuration values at the start.
 
-    2DO:
-    - Basic program:
-      ./ Configuration values
-      ./ Open connection to sensor
-      ./ LOOP
-      - Test
-    - Addons:
-      - simple graph last 10min/24hr
-      - socket interface to query latest string
 """
 
 #### Settings
 # Serial port to connect to arduino
-#serialport = '/dev/tty.usbmodem14201' # mac
-serialport = '/dev/tty.usbmodem1421101' # mac with USB extension
+serialport = '/dev/tty.usbmodem1421' # mac
+#serialport = '/dev/tty.usbmodem1421101' # mac with USB extension
 # Serial transfer rate
 serialbaud = 19200
 # Command to get values
-readcmd = 'compress#'
+readcmd = 'compress\n'
 # Log file name (can contain strftime formatting)
-logfile = '/Users/berthoud/temp/ProTemp/TolTEC/data/complog%y%m%d.txt'
+logfile = '/Users/berthoud/temp/complog%y%m%d.txt'
 # Logging rate in seconds
 lograte = 5
 
@@ -51,12 +42,34 @@ while True:
     while nextime < time.time():
         nextime += lograte
     # Get the value
-    comm.write(readcmd.encode())
-    time.sleep(lograte/5.)
     try:
+        comm.write(readcmd.encode())
+        time.sleep(lograte/5.)
         dataval = comm.read(1000).decode().strip()
     except:
-        dataval = '-'
+        # If fail to read, close then open connection, try to read again
+        try:
+            # Try to close connection
+            try:
+                comm.close()
+            except:
+                print("Failed Closing connection")
+            # Open connection
+            time.sleep(lograte/5.)
+            comm = serial.Serial(serialport,serialbaud,timeout=0.02)
+            print(f"Opened serial connection with {serialport}")
+            # Clear serial buffer with empty command
+            time.sleep(lograte/5.)
+            comm.write('\n'.encode())
+            time.sleep(lograte/5.)
+            dataval = comm.read(1000).decode().strip()            
+            # Read data
+            comm.write(readcmd.encode())
+            time.sleep(lograte/5.)
+            dataval = comm.read(1000).decode().strip()
+        except:
+            # This fails as well - return bad data
+            dataval = '-'
     print(f"read {dataval}")
     # Add to logfile
     # On the fly converts strftime to current time
