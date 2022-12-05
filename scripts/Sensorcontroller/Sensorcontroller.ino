@@ -234,14 +234,14 @@ void readcommand(char* (inputcmd)){
           
           //compressor pressure read
           else if(strcmp(inputcmd, "compress")==0){//Command to read oil temp in degrees celsius
-            Serial.print("Compressor pressure raw input: ");
+            Serial.print("Compressor pressure: ");
             praw = analogRead(compPinput);
             Serial.print(praw);
             pval = 5.0*praw/1023;
-            Serial.print(" ~ ");
+            Serial.print("cnts ");
             Serial.print(pval);
             pval = 300.0*(pval-0.45)/4.0;
-            Serial.print("V ~ ");
+            Serial.print("V ");
             Serial.print(pval);
             Serial.println("Psi");
 //            Serial.println(adccorrected(oilinput));           
