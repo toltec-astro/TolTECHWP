@@ -131,7 +131,7 @@ class S826Board(object):
         pps_flags = self.s826_dll.S826_CounterFilterWrite(
             self.board_id, countpps,        # Filter Configuration:
             (1 << 31) | (1 << 30) | # Apply to IX and clock
-            100                     # 100x20ns = 2us filter constant
+            1000                     # 20 * (F * 1) Not true any more >>100x20ns = 2us filter constant
         )                 
         errhandle(pps_flags, name=f'S826_CounterFilterWrite')
 
@@ -150,6 +150,7 @@ class S826Board(object):
     def _configure_zero_point(self):
 
         S826_CM_K_AFALL = (1 << 4)
+        S826_CM_K_ARISE = (0 << 4)
         S826_SSRMASK_IXRISE = (1 << 4)
         S826_BITWRITE = 0
 
@@ -173,6 +174,7 @@ class S826Board(object):
             self.board_id, 
             countzeropoint,  
             S826_SSRMASK_IXRISE, # Acquire counts upon tick rising edge. 
+            #(1 << 6),
             S826_BITWRITE
         )
         errhandle(zeropoint_flags, name=f'S826_CounterSnapshotConfigWrite')
@@ -298,5 +300,23 @@ if __name__ == '__main__':
         print(f'Temperature: {T:0.1f} C ({((T * 9/5) + 32):0.1f} F) \t Humidity: {true_RH:0.1f} %')
         time.sleep(1)
 
-    
+    for _ in range(1000):
+        
+        counts = ctypes.c_uint() 
+        tstamp = ctypes.c_uint() 
+        reason = ctypes.c_uint()
+
+        counts_ptr = ctypes.pointer(counts)
+        tstamp_ptr = ctypes.pointer(tstamp)
+        reason_ptr = ctypes.pointer(reason)
+
+        # read again
+        errcode = test_S826Board.s826_dll.S826_CounterSnapshotRead(
+            test_S826Board.board_id, 1,
+            counts_ptr, tstamp_ptr, 
+            reason_ptr, 0
+        )
+
+        print((errcode, tstamp.value, counts.value, int(time.time())))
+        time.sleep(1)
     test_S826Board.close()

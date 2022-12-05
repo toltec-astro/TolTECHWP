@@ -10,7 +10,10 @@ from distutils.util import strtobool
 
 # everything is in MHz (microseconds)
 
-from .s826board import S826Board, errhandle
+try:
+    from .s826board import S826Board, errhandle
+except:
+    from s826board import S826Board, errhandle
 
 class PulsePerSecProducerThread(threading.Thread):
     """Pulse Per Sec Producer Thread """
@@ -29,10 +32,10 @@ class PulsePerSecProducerThread(threading.Thread):
     def datalog(self, dir):
         self.ppslog = logging.getLogger('PPSLogger')
 
-        self.ppshandler = logging.handlers.TimedRotatingFileHandler(f'{dir}/data', 
-            when='midnight', backupCount=5)
-        self.ppslog.addHandler(self.ppshandler)
-        self.ppslog.setLevel(logging.INFO)
+        #self.ppshandler = logging.handlers.TimedRotatingFileHandler(f'{dir}/data', 
+        #    when='midnight', backupCount=5)
+        #self.ppslog.addHandler(self.ppshandler)
+        #self.ppslog.setLevel(logging.INFO)
 
     def run(self):
         print(f'Starting: {threading.current_thread().name}')
@@ -61,11 +64,13 @@ class PulsePerSecProducerThread(threading.Thread):
                 counts_ptr, tstamp_ptr, 
                 reason_ptr, 0
             )
+            print(f"errcode: {errcode}")
 
             while errcode in (0, -15):
 
                 # insert value into queue
-                #print((tstamp.value, counts.value, int(time.time())))
+                #if __name__ == "__main__":
+                print((tstamp.value, counts.value, int(time.time())))
                 self.queue.put((tstamp.value, counts.value, int(time.time())))
                 self.counter += 1
                 #self.ppslog.info(f'{tstamp.value}\t{counts.value}\t{int(time.time())}')          
