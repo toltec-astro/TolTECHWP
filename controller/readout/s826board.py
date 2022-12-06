@@ -131,7 +131,7 @@ class S826Board(object):
         pps_flags = self.s826_dll.S826_CounterFilterWrite(
             self.board_id, countpps,        # Filter Configuration:
             (1 << 31) | (1 << 30) | # Apply to IX and clock
-            1000                     # 20 * (F * 1) Not true any more >>100x20ns = 2us filter constant
+            0                     # 20 * (F * 1) Not true any more >>100x20ns = 2us filter constant
         )                 
         errhandle(pps_flags, name=f'S826_CounterFilterWrite')
 
