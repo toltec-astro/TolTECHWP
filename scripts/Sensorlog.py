@@ -8,13 +8,11 @@
 
 #### Settings
 # Serial port to connect to arduino
-<<<<<<< HEAD
 #serialport = '/dev/tty.usbmodem14201' # mac
 #serialport = '/dev/tty.usbmodem1421101' # mac with USB extension
 serialport = '/dev/ttyACM0'
 
-=======
-serialport = '/dev/tty.usbmodem1421' # mac
+#serialport = '/dev/tty.usbmodem1421' # mac
 #serialport = '/dev/tty.usbmodem1421101' # mac with USB extension
 # Serial transfer rate
 serialbaud = 19200
@@ -29,6 +27,10 @@ lograte = 10
 #### Imports
 import serial
 import time
+import os
+import re
+import psycopg
+pgconnstring = os.getenv('PGCONNSTRING')
 
 #### Setup
 # Setup timing
@@ -82,5 +84,19 @@ while True:
     # On the fly converts strftime to current time
     with open(time.strftime(logfile), 'at') as outf:
         outext = time.strftime("%y-%m-%d %H:%M:%S ") + dataval + '\n'
+        datetime = time.strftime("%y-%m-%d %H:%M:%S")
+        raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
+        #print(datetime, raw, voltage, psi)
         outf.write(outext)
         outf.close()
+
+        try:
+            with psycopg.connect(pgconnstring) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "INSERT INTO comp_pressure (DATETIME, COUNTER, VOLTAGE, PSI) VALUES (%s, %s, %s, %s)",
+                        (datetime, int(raw), float(voltage), float(psi))
+                    )
+                    conn.commit()
+        except:
+            pass
