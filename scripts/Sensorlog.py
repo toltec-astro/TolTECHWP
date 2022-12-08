@@ -85,12 +85,13 @@ while True:
     with open(time.strftime(logfile), 'at') as outf:
         outext = time.strftime("%y-%m-%d %H:%M:%S ") + dataval + '\n'
         datetime = time.strftime("%y-%m-%d %H:%M:%S")
-        raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
+        #raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
         #print(datetime, raw, voltage, psi)
         outf.write(outext)
         outf.close()
 
         try:
+            raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
             with psycopg.connect(pgconnstring) as conn:
                 with conn.cursor() as cur:
                     cur.execute(

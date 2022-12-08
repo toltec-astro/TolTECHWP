@@ -96,6 +96,7 @@ if __name__ == '__main__':
     # load configuration file
     config = configparser.ConfigParser()
     configfile = 'testconfig.ini'
+    configfile = '/home/poluser/TolTECHWP/config/masterconfig.ini'
     config.read(configfile)
     
     test_S826Board = S826Board(config)
