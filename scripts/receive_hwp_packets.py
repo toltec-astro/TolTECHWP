@@ -53,8 +53,58 @@ def listen_UDP(ip='127.0.0.1', rec_port=6969):
     packet_size = 12352    
     while True:
         data, addr = rec_sock.recvfrom(packet_size)
-        for i in split_4(data):
-            print(struct.unpack("=I", i)[0])
+        #for i in split_4(data):
+        #    print(struct.unpack("=I", i)[0])
+        list_form = [struct.unpack("=I", i)[0] for i in split_4(data)]
+
+        # first set of 166 values
+        encoder_1 = list_form[0:166*3]
+        print('encoder_1', len(encoder_1), encoder_1[0], encoder_1[-1])
+
+        padding_1 = list_form[498:498+14]
+        print('padding_1', len(padding_1), padding_1)
+
+        encoder_2 = list_form[512:512 + 166 *3]
+        print('encoder_2', len(encoder_2), encoder_2[0], encoder_2[-1])
+
+        padding_2 = list_form[1010:1010+14]
+        print('padding_2', len(padding_2), padding_2)
+
+        encoder_3 = list_form[1024:1024 + 166*3]
+        print('encoder_3', len(encoder_3), encoder_3[0], encoder_3[-1])
+
+        padding_3 = list_form[1522:1522+14]
+        print('padding_3', len(padding_3), padding_3)
+
+        encoder_4 = list_form[1536:1536 + 2 * 3]
+        print('encoder_4', len(encoder_4), encoder_4[0], encoder_4[-1])
+        
+
+        zeropt = list_form[1542:1542 + (10 * 3)]
+        print('zerpot', len(zeropt), zeropt)
+
+        pps = list_form[1572:1572 + (3 * 4)]
+        print('pps', len(pps), pps)
+
+        sensor_data = list_form[1584:1584+(16 * 3)]
+        print('sensor_data', len(sensor_data), sensor_data)
+        # zero point 10 
+        # pps 4
+        # sensor data 16
+
+
+        #print(list_form[0:166*3])
+        # padding of zeros
+        #print(list_form[166*3 + 1:166 *3 +14])
+
+        # second set of 166 values
+        #print(list_form[(166*3+15):(166*3*2+14)])
+        # padding of zeros
+        #print(list_form[(166*3*2+15):(166*3*2+28)])
+        
+
+        exit()
+
 if __name__ == '__main__':
 
     listen_UDP()
