@@ -11,13 +11,15 @@ import socket
 import pickle
 import struct
 import logging
+import traceback
 
 import numpy as np
 
 # sudo sysctl -w net.inet.udp.maxdgram=65535'
 
-def send_message(message, ip='127.0.0.1', port=8798):
+def send_message(message, ip='192.168.110.207', port=64013):
     sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
+    sock.bind(('192.168.110.205', port+1000))
     sock.sendto(message, (ip, port))
     sock.close()
     #print(f"sent to {ip}:{port}")
@@ -25,27 +27,25 @@ def send_message(message, ip='127.0.0.1', port=8798):
 
 if __name__ == '__main__':
 
-    DESTINATION_IP   = '127.0.0.1'
-    DESTINATION_PORT = 6969
-
     packets_sent = 0
     while True:
         #
         # generate fake quadrature data
         #
-        quad_packet_allocation = 800
+        quad_packet_allocation = 500
         fake_quad_data_ts       = np.arange(0, quad_packet_allocation, 1) +  np.random.randint(1000, 854895)
         fake_quad_data_cnter    = np.arange(0, quad_packet_allocation, 1) +  np.random.randint(10, 100)
         fake_quad_data_unixtime = np.arange(0, quad_packet_allocation, 1) + int(time.time())
         
-        fake_quad_data = [fake_quad_data_ts, fake_quad_data_cnter, fake_quad_data_unixtime]
-        quad_export = np.array(fake_quad_data, dtype=np.uint32).T.flatten()
-        
+        running_queue_len = 500
+        r_quad_queue     = collections.deque(maxlen=running_queue_len)
+        _ = [r_quad_queue.append((fake_quad_data_ts[i], fake_quad_data_cnter[i], fake_quad_data_unixtime[i])) for i in range(running_queue_len)]
+        quad_export = np.array(list(r_quad_queue), dtype=np.uint32).flatten()
 
-        running_queue_len = 64
-        r_pps_queue     = collections.deque(maxlen=running_queue_len)
-        r_zeropt_queue  = collections.deque(maxlen=running_queue_len)
-        r_sensors_queue = collections.deque(maxlen=running_queue_len)
+        running_queue_len = 1
+        r_pps_queue     = collections.deque(maxlen=4)
+        r_zeropt_queue  = collections.deque(maxlen=10)
+        r_sensors_queue = collections.deque(maxlen=32)
 
             
         _ = [r_zeropt_queue.append((650, 690, 420)) for _ in range(running_queue_len)]
@@ -58,22 +58,25 @@ if __name__ == '__main__':
         sensor_export = np.array(list(r_sensors_queue), dtype=np.uint32).flatten()
 
         # make the packet
-        packet = list(quad_export) + list(zeroopt_export) + list(pps_export) + list(sensor_export)
+        packet = list(quad_export[0:166*3]) + [0]*14 + list(quad_export[166*3:332*3]) + [0]*14 + list(quad_export[332*3:498*3]) + [0]*14 + list(quad_export[498:500]) + list(zeroopt_export) + list(pps_export) + list(sensor_export)
+        packet += [0]*(2048-len(packet))
+        packet[1024*2-6+5] = socket.htonl(packets_sent)
         bin_packet = [struct.pack("=I", value) for value in packet]
-        binarypackage = b"".join(bin_packet)    
-        packet_size = np.sum([sys.getsizeof(i) for i in [quad_export,zeroopt_export,pps_export,sensor_export]])            
+        binarypackage = b"".join(bin_packet)
+        packet_size = len(packet)*np.dtype(np.uint32).itemsize
         
         try: 
             # send the packet
-            send_message(binarypackage, port=6969)
-            msg = f'{int(time.time())} Packet Size Sent: {packet_size} Packets Sent: {packets_sent}'
+            send_message(binarypackage)
+            msg = f'{int(time.time())} Packet Size Sent: {packet_size} Packets Sent: {packets_sent} {packet[2]} {packet[500+3*14+3+3+3-1]}'
             print(msg)
             packets_sent += 1 
         except OSError as error:
             print(error)
+            traceback.print_exc()
 
         # do not spam them
-        time.sleep(5)
+        time.sleep(1.)
 
         
     
