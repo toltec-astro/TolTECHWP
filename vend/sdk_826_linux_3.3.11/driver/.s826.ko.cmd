@@ -1,0 +1,1 @@
+cmd_/home/poluser/TolTECHWP/vend/sdk_826_linux_3.3.11/driver/s826.ko := ld -r -m elf_x86_64 -z max-page-size=0x200000 -T ./scripts/module-common.lds --build-id  -o /home/poluser/TolTECHWP/vend/sdk_826_linux_3.3.11/driver/s826.ko /home/poluser/TolTECHWP/vend/sdk_826_linux_3.3.11/driver/s826.o /home/poluser/TolTECHWP/vend/sdk_826_linux_3.3.11/driver/s826.mod.o ;  true

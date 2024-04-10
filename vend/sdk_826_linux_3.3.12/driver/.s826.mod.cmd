@@ -1,0 +1,1 @@
+cmd_/home/poluser/TolTECHWP/vend/sdk_826_linux_3.3.12/driver/s826.mod := { echo  /home/poluser/TolTECHWP/vend/sdk_826_linux_3.3.12/driver/s826.o;  echo; } > /home/poluser/TolTECHWP/vend/sdk_826_linux_3.3.12/driver/s826.mod
