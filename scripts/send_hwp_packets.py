@@ -17,9 +17,9 @@ import numpy as np
 
 # sudo sysctl -w net.inet.udp.maxdgram=65535'
 
-def send_message(message, ip='192.168.110.207', port=64013):
+def send_message(message, ip='192.168.0.207', port=64013):
     sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) # UDP
-    sock.bind(('192.168.110.205', port+1000))
+#    sock.bind(('192.168.0.205', port+1000))
     sock.sendto(message, (ip, port))
     sock.close()
     #print(f"sent to {ip}:{port}")
@@ -61,6 +61,8 @@ if __name__ == '__main__':
         packet = list(quad_export[0:166*3]) + [0]*14 + list(quad_export[166*3:332*3]) + [0]*14 + list(quad_export[332*3:498*3]) + [0]*14 + list(quad_export[498:500]) + list(zeroopt_export) + list(pps_export) + list(sensor_export)
         packet += [0]*(2048-len(packet))
         packet[1024*2-6+5] = socket.htonl(packets_sent)
+        print(packet[1024*2-6])
+        #packet[1024*2-6+2] = socket.htonl(latest_pps)
         bin_packet = [struct.pack("=I", value) for value in packet]
         binarypackage = b"".join(bin_packet)
         packet_size = len(packet)*np.dtype(np.uint32).itemsize

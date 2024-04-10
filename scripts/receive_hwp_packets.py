@@ -2,7 +2,7 @@ import sys
 import socket
 import glob
 import struct
-
+import numpy as np
 
 def split_4(array):
     return [array[i:i+4] for i in range(0, len(array), 4)]    
@@ -50,7 +50,7 @@ def listen_UDP(ip='127.0.0.1', rec_port=6969):
     rec_sock.bind((ip, rec_port))
 
     # recieve and print
-    packet_size = 12352    
+    packet_size = 8192   
     while True:
         data, addr = rec_sock.recvfrom(packet_size)
         #for i in split_4(data):
@@ -59,7 +59,7 @@ def listen_UDP(ip='127.0.0.1', rec_port=6969):
 
         # first set of 166 values
         encoder_1 = list_form[0:166*3]
-        print('encoder_1', len(encoder_1), encoder_1[0], encoder_1[-1])
+        print('encoder_1', len(encoder_1), encoder_1[0:3], encoder_1[-1])
 
         padding_1 = list_form[498:498+14]
         print('padding_1', len(padding_1), padding_1)
@@ -86,8 +86,26 @@ def listen_UDP(ip='127.0.0.1', rec_port=6969):
         pps = list_form[1572:1572 + (3 * 4)]
         print('pps', len(pps), pps)
 
-        sensor_data = list_form[1584:1584+(16 * 3)]
+        sensor_data = list_form[1584:1584+(32 * 3)]
         print('sensor_data', len(sensor_data), sensor_data)
+        
+        encoder_data = encoder_1 + encoder_2 + encoder_3 + encoder_4
+        encoder_data_arr = np.reshape(np.array(encoder_data), (500,3))
+        sensor_data_arr = np.reshape(np.array(sensor_data), (32,3))
+        packet_number = socket.ntohl(list_form[2047])
+
+
+        encoder_file = '/data/toltec/readout/packet_monitoring/encoder.txt'
+        np.savetxt(encoder_file, encoder_data_arr, delimiter="\t")
+
+        sensor_file = '/data/toltec/readout/packet_monitoring/sensor.txt'
+        np.savetxt(sensor_file, sensor_data_arr, delimiter="\t")
+        
+
+
+        #import matplotlib.pyplot as plt
+        #plt.plot(encoder_data_arr.T[0], encoder_data_arr.T[2])
+        #plt.show()
         # zero point 10 
         # pps 4
         # sensor data 16
@@ -103,12 +121,19 @@ def listen_UDP(ip='127.0.0.1', rec_port=6969):
         #print(list_form[(166*3*2+15):(166*3*2+28)])
         
 
-        exit()
 
 if __name__ == '__main__':
 
-    listen_UDP()
     
+    listen_UDP()
+   
+    # return the data in arrays
+    # append to array
+    
+    
+
+
+
     # packet_size = 8192    
 
     # binarydumps = glob.glob('*.data')

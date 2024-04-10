@@ -84,20 +84,23 @@ while True:
     # On the fly converts strftime to current time
     with open(time.strftime(logfile), 'at') as outf:
         outext = time.strftime("%y-%m-%d %H:%M:%S ") + dataval + '\n'
-        datetime = time.strftime("%y-%m-%d %H:%M:%S")
+        dt = time.strftime("%y-%m-%d %H:%M:%S")
         #raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
         #print(datetime, raw, voltage, psi)
+        from datetime import datetime, timezone
+
+        utcdt = datetime.now(timezone.utc)
         outf.write(outext)
         outf.close()
-
         try:
             raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
             with psycopg.connect(pgconnstring) as conn:
                 with conn.cursor() as cur:
                     cur.execute(
-                        "INSERT INTO comp_pressure (DATETIME, COUNTER, VOLTAGE, PSI) VALUES (%s, %s, %s, %s)",
-                        (datetime, int(raw), float(voltage), float(psi))
+                            "INSERT INTO comp_pressure (DATETIME, COUNTER, VOLTAGE, PSI, UTCDATETIME) VALUES (%s, %s, %s, %s, %s)",
+                        (dt, int(raw), float(voltage), float(psi), utcdt,)
                     )
                     conn.commit()
-        except:
+        except Exception as e: 
+            print(e)
             pass
