@@ -1,2 +1,2 @@
 # TolTECHWP
-Software for the HWP of the TolTEC instrument.
+Software for the HWPR of the TolTEC instrument.
