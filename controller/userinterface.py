@@ -9,6 +9,9 @@
 import sys
 import queue
 import time
+from prompt_toolkit import prompt
+from prompt_toolkit.patch_stdout import patch_stdout
+from prompt_toolkit.history import InMemoryHistory
 from interparent import InterParent
 #from __builtin__ import False
 
@@ -22,6 +25,7 @@ class InterUser(InterParent):
         """
         # Setup
         self.lastagent = ''
+        prompthist = InMemoryHistory() # history for prompt
         # Loop
         print(self.config['userinterface']['greeting'])
         while not self.exit:
@@ -34,7 +38,8 @@ class InterUser(InterParent):
                 self.log.debug('Got response <%s>' % resp)
                 print(resp)
             # Wait for keyboard input
-            command = input('> ')
+            with patch_stdout():
+                command = prompt('> ', history = prompthist)
             # If it's status -> print list of all agents
             if 'status' in command.lower()[:7]:
                 # Print agents list
