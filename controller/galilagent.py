@@ -277,15 +277,16 @@ class GalilAgent(AgentParent):
                     self.torque = float(datas[ind])
                     newvalues = True
                 except:
-                    # Warning message if couldn't read all data
-                    self.log.warn('Error reading TPA, TVA or MOA')
-                if len(self.config['galil']['simulategalil']):
-                    newvalues = True
-                    self.pos += 1
-                    self.speed = self.cntperev
-                    self.motoroff = 1
-                    self.poserr = 1000
-                    self.torque = 1.0
+                    if len(self.config['galil']['simulategalil']):
+                        newvalues = True
+                        self.pos += 1
+                        self.speed = self.cntperev
+                        self.motoroff = 1
+                        self.poserr = 1000
+                        self.torque = 1.0
+                    else:
+                        # Warning message if couldn't read all data
+                        self.log.warn('Error reading TPA, TVA or MOA')
                 if newvalues :
                     datafile = time.strftime(self.config['galil']['datafile'])
                     with open(datafile,'at') as outf:
