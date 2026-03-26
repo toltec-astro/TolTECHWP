@@ -273,7 +273,7 @@ class GalilAgent(AgentParent):
                     self.motoroff = float(datas[ind])
                     ind = vlist.index('_TEA')
                     self.poserr = float(datas[ind])
-                    int = vlist.index('_TTA')
+                    ind = vlist.index('_TTA')
                     self.torque = float(datas[ind])
                     newvalues = True
                 except:
@@ -291,8 +291,8 @@ class GalilAgent(AgentParent):
                     datafile = time.strftime(self.config['galil']['datafile'])
                     with open(datafile,'at') as outf:
                         outstr = time.strftime('%y-%m-%d\t%H:%M:%S')
-                        outstr += f'\tPos={360.0*self.pos/self.cntperev:.3f}deg'
-                        outstr += f'\tSpeed={self.speed/self.cntperev:.5f}Hz'
+                        outstr += f'\tPos={360.0*(self.pos % self.cntperev) / self.cntperev:.3f}deg'
+                        outstr += f'\tSpeed={self.speed/self.cntperev:.5f}rps'
                         outstr += f'\tmotoroff={self.motoroff}'
                         outstr += f'\tposerr={360.0*self.poserr/self.cntperev:.3f}deg'
                         outstr += f'\ttorque={self.torque:.2f}V'
