@@ -93,14 +93,15 @@ while True:
         outf.write(outext)
         outf.close()
         try:
-            raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
-            with psycopg.connect(pgconnstring) as conn:
-                with conn.cursor() as cur:
-                    cur.execute(
-                            "INSERT INTO comp_pressure (DATETIME, COUNTER, VOLTAGE, PSI, UTCDATETIME) VALUES (%s, %s, %s, %s, %s)",
-                        (dt, int(raw), float(voltage), float(psi), utcdt,)
-                    )
-                    conn.commit()
+            pass
+            #raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
+            #with psycopg.connect(pgconnstring) as conn:
+            #    with conn.cursor() as cur:
+            #        cur.execute(
+            #                "INSERT INTO comp_pressure (DATETIME, COUNTER, VOLTAGE, PSI, UTCDATETIME) VALUES (%s, %s, %s, %s, %s)",
+            #            (dt, int(raw), float(voltage), float(psi), utcdt,)
+            #        )
+            #        conn.commit()
         except Exception as e: 
             print(e)
             pass
