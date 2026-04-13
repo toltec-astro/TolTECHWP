@@ -11,6 +11,16 @@
 
 import logging
 import socket
+from prompt_toolkit.patch_stdout import patch_stdout
+
+class PrintHandler(logging.Handler):
+    """ Handler that uses print() command which correctly
+        interfaces with prompt_toolkit.patch_stdout
+    """
+    def emit(self, record):
+        log_entry = self.format(record)
+        print(log_entry)
+
 
 class LoggerControl():
     """ Logger receiver: sets up logging then opens a port
@@ -32,7 +42,8 @@ class LoggerControl():
         logging.getLogger().setLevel(logging.DEBUG)
         logformat = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         # Set stream logger
-        shand = logging.StreamHandler()
+        #shand = logging.StreamHandler(patch_stdout)
+        shand = PrintHandler()
         shand.setFormatter(logging.Formatter(logformat))
         shand.setLevel(self.config['logging']['level'])
         logging.getLogger().addHandler(shand)

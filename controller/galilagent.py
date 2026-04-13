@@ -57,6 +57,8 @@ class GalilAgent(AgentParent):
         self.cntperev = 1 # encoder counts per revolution / is set below
         self.pos = 0 # Position
         self.speed = 0 # Velocity
+        self.poserr = 0 # Position error
+        self.torque = 0 # Torque voltage
         self.motoroff = 0 # Flag is motor is unpowered i.e. response of MOA
     
     def read(self):
@@ -72,10 +74,10 @@ class GalilAgent(AgentParent):
         else:
             self.log.warn("Read failed - not connected")
         
-    def write(self, message, debug=True):
+    def write(self, message, verbose=True):
         """ Function to write to galil
         """
-        if debug: self.log.debug('Write: %s' % message)
+        if verbose: self.log.debug('Write: %s' % message)
         if self.comm != 1 and self.comm != None:
             self.comm.write(message.encode())
             
@@ -83,13 +85,22 @@ class GalilAgent(AgentParent):
         """ Function to send commands and returns response.
             Uses write and read, checks if comm is open.
         """
-        if self.comm != None:
-            self.write((command+'\n\r'))
-            time.sleep(float(self.config['galil']['waittime']))
-            retmsg = self.read()
+        # If no connection
+        if self.comm is None:
+            return "Unable to send command, no open connection"        
+        # Long command - split it
+        comsplit = command.split(';')
+        if len(comsplit) > 3:
+            retmsg = self.command(';'.join(comsplit[:3]))
+            time.sleep(3*float(self.config['galil']['waittime']))
+            retmsg += self.command(';'.join(comsplit[1:]))
+            return retmsg
+        # Send the command
+        self.write((command+'\n\r'), verbose = bool(self.config['galil']['verbose']))
+        time.sleep(float(self.config['galil']['waittime']))
+        retmsg = self.read()
+        if bool(self.config['galil']['verbose']):
             self.log.debug('Read: %s' % retmsg)
-        else:
-            retmsg = "Unable to send command, no open connection"
         return retmsg
 
     def open(self):
@@ -245,11 +256,12 @@ class GalilAgent(AgentParent):
                 for s in vlist[1:]: stext += ',' + s
                 stext += '\n\r'
                 # Send - wait - return
-                self.write(stext, debug=False)
+                self.write(stext, verbose=False)
                 time.sleep(float(self.config['galil']['waittime']))
                 rtext = self.read().strip()
                 # Log the result
                 self.log.debug('Data: %s' % rtext)
+                newvalues = False # flag indicating if new values were read
                 try:
                     # update velocity, position and motor status
                     datas = [w.strip() for w in rtext.split()]
@@ -259,9 +271,32 @@ class GalilAgent(AgentParent):
                     self.speed = float(datas[ind])
                     ind = vlist.index('_MOA')
                     self.motoroff = float(datas[ind])
+                    ind = vlist.index('_TEA')
+                    self.poserr = float(datas[ind])
+                    ind = vlist.index('_TTA')
+                    self.torque = float(datas[ind])
+                    newvalues = True
                 except:
-                    # Warning message if couldn't read all data
-                    self.log.warn('Error reading TPA, TVA or MOA')
+                    if len(self.config['galil']['simulategalil']):
+                        newvalues = True
+                        self.pos += 1
+                        self.speed = self.cntperev
+                        self.motoroff = 1
+                        self.poserr = 1000
+                        self.torque = 1.0
+                    else:
+                        # Warning message if couldn't read all data
+                        self.log.warn('Error reading TPA, TVA or MOA')
+                if newvalues :
+                    datafile = time.strftime(self.config['galil']['datafile'])
+                    with open(datafile,'at') as outf:
+                        outstr = time.strftime('%y-%m-%d\t%H:%M:%S')
+                        outstr += f'\tPos={360.0*(self.pos % self.cntperev) / self.cntperev:.3f}deg'
+                        outstr += f'\tSpeed={self.speed/self.cntperev:.5f}rps'
+                        outstr += f'\tmotoroff={self.motoroff}'
+                        outstr += f'\tposerr={360.0*self.poserr/self.cntperev:.3f}deg'
+                        outstr += f'\ttorque={self.torque:.2f}V'
+                        outf.write(outstr+'\n')
             # Send return message
             if len(retmsg):
                 respqueue.put("%s: %s" % (self.name, retmsg))

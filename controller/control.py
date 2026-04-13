@@ -25,7 +25,23 @@
     * Standard way to handle agents which take long time to respond?
 
     2DO:
-    * Watchdog:
+    ./ Review: 
+      ./ Look at new simonsobs code for good ideas
+    * Cleanup
+      ./ Clean out ideas for later <-> DONE below
+      ./ comment out watchdog operator 
+    * Update userinterface
+      ./ Remove doit - done
+      ./ Use prompt_toolkit and patch_stdout
+      ./ Fix problem with logger and patch_toolkit by writing custom loghandler
+      o Spawn separate thread for getting and printing answers (remove need to get all answers)
+    * Galil interface
+      ./ Update command to use splitting as in my SimonsObs code
+      ./ Get data / improve handling of missing data due to busy controller (set all data to 0)
+      ./ Convert and print data into file
+    
+    Ideas for LATER:
+    * Watchdog: (there is currently no interface to get pressure and temperatures)
       * Set up for getting pressure information -> Stop motor if below 80psi
         * where to find channel which is pressure? A: Not in config, it's hardcoded.
       * check clear function
@@ -35,25 +51,21 @@
         * What do I need from galil? Know if it works, know if error, MOA and speed
         * Possible to get error flags from galil and respond to them?
     * Galil:
-      * Make status variables and command (speed, 
-      * Make sure init happens 
-      * Error handling, reconnect
-      * Make abort function
-      * Check number of command and report error if missing number of : or reports
-        error if ?
+      * Error handling, reconnect: 
+        * Error message if a '?' is returned
+        * If write / read when self.comm==None --> return error
+        * Check number of command and report error if missing number of : or reports
+          error if ?
       * Add initialization check and regular comcheck (with warning if lost signal)
       * Regularly set galil internal variable for galil watchdog to ABort after
         set time.
+    * Telecscope Control System ???
+      * Make list of commands
+      * Add interface for telescope control system
     * Readout:
       * Make list of commands
       * Make command receiver which sends commands to the readout
-    * Telecscope Control System
-      * Make list of commands
-      * Add interface for telescope control system
-    * Server Interface:
-      * Make object and thread
-      * Make simple server thread (responds with galil status)
-      * Make post message window and get response (and timeout) and rest of queue
+    * Web Server Interface:
       * Add to list last log messages (make autoupdate, use HAWC code)
     * Updates:
       * Make sure galil response is properly formatted
@@ -64,6 +76,12 @@
       * For multiple users (could also do slackbot)
       * All interfaces should print messages at info and higher level
         (each inter collects last 10 messages in FIFO queue - purge when printed out)
+        
+    DONE:
+    * Web Server Interface:
+      ./ Make object and thread
+      ./ Make simple server thread (responds with galil status)
+      ./ Make post message window and get response (and timeout) and rest of queue
 
 """
 
@@ -87,7 +105,7 @@ from webinterface import InterWeb
 from loggercontrol import LoggerControl
 from galilagent import GalilAgent
 from configagent import ConfigAgent
-from watchdogoper import WatchdogOper
+#from watchdogoper import WatchdogOper
 from readoutagent import ReadoutAgent
 
 def hwpcontrol(confilename):
@@ -101,31 +119,31 @@ def hwpcontrol(confilename):
     inusr = InterUser(config, 'User')
     insock = InterSocket(config,'Socket')
     inweb = InterWeb(config,'Web')
-    opwat = WatchdogOper(config,'Watch')
+    #opwat = WatchdogOper(config,'Watch')
     agconf = ConfigAgent(config, 'Conf')
-    agresp = AgentParent(config, 'Echo')
+    #agresp = AgentParent(config, 'Echo') - taken out add to lists below to reactivate
     aggal = GalilAgent(config, 'Galil')
 
     readou = ReadoutAgent(config, 'Readout')
 
     # Register agents with interfaces
-    for agent in [agresp, aggal, agconf, opwat, readou]:
+    for agent in [aggal, agconf, readou]: #opwat]:
         inusr.addagent(agent)
         insock.addagent(agent)
         inweb.addagent(agent)
-        opwat.addagent(agent)
+        #opwat.addagent(agent)
         insock.addagent(agent)
 
     # Run items as threads (as daemons such that they shut down on exit)
     threads = {}
-    for item in [logctrl, agresp, aggal, agconf, opwat, inusr, insock, inweb, readou]:
+    for item in [logctrl, aggal, agconf, inusr, insock, inweb, readou ]: #, opwat]:
         thread = threading.Thread(target = item)
         thread.daemon = True
         thread.start()
         threads[item.name] = thread
     # Wait and do some stuff
     time.sleep(2)
-    agresp.comqueue.put(('Do It',inusr.respqueue))
+    #agresp.comqueue.put(('Do It',inusr.respqueue))
     # Join with User Interface thread
     threads['User'].join()
 
