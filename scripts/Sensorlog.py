@@ -23,24 +23,28 @@ logfile = '/data/toltec/compressormon/comp_mon_log_%y%m%d.txt'
 #logfile = '/Users/berthoud/temp/complog%y%m%d.txt'
 # Logging rate in seconds
 lograte = 10
+# Simulate flag, set True if no sensor is attached
+simulatesensor = False
 
 #### Imports
 import serial
 import time
+from datetime import datetime, timezone
 import os
 import re
-import psycopg
+#import psycopg # to send data to external database
 pgconnstring = os.getenv('PGCONNSTRING')
 
 #### Setup
 # Setup timing
 nextime = time.time() + lograte
 # Setup connection
-comm = serial.Serial(serialport,serialbaud,timeout=0.02)
-print(f"Opened serial connection with {serialport}")
-# Get backlog from serial port
-time.sleep(2.0)
-comm.read(1000)
+if not simulatesensor:
+    comm = serial.Serial(serialport,serialbaud,timeout=0.02)
+    print(f"Opened serial connection with {serialport}")
+    # Get backlog from serial port
+    time.sleep(2.0)
+    comm.read(1000)
 #### Main Loop
 while True:
     # Wait
@@ -52,9 +56,12 @@ while True:
         nextime += lograte
     # Get the value
     try:
-        comm.write(readcmd.encode())
-        time.sleep(lograte/5.)
-        dataval = comm.read(1000).decode().strip()
+        if simulatesensor: 
+            dataval = 'Compressor pressure: 341cnts 1.67V 90.00Psi'
+        else:
+            comm.write(readcmd.encode())
+            time.sleep(lograte/5.)
+            dataval = comm.read(1000).decode().strip()
     except:
         # If fail to read, close then open connection, try to read again
         try:
@@ -71,7 +78,7 @@ while True:
             time.sleep(lograte/5.)
             comm.write('\n'.encode())
             time.sleep(lograte/5.)
-            dataval = comm.read(1000).decode().strip()            
+            dataval = comm.read(1000).decode().strip()
             # Read data
             comm.write(readcmd.encode())
             time.sleep(lograte/5.)
@@ -80,28 +87,33 @@ while True:
             # This fails as well - return bad data
             dataval = '-'
     print(f"read {dataval}")
-    # Add to logfile
+    # Check if logfile exists
     # On the fly converts strftime to current time
-    with open(time.strftime(logfile), 'at') as outf:
-        outext = time.strftime("%y-%m-%d %H:%M:%S ") + dataval + '\n'
+    logfname = time.strftime(logfile)
+    logfnew = not os.path.exists(logfname)
+    # Add to logfile
+    with open(logfname, 'at') as outf:
+        if logfnew:
+            outf.write('Date,Time,Sensor_Cnts,Sensor_V,Press_Psi\n')
+        outext = time.strftime("%y-%m-%d,%H:%M:%S,")
         dt = time.strftime("%y-%m-%d %H:%M:%S")
-        #raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
-        #print(datetime, raw, voltage, psi)
-        from datetime import datetime, timezone
-
-        utcdt = datetime.now(timezone.utc)
+        raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
+        print(datetime, raw, voltage, psi)
+        outext += f'{raw},{voltage},{psi}\n'
         outf.write(outext)
         outf.close()
-        try:
-            pass
-            #raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
-            #with psycopg.connect(pgconnstring) as conn:
-            #    with conn.cursor() as cur:
-            #        cur.execute(
-            #                "INSERT INTO comp_pressure (DATETIME, COUNTER, VOLTAGE, PSI, UTCDATETIME) VALUES (%s, %s, %s, %s, %s)",
-            #            (dt, int(raw), float(voltage), float(psi), utcdt,)
-            #        )
-            #        conn.commit()
-        except Exception as e: 
-            print(e)
-            pass
+    # Send to 
+    try:
+        pass
+        #raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
+        #utcdt = datetime.now(timezone.utc)
+        #with psycopg.connect(pgconnstring) as conn:
+        #    with conn.cursor() as cur:
+        #        cur.execute(
+        #                "INSERT INTO comp_pressure (DATETIME, COUNTER, VOLTAGE, PSI, UTCDATETIME) VALUES (%s, %s, %s, %s, %s)",
+        #            (dt, int(raw), float(voltage), float(psi), utcdt,)
+        #        )
+        #        conn.commit()
+    except Exception as e: 
+        print(e)
+        pass
