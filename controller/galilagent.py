@@ -25,6 +25,7 @@ helpmsg = """Galil Agent: Communicates to Galil motor controller
 
 
 # Preparation
+import os
 import sys
 import queue
 import traceback
@@ -289,13 +290,21 @@ class GalilAgent(AgentParent):
                         self.log.warn('Error reading TPA, TVA or MOA')
                 if newvalues :
                     datafile = time.strftime(self.config['galil']['datafile'])
+                    datafnew = not os.path.exists(datafile)
                     with open(datafile,'at') as outf:
-                        outstr = time.strftime('%y-%m-%d\t%H:%M:%S')
-                        outstr += f'\tPos={360.0*(self.pos % self.cntperev) / self.cntperev:.3f}deg'
-                        outstr += f'\tSpeed={self.speed/self.cntperev:.5f}rps'
-                        outstr += f'\tmotoroff={self.motoroff}'
-                        outstr += f'\tposerr={360.0*self.poserr/self.cntperev:.3f}deg'
-                        outstr += f'\ttorque={self.torque:.2f}V'
+                        if datafnew:
+                            outf.write('Data,Time,Pos_deg,Speed_rps,Motoroff,PosErr_deg,Torque_Volts\n')
+                        outstr = time.strftime('%y-%m-%d,%H:%M:%S')
+                        outstr += f',{360.0*(self.pos % self.cntperev) / self.cntperev:.3f}'
+                        outstr += f',{self.speed/self.cntperev:.5f}'
+                        outstr += f',{self.motoroff}'
+                        outstr += f',{360.0*self.poserr/self.cntperev:.3f}'
+                        outstr += f',{self.torque:.2f}'
+                        #outstr += f'\tPos={360.0*(self.pos % self.cntperev) / self.cntperev:.3f}deg'
+                        #outstr += f'\tSpeed={self.speed/self.cntperev:.5f}rps'
+                        #outstr += f'\tmotoroff={self.motoroff}'
+                        #outstr += f'\tposerr={360.0*self.poserr/self.cntperev:.3f}deg'
+                        #outstr += f'\ttorque={self.torque:.2f}V'
                         outf.write(outstr+'\n')
             # Send return message
             if len(retmsg):
