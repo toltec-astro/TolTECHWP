@@ -19,7 +19,8 @@ serialbaud = 19200
 # Command to get values
 readcmd = 'compress\n'
 # Log file name (can contain strftime formatting)
-logfile = '/data/toltec/compressormon/comp_mon_log_%y%m%d.txt'
+#logfile = '/data/toltec/compressormon/comp_mon_log_%y%m%d.txt'
+logfile = '/home/poluser/TolTECTEMP/compressormon/comp_mon_log_%y%m%d.txt'
 #logfile = '/Users/berthoud/temp/complog%y%m%d.txt'
 # Logging rate in seconds
 lograte = 10
@@ -41,7 +42,7 @@ nextime = time.time() + lograte
 # Setup connection
 if not simulatesensor:
     comm = serial.Serial(serialport,serialbaud,timeout=0.02)
-    print(f"Opened serial connection with {serialport}")
+    print("Opened serial connection with %s" % serialport)
     # Get backlog from serial port
     time.sleep(2.0)
     comm.read(1000)
@@ -73,7 +74,7 @@ while True:
             # Open connection
             time.sleep(lograte/5.)
             comm = serial.Serial(serialport,serialbaud,timeout=0.02)
-            print(f"Opened serial connection with {serialport}")
+            print("Opened serial connection with %s" % serialport)
             # Clear serial buffer with empty command
             time.sleep(lograte/5.)
             comm.write('\n'.encode())
@@ -86,7 +87,7 @@ while True:
         except:
             # This fails as well - return bad data
             dataval = '-'
-    print(f"read {dataval}")
+    print("read %s" % dataval)
     # Check if logfile exists
     # On the fly converts strftime to current time
     logfname = time.strftime(logfile)
@@ -99,7 +100,7 @@ while True:
         dt = time.strftime("%y-%m-%d %H:%M:%S")
         raw, voltage, psi = re.findall("Compressor pressure: (.*)cnts (.*)V (.*)Psi", dataval)[0]
         print(datetime, raw, voltage, psi)
-        outext += f'{raw},{voltage},{psi}\n'
+        outext += '%s,%s,%s\n' % (raw,voltage,psi)
         outf.write(outext)
         outf.close()
     # Send to 
