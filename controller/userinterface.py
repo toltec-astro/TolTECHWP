@@ -28,7 +28,7 @@ class InterUser(InterParent):
         prompthist = InMemoryHistory() # history for prompt
         # Loop
         print(self.config['userinterface']['greeting'])
-        while not self.exit:
+        while not self.exit.is_set():
             # Get response and print
             try:
                 resp = self.respqueue.get(timeout=0.1)
@@ -66,7 +66,7 @@ class InterUser(InterParent):
                 command = ''
             # Check if exit
             if 'exit' in resp.lower()[:5] or 'exit' in command.lower()[:10]:
-                self.exit = True
+                self.exit.set()
                 # Set command to empty to get all messages
                 command = ''
             # Empty command -> empty the queue
@@ -74,7 +74,7 @@ class InterUser(InterParent):
                 resp = ' '
                 while len(resp):
                     if 'exit' in resp.lower()[:5]:
-                        self.exit = True
+                        self.exit.set()
                     try:
                         time.sleep(1.0)
                         resp = self.respqueue.get(timeout=0.1)

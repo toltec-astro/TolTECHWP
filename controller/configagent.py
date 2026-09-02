@@ -34,14 +34,14 @@ class ConfigAgent(AgentParent):
         self.comqueue = queue.Queue() # Queue object for querries
         self.config = config # configuration
         self.log = logging.getLogger('Agent.'+self.name)
-        self.exit = False # Indicates that loop should exit
+        self.exit = None # threading.Event indicating exit
         
     def __call__(self):
         """ Object call: Runs a loop that runs forever and forwards
             user input.
         """
         ### Command loop
-        while not self.exit:
+        while not self.exit.is_set():
             ### Look for task
             try:
                 task, respqueue = self.comqueue.get(timeout = 0.1)
@@ -54,11 +54,8 @@ class ConfigAgent(AgentParent):
                 continue
             #print(repr(self.comm))
             retmsg = ''
-            # Exit
-            if 'exit' in task[:4].lower():
-                self.exit = True
             # Help message
-            elif 'help' in task[:4].lower():
+            if 'help' in task[:4].lower():
                 retmsg = helpmsg
             # Print all config
             elif 'all' in task[:3].lower():
@@ -96,4 +93,4 @@ class ConfigAgent(AgentParent):
             # Send return message
             if len(retmsg):
                 respqueue.put("%s: %s" % (self.name, retmsg))
-        
+        self.log.debug('Exiting')

@@ -37,21 +37,18 @@ class OperatorParent(InterParent, AgentParent):
         self.config = config # configuration
         self.agents = {}
         self.log = logging.getLogger('Operator.'+self.name)
-        self.exit = False # Indicates that loop should exit
+        self.exit = None # threading.Event indicating exit
         
     def __call__(self):
         """ Object call: Run a loop that runs forever and handles tasks
         """
         # Loop
-        while not self.exit:
+        while not self.exit.is_set():
             # Look for task
             task, respqueue = self.comqueue.get()
             self.log.debug("Agent %s - Handling Task <%s>" % (self.name, task) )
-            # Check if it's exit
-            if 'exit' in task.lower():
-                self.exit = True
             # If Echo agent exists, send task to it
-            elif 'echo' in self.agents:
+            if 'echo' in self.agents:
                 self.log.debug('%s: Sending %s to Echo' % (self.name, task))
                 self.sendtask('echo %s' % task)
                 # Get all responses

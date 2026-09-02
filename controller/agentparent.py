@@ -29,21 +29,20 @@ class AgentParent():
         self.comqueue = queue.Queue() # Queue object for querries
         self.config = config # configuration
         self.log = logging.getLogger('Agent.'+self.name)
-        self.exit = False # Indicates that loop should exit
+        self.exit = None # threading.Event indicating exit
         
     def __call__(self):
         """ Object call: Run a loop that runs forever and handles tasks
         """
         # Loop
-        while not self.exit:
+        while not self.exit.is_set():
             # Look for task
-            task, respqueue = self.comqueue.get()
+            try:
+                task, respqueue = self.comqueue.get(timeout = 1.0)
+            except queue.Empty:
+                continue
             self.log.debug("Agent %s - Handling Task <%s>" % (self.name, task) )
-            # Check if it's exit
-            if 'exit' in task.lower():
-                self.exit = True
-            # Else just send task string back
-            else:
-                respqueue.put("%s: Doing %s" % (self.name, task))
-                time.sleep(1.0)
-                respqueue.put("%s: %s is done" % (self.name, task))
+            # Send task string back
+            respqueue.put("%s: Doing %s" % (self.name, task))
+            time.sleep(1.0)
+            respqueue.put("%s: %s is done" % (self.name, task))

@@ -1,0 +1,821 @@
+%(asctime)s - %(name)s - %(levelname)s - %(message)s
+%(asctime)s - %(name)s - %(levelname)s - %(message)s
+%(asctime)s - %(name)s - %(levelname)s - %(message)s
+Logging is set up
+2019-01-28 11:17:12,758 - control.logger - INFO - Logging is set up
+2019-01-28 11:24:40,200 - control.logger - INFO - Logging is set up
+2019-01-28 11:24:52,814 - control.logger - INFO - Logging is set up
+2019-01-28 11:30:07,827 - control.logger - INFO - Logging is set up
+2019-01-28 11:30:48,077 - control.logger - INFO - Logging is set up
+2019-01-28 11:32:23,752 - control.logger - INFO - Logging is set up
+2019-01-28 11:39:33,975 - control.logger - INFO - Logging is set up
+2019-01-28 11:40:01,668 - control.logger - INFO - Logging is set up
+2019-01-28 11:40:03,670 - Action.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 11:46:07,181 - Agent.Echo - ERROR - Agent Echo - Handling Task <Do It>
+2019-01-28 11:47:25,801 - control.logger - INFO - Logging is set up
+2019-01-28 11:47:27,806 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 11:48:18,648 - control.logger - INFO - Logging is set up
+2019-01-28 11:48:20,652 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 11:48:32,693 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-28 11:48:32,693 - Agent.Echo - DEBUG - Agent Echo - Handling Task <fly>
+2019-01-28 11:48:54,324 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-28 11:48:54,324 - Interface.User - DEBUG - Got response <Echo: Doing fly>
+2019-01-28 11:48:54,324 - Interface.User - DEBUG - Got response <Echo: fly is done>
+2019-01-28 11:49:43,778 - control.logger - INFO - Logging is set up
+2019-01-28 11:49:45,783 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 11:50:02,177 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-28 11:50:02,178 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-28 11:50:15,352 - Interface.User - DEBUG - Got response <Invalid Agent: echo>
+2019-01-28 11:50:20,767 - Agent.Echo - DEBUG - Agent Echo - Handling Task <test>
+2019-01-28 11:50:20,767 - Interface.User - DEBUG - Got response <Echo: Doing test>
+2019-01-28 11:50:23,812 - Interface.User - DEBUG - Got response <Echo: test is done>
+2019-01-28 11:51:20,733 - control.logger - INFO - Logging is set up
+2019-01-28 11:51:22,738 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 11:51:25,413 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-28 11:51:25,413 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-28 11:51:31,765 - Agent.Echo - DEBUG - Agent Echo - Handling Task <test>
+2019-01-28 11:51:31,766 - Interface.User - DEBUG - Got response <Echo: Doing test>
+2019-01-28 11:51:33,661 - Interface.User - DEBUG - Got response <Echo: test is done>
+2019-01-28 11:51:55,605 - control.logger - INFO - Logging is set up
+2019-01-28 11:51:57,610 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 11:51:57,610 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-28 11:51:58,616 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-28 11:52:02,724 - Agent.Echo - DEBUG - Agent Echo - Handling Task <test>
+2019-01-28 11:52:02,724 - Interface.User - DEBUG - Got response <Echo: Doing test>
+2019-01-28 11:52:03,900 - Interface.User - DEBUG - Got response <Echo: test is done>
+2019-01-28 11:53:16,339 - control.logger - INFO - Logging is set up
+2019-01-28 11:53:18,344 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 11:53:22,120 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-28 11:53:22,121 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-28 11:53:23,328 - Interface.User - INFO - Exiting
+2019-01-28 12:00:08,850 - control.logger - INFO - Logging is set up
+2019-01-28 12:00:10,855 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 12:00:20,638 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-28 12:00:22,189 - Interface.User - INFO - Exiting
+2019-01-28 12:00:22,968 - control.logger - INFO - Logging is set up
+2019-01-28 12:00:24,973 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 12:00:42,821 - Interface.User - INFO - Exiting
+2019-01-28 12:00:43,547 - control.logger - INFO - Logging is set up
+2019-01-28 12:00:45,551 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 12:01:10,028 - Interface.User - INFO - Exiting
+2019-01-28 12:01:10,870 - control.logger - INFO - Logging is set up
+2019-01-28 12:01:12,873 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 12:01:13,059 - Interface.User - INFO - Exiting
+2019-01-28 12:02:06,007 - control.logger - INFO - Logging is set up
+2019-01-28 12:02:08,007 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 12:06:13,325 - Interface.User - INFO - Exiting
+2019-01-28 12:06:19,671 - control.logger - INFO - Logging is set up
+2019-01-28 12:06:21,673 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 12:06:38,193 - warn - INFO - hello
+2019-01-28 12:07:55,333 - abba - WARNING - hello!
+2019-01-28 12:08:12,052 - abba - DEBUG - hello!
+2019-01-28 12:08:37,624 - Interface.User - INFO - Exiting
+2019-01-28 12:08:39,917 - control.logger - INFO - Logging is set up
+2019-01-28 12:08:41,922 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 12:08:45,507 - abba - DEBUG - hello!
+2019-01-28 12:08:55,178 - abba - INFO - hello!
+2019-01-28 12:09:01,887 - Interface.User - INFO - Exiting
+2019-01-28 12:11:17,508 - control.logger - INFO - Logging is set up
+2019-01-28 12:11:19,513 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-28 12:11:35,611 - PortLogger - INFO - hello!
+2019-01-28 12:12:11,819 - PortLogger - INFO - hello!
+2019-01-28 12:12:25,593 - PortLogger - WARNING - hello!
+2019-01-28 12:12:39,304 - PortLogger - INFO - Hello!
+2019-01-28 12:12:47,820 - Interface.User - INFO - Exiting
+2019-01-31 12:56:26,219 - control.logger - INFO - Logging is set up
+2019-01-31 12:56:28,223 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 12:56:29,609 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 12:56:29,610 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 12:57:27,998 - Interface.User - INFO - Exiting
+2019-01-31 12:57:29,634 - control.logger - INFO - Logging is set up
+2019-01-31 12:57:31,640 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 12:59:18,953 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 12:59:18,953 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 12:59:21,367 - Interface.User - INFO - Exiting
+2019-01-31 12:59:23,062 - control.logger - INFO - Logging is set up
+2019-01-31 12:59:25,065 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 12:59:32,888 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 12:59:32,888 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 13:05:08,257 - Interface.User - INFO - Exiting
+2019-01-31 13:05:12,165 - control.logger - INFO - Logging is set up
+2019-01-31 13:05:14,168 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 13:05:18,361 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 13:05:18,361 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 13:06:04,751 - Interface.User - INFO - Exiting
+2019-01-31 13:06:05,722 - control.logger - INFO - Logging is set up
+2019-01-31 13:06:07,724 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 13:06:09,823 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 13:06:09,823 - Agent.Galil - DEBUG - Got task <help>
+2019-01-31 13:06:13,047 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 13:06:13,047 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+  exit - shuts down agent
+  open - (re)opens connection to galil with current config settings
+  close - closes connection to galil
+  any galil command is send to the controller>
+2019-01-31 13:06:22,790 - Agent.Galil - DEBUG - Got task <help>
+2019-01-31 13:06:22,790 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+  exit - shuts down agent
+  open - (re)opens connection to galil with current config settings
+  close - closes connection to galil
+  any galil command is send to the controller>
+2019-01-31 13:06:43,389 - Agent.Galil - DEBUG - Got task <test>
+2019-01-31 13:06:43,389 - Interface.User - INFO - Exiting
+2019-01-31 13:07:10,220 - control.logger - INFO - Logging is set up
+2019-01-31 13:07:12,223 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 13:09:01,183 - Interface.User - INFO - Exiting
+2019-01-31 13:09:02,105 - control.logger - INFO - Logging is set up
+2019-01-31 13:09:04,107 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 13:09:08,070 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 13:09:08,071 - Agent.Galil - DEBUG - Got task <help>
+2019-01-31 13:09:08,590 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 13:09:08,591 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+  exit - shuts down agent
+  open - (re)opens connection to galil with current config settings
+  close - closes connection to galil
+  any galil command is send to the controller>
+2019-01-31 13:09:13,174 - Agent.Galil - DEBUG - Got task <test>
+2019-01-31 13:09:13,175 - Interface.User - DEBUG - Got response <Galil: Unable to send command, connection closed>
+2019-01-31 13:09:45,269 - Agent.Galil - DEBUG - Got task <open>
+2019-01-31 13:09:45,270 - Agent.Galil - WARNING - Serial connection to /dev/tty.usbserial-AO003IDA FAILED
+2019-01-31 13:09:45,271 - Interface.User - DEBUG - Got response <Galil: Serial connection to /dev/tty.usbserial-AO003IDA FAILED>
+2019-01-31 13:09:54,548 - Agent.Galil - DEBUG - Got task <close>
+2019-01-31 13:10:11,076 - Interface.User - INFO - Exiting
+2019-01-31 13:10:53,510 - control.logger - INFO - Logging is set up
+2019-01-31 13:10:55,514 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 13:10:56,569 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 13:10:56,570 - Agent.Galil - DEBUG - Got task <open>
+2019-01-31 13:10:56,571 - Agent.Galil - WARNING - Serial connection to /dev/tty.usbserial-AO003IDA FAILED
+2019-01-31 13:11:01,097 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 13:11:01,097 - Interface.User - DEBUG - Got response <Galil: Serial connection to /dev/tty.usbserial-AO003IDA FAILED>
+2019-01-31 13:11:06,233 - Agent.Galil - DEBUG - Got task <close>
+2019-01-31 13:11:06,234 - Interface.User - DEBUG - Got response <Galil: Already closed>
+2019-01-31 13:11:15,665 - Interface.User - INFO - Exiting
+2019-01-31 13:12:05,747 - control.logger - INFO - Logging is set up
+2019-01-31 13:12:07,751 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 13:12:08,887 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 13:12:08,887 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 13:12:32,878 - Agent.Galil - DEBUG - Got task <open>
+2019-01-31 13:13:42,362 - Interface.User - DEBUG - Got response <Invalid Task: gal>
+2019-01-31 13:13:48,020 - Agent.Galil - WARNING - Telnet connection to 192.168.2.2 FAILED
+2019-01-31 13:13:48,020 - Agent.Galil - DEBUG - Got task <close>
+2019-01-31 13:13:48,020 - Agent.Galil - DEBUG - Got task <help>
+2019-01-31 13:13:53,578 - Interface.User - DEBUG - Got response <Galil: Telnet connection to 192.168.2.2 FAILED>
+2019-01-31 13:13:53,578 - Interface.User - DEBUG - Got response <Galil: Already closed>
+2019-01-31 13:13:53,578 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+  exit - shuts down agent
+  open - (re)opens connection to galil with current config settings
+  close - closes connection to galil
+  any galil command is send to the controller>
+2019-01-31 13:15:44,229 - Interface.User - INFO - Exiting
+2019-01-31 13:15:47,980 - control.logger - INFO - Logging is set up
+2019-01-31 13:15:49,982 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 13:15:51,772 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 13:15:51,773 - Agent.Galil - DEBUG - Got task <connect>
+2019-01-31 13:15:54,036 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 13:15:54,037 - Interface.User - DEBUG - Got response <Galil: Unable to send command, no open connection>
+2019-01-31 13:16:00,419 - Agent.Galil - DEBUG - Got task <help>
+2019-01-31 13:16:00,420 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+  exit - shuts down agent
+  open - (re)opens connection to galil with current config settings
+  close - closes connection to galil
+  any galil command is send to the controller>
+2019-01-31 13:16:03,988 - Agent.Galil - DEBUG - Got task <open>
+2019-01-31 13:16:04,998 - Agent.Galil - WARNING - Telnet connection to 192.168.2.2 FAILED
+2019-01-31 13:16:06,164 - Interface.User - DEBUG - Got response <Galil: Telnet connection to 192.168.2.2 FAILED>
+2019-01-31 19:08:37,058 - Interface.User - INFO - Exiting
+2019-01-31 19:09:01,979 - control.logger - INFO - Logging is set up
+2019-01-31 19:09:03,982 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 19:09:06,264 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 19:09:06,264 - Agent.Galil - DEBUG - Got task <help>
+2019-01-31 19:09:09,943 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 19:09:09,944 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+  exit - shuts down agent
+  open - (re)opens connection to galil with current config settings
+  close - closes connection to galil
+  any galil command is send to the controller>
+2019-01-31 19:09:17,855 - Agent.Galil - DEBUG - Got task <open>
+2019-01-31 19:09:19,871 - Interface.User - DEBUG - Got response <Galil: Serial connection set up with /dev/tty.usbserial-AO003IDA>
+2019-01-31 19:11:42,849 - Interface.User - INFO - Exiting
+2019-01-31 19:12:12,224 - control.logger - INFO - Logging is set up
+2019-01-31 19:12:14,227 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 19:12:16,695 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 19:12:16,696 - Agent.Galil - DEBUG - Got task <help>
+2019-01-31 19:12:17,999 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 19:12:17,999 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+  exit - shuts down agent
+  open - (re)opens connection to galil with current config settings
+  close - closes connection to galil
+  any galil command is send to the controller>
+2019-01-31 19:12:21,838 - Agent.Galil - DEBUG - Got task <open>
+2019-01-31 19:12:25,395 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:27,448 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:29,498 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:31,550 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:33,603 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:34,599 - Interface.User - DEBUG - Got response <Galil: Serial connection set up with /dev/tty.usbserial-AO003IDA>
+2019-01-31 19:12:34,599 - Agent.Galil - DEBUG - Got task <DH?>
+2019-01-31 19:12:36,700 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:38,749 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:40,094 - Interface.User - DEBUG - Got response <Galil: 1
+:>
+2019-01-31 19:12:40,801 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:42,852 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:44,904 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:46,956 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:49,003 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:50,062 - Agent.Galil - DEBUG - Got task <IP?>
+2019-01-31 19:12:50,112 - Interface.User - DEBUG - Got response <Galil: 0
+:>
+2019-01-31 19:12:52,168 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:54,221 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:56,273 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:12:57,606 - Agent.Galil - DEBUG - Got task <IA?>
+2019-01-31 19:12:57,656 - Interface.User - DEBUG - Got response <Galil: 0, 0, 0, 0
+:>
+2019-01-31 19:12:59,706 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:01,758 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:03,813 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:05,866 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:07,916 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:09,968 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:12,019 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:14,073 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:16,117 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:18,172 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:20,221 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:22,272 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:24,325 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:26,377 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:28,423 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:30,473 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:32,524 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:34,576 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:36,628 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:38,674 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:40,729 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:42,781 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:44,836 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:46,889 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:48,942 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:50,994 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:53,042 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:55,093 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:57,151 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:13:59,203 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:01,261 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:03,310 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:05,364 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:07,408 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:09,462 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:11,516 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:13,572 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:15,621 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:17,673 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:19,725 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:21,774 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:23,827 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:25,878 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:27,932 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:29,987 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:32,038 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:34,091 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:36,143 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:37,537 - Interface.User - DEBUG - Got response <Invalid Task: IA?>
+2019-01-31 19:14:38,196 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:40,243 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:42,294 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:42,329 - Agent.Galil - DEBUG - Got task <IA?>
+2019-01-31 19:14:42,377 - Interface.User - DEBUG - Got response <Galil: 192, 168, 2, 4
+:>
+2019-01-31 19:14:44,428 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:46,485 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:48,537 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:50,586 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:52,638 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:54,691 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:56,742 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:14:58,791 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:00,841 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:02,892 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:04,944 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:06,995 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:09,052 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:11,104 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:13,155 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:15,207 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:17,256 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:19,308 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:21,360 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:23,410 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:15:23,992 - Agent.Galil - DEBUG - Got task <exit>
+2019-01-31 19:15:23,992 - Interface.User - INFO - Exiting
+2019-01-31 19:18:16,996 - control.logger - INFO - Logging is set up
+2019-01-31 19:18:19,000 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-01-31 19:18:20,320 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-01-31 19:18:20,320 - Agent.Galil - DEBUG - Got task <open>
+2019-01-31 19:18:23,875 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:25,925 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:26,944 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-01-31 19:18:26,945 - Interface.User - DEBUG - Got response <Galil: Serial connection set up with /dev/tty.usbserial-AO003IDA>
+2019-01-31 19:18:27,976 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:30,030 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:32,080 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:34,132 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:36,184 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:38,234 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:40,289 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:42,343 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:44,391 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:45,583 - Agent.Galil - DEBUG - Got task <MG _MOA>
+2019-01-31 19:18:45,631 - Interface.User - DEBUG - Got response <Galil: 1.0000
+:>
+2019-01-31 19:18:47,675 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:49,727 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:51,775 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:53,827 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:55,876 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:57,929 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:18:59,980 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:02,033 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:04,083 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:06,136 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:08,186 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:10,233 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:12,287 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:14,342 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:16,398 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:18,451 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:20,504 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:22,547 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:24,597 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:26,645 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:28,696 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:30,746 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:32,798 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:34,853 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:36,901 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:38,954 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:41,006 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:43,061 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:45,109 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:47,161 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:49,214 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:51,266 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:53,312 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:55,363 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:57,415 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:19:59,460 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:20:01,510 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:20:03,565 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:20:05,618 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:20:06,916 - Agent.Galil - DEBUG - Got task <MG @AN[0]>
+2019-01-31 19:20:06,960 - Interface.User - DEBUG - Got response <Galil: 0.0021
+:>
+2019-01-31 19:20:09,011 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:20:11,062 - Agent.Galil - DEBUG - Data: 0.0000 0.0000 0.0000 0.0000
+:
+2019-01-31 19:20:12,459 - Interface.User - INFO - Exiting
+2019-02-04 12:07:28,594 - control.logger - INFO - Logging is set up
+2019-02-04 12:07:30,598 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-02-04 12:07:30,599 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-02-04 12:07:31,601 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-02-04 12:07:37,070 - Agent.Galil - DEBUG - Got task <test>
+2019-02-04 12:07:37,071 - Interface.User - DEBUG - Got response <Galil: Unable to send command, no open connection>
+2019-02-04 12:07:43,382 - Agent.Galil - DEBUG - Got task <open>
+2019-02-04 12:07:43,393 - Agent.Galil - WARNING - Serial connection to /dev/tty.usbserial-AO003IDA FAILED
+2019-02-04 12:07:43,393 - Interface.User - DEBUG - Got response <Galil: Serial connection to /dev/tty.usbserial-AO003IDA FAILED>
+2019-02-04 12:07:54,038 - Agent.Galil - DEBUG - Got task <close>
+2019-02-04 12:07:54,038 - Interface.User - DEBUG - Got response <Galil: Already closed>
+2019-02-04 12:07:55,605 - Interface.User - INFO - Exiting
+2019-02-04 12:08:04,192 - control.logger - INFO - Logging is set up
+2019-02-04 12:08:06,196 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-02-04 12:08:06,196 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-02-04 12:08:07,200 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-02-04 12:08:10,141 - Agent.Galil - DEBUG - Got task <open>
+2019-02-04 12:09:29,289 - Interface.User - INFO - Exiting
+2019-02-04 12:09:31,338 - control.logger - INFO - Logging is set up
+2019-02-04 12:09:33,340 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-02-04 12:09:33,340 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-02-04 12:09:34,345 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-02-04 12:09:37,681 - Agent.Galil - DEBUG - Got task <open>
+2019-02-04 12:09:37,681 - Interface.User - DEBUG - Got response <Galil: Simulated Galil connection open>
+2019-02-04 12:09:41,601 - Agent.Galil - DEBUG - Got task <test>
+2019-02-04 12:09:41,601 - Interface.User - DEBUG - Got response <Galil: Unable to send command, no open connection>
+2019-02-04 12:11:01,285 - Interface.User - INFO - Exiting
+2019-02-04 12:12:08,178 - control.logger - INFO - Logging is set up
+2019-02-04 12:12:10,182 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-02-04 12:12:10,182 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-02-04 12:12:11,187 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-02-04 12:12:12,506 - Agent.Galil - DEBUG - Got task <test>
+2019-02-04 12:12:12,507 - Interface.User - DEBUG - Got response <Galil: Unable to send command, no open connection>
+2019-02-04 12:12:24,138 - Agent.Galil - DEBUG - Got task <open>
+2019-02-04 12:12:24,138 - Interface.User - DEBUG - Got response <Galil: Simulated Galil connection open>
+2019-02-04 12:12:33,929 - Agent.Galil - DEBUG - Got task <close>
+2019-02-04 12:12:33,929 - Interface.User - DEBUG - Got response <Galil: Already closed>
+2019-02-04 12:12:36,681 - Interface.User - INFO - Exiting
+2019-02-04 12:12:52,235 - control.logger - INFO - Logging is set up
+2019-02-04 12:12:54,241 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-02-04 12:12:56,120 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-02-04 12:12:56,120 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-02-04 12:12:58,200 - Agent.Galil - DEBUG - Got task <open>
+2019-02-04 12:12:58,200 - Interface.User - DEBUG - Got response <Galil: Simulated Galil connection open>
+2019-02-04 12:16:17,151 - Interface.User - INFO - Exiting
+2019-02-04 12:16:20,316 - control.logger - INFO - Logging is set up
+2019-02-04 12:16:22,319 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-02-04 12:16:22,319 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-02-04 12:16:23,323 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-02-04 12:16:25,071 - Interface.User - DEBUG - Got response <Invalid Task: open>
+2019-02-04 12:16:27,551 - Agent.Galil - DEBUG - Got task <open>
+2019-02-04 12:16:27,551 - Interface.User - DEBUG - Got response <Galil: Simulated Galil connection open>
+2019-02-04 12:17:38,844 - Interface.User - INFO - Exiting
+2019-02-04 12:17:40,171 - control.logger - INFO - Logging is set up
+2019-02-04 12:17:42,175 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-02-04 12:17:43,331 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-02-04 12:17:43,332 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-02-04 12:17:45,611 - Agent.Galil - DEBUG - Got task <open>
+2019-02-04 12:17:45,612 - Interface.User - DEBUG - Got response <Galil: Simulated Galil connection open>
+2019-02-04 12:17:47,635 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:17:49,663 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:17:51,690 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:17:53,719 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:17:55,746 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:17:57,771 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:17:59,798 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:18:01,571 - Interface.User - DEBUG - Got response <Invalid Agent: gali>
+2019-02-04 12:18:01,824 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:18:03,850 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:18:05,002 - Agent.Galil - DEBUG - Got task <close>
+2019-02-04 12:18:43,945 - Interface.User - DEBUG - Got response <Invalid Task: eixt>
+2019-02-04 12:18:45,137 - Interface.User - INFO - Exiting
+2019-02-04 12:18:46,145 - control.logger - INFO - Logging is set up
+2019-02-04 12:18:48,148 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-02-04 12:18:48,148 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-02-04 12:18:49,153 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-02-04 12:18:53,128 - Agent.Galil - DEBUG - Got task <open>
+2019-02-04 12:18:53,129 - Interface.User - DEBUG - Got response <Galil: Simulated Galil connection open>
+2019-02-04 12:18:55,154 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:18:57,183 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:18:59,209 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:19:01,236 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:19:03,261 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:19:03,424 - Agent.Galil - DEBUG - Got task <test>
+2019-02-04 12:19:37,854 - Interface.User - INFO - Exiting
+2019-02-04 12:19:38,907 - control.logger - INFO - Logging is set up
+2019-02-04 12:19:40,912 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-02-04 12:19:41,630 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-02-04 12:19:41,917 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-02-04 12:19:48,598 - Agent.Galil - DEBUG - Got task <open>
+2019-02-04 12:19:48,598 - Interface.User - DEBUG - Got response <Galil: Simulated Galil connection open>
+2019-02-04 12:19:50,622 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:19:52,652 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:19:53,788 - Agent.Galil - DEBUG - Got task <test>
+2019-02-04 12:19:53,813 - Interface.User - DEBUG - Got response <Galil: sim:>
+2019-02-04 12:19:55,836 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:19:57,860 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:19:59,887 - Agent.Galil - DEBUG - Data: sim:
+2019-02-04 12:20:00,541 - Agent.Galil - DEBUG - Got task <close>
+2019-02-04 12:20:00,542 - Interface.User - DEBUG - Got response <Galil: Connection closed>
+2019-02-04 12:20:03,917 - Agent.Galil - DEBUG - Got task <test>
+2019-02-04 12:20:03,918 - Interface.User - DEBUG - Got response <Galil: Unable to send command, no open connection>
+2019-02-04 12:20:06,045 - Interface.User - INFO - Exiting
+2019-04-19 11:43:56,019 - control.logger - INFO - Logging is set up
+2019-04-19 11:43:58,026 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-04-19 11:43:58,026 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-04-19 11:43:59,027 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-04-19 11:45:19,868 - Interface.User - INFO - Exiting
+2019-04-19 11:45:21,617 - control.logger - INFO - Logging is set up
+2019-04-19 11:45:23,623 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-04-19 11:45:26,791 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-04-19 11:45:26,791 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-04-19 11:45:32,192 - Interface.User - DEBUG - Got response <Invalid Task: list>
+2019-04-19 11:45:54,805 - Agent.Galil - DEBUG - Got task <help>
+2019-04-19 11:45:54,805 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+  exit - shuts down agent
+  open - (re)opens connection to galil with current config settings
+  close - closes connection to galil
+  any galil command is send to the controller>
+2019-04-19 12:05:55,995 - Interface.User - INFO - Exiting
+2019-04-19 12:05:57,002 - control.logger - INFO - Logging is set up
+2019-04-19 12:05:59,005 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-04-19 12:06:01,900 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-04-19 12:06:01,901 - Agent.Galil - DEBUG - Got task <help>
+2019-04-19 12:06:08,063 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-04-19 12:06:08,063 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+    exit - shuts down agent
+    open - (re)opens connection to galil with current config settings
+    close - closes connection to galil
+    conf - sends the config commands to the galil
+    init - initializes the motor (do this after config)
+    start - start motor movement
+    stop - stop motor movement
+    off - shuts motor off
+    any galil command is send to the controller>
+2019-04-19 12:06:17,184 - Agent.Galil - DEBUG - Got task <help>
+2019-04-19 12:06:17,184 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+    exit - shuts down agent
+    open - (re)opens connection to galil with current config settings
+    close - closes connection to galil
+    conf - sends the config commands to the galil
+    init - initializes the motor (do this after config)
+    start - start motor movement
+    stop - stop motor movement
+    off - shuts motor off
+    any galil command is send to the controller>
+2019-04-19 12:06:26,322 - Interface.User - DEBUG - Got response <Invalid Task: open>
+2019-04-19 12:06:29,963 - Agent.Galil - DEBUG - Got task <open>
+2019-04-19 12:06:29,968 - Agent.Galil - WARNING - Serial connection to /dev/tty.usbserial-AO003IDA FAILED
+2019-04-19 12:06:29,968 - Interface.User - DEBUG - Got response <Galil: Serial connection to /dev/tty.usbserial-AO003IDA FAILED>
+2019-04-19 12:06:43,966 - Interface.User - INFO - Exiting
+2019-04-19 12:06:55,412 - control.logger - INFO - Logging is set up
+2019-04-19 12:06:57,416 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-04-19 12:06:58,841 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-04-19 12:07:00,513 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-04-19 12:07:02,586 - Interface.User - DEBUG - Got response <Invalid Task: confi>
+2019-04-19 12:07:02,586 - Interface.User - DEBUG - Got response <Invalid Task: conf>
+2019-04-19 12:07:14,092 - Agent.Galil - DEBUG - Got task <open>
+2019-04-19 12:07:14,092 - Interface.User - DEBUG - Got response <Galil: Simulated Galil connection open>
+2019-04-19 12:07:16,120 - Agent.Galil - DEBUG - Data: sim:
+2019-04-19 12:07:18,144 - Agent.Galil - DEBUG - Data: sim:
+2019-04-19 12:07:20,172 - Agent.Galil - DEBUG - Data: sim:
+2019-04-19 12:07:21,741 - Agent.Galil - DEBUG - Got task <conf>
+2019-04-19 12:09:43,266 - Interface.User - INFO - Exiting
+2019-04-19 12:09:45,507 - control.logger - INFO - Logging is set up
+2019-04-19 12:09:47,511 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-04-19 12:09:50,869 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-04-19 12:09:50,869 - Agent.Galil - DEBUG - Got task <open>
+2019-04-19 12:09:52,899 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:09:54,923 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:09:56,952 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:09:58,979 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:01,008 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:03,037 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:05,061 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:07,090 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:08,080 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-04-19 12:10:09,114 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:09,418 - Interface.User - DEBUG - Got response <Galil: Simulated Galil connection open>
+2019-04-19 12:10:09,418 - Interface.User - DEBUG - Got response <Invalid Task: hlep>
+2019-04-19 12:10:11,142 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:13,167 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:15,195 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:17,220 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:19,250 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:21,280 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:10:22,500 - Agent.Galil - DEBUG - Got task <start>
+2019-04-19 12:10:22,500 - Agent.Galil - DEBUG - Write: SHA;BGA
+
+2019-04-19 12:10:45,103 - Interface.User - INFO - Exiting
+2019-04-19 12:11:03,949 - control.logger - INFO - Logging is set up
+2019-04-19 12:11:05,953 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-04-19 12:11:05,953 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-04-19 12:11:06,955 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-04-19 12:11:24,897 - Agent.Galil - DEBUG - Got task <help>
+2019-04-19 12:11:24,897 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+    exit - shuts down agent
+    open - (re)opens connection to galil with current config settings
+    close - closes connection to galil
+    conf - sends the config commands to the galil
+    init - initializes the motor (do this after config)
+    start - start motor movement
+    stop - stop motor movement
+    off - shuts motor off
+    any galil command is send to the controller>
+2019-04-19 12:12:01,040 - Agent.Galil - DEBUG - Got task <start>
+2019-04-19 12:12:15,555 - Agent.Galil - DEBUG - Got task <open>
+2019-04-19 12:12:15,556 - Interface.User - DEBUG - Got response <Galil: Simulated Galil connection open>
+2019-04-19 12:12:17,582 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:19,610 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:21,140 - Agent.Galil - DEBUG - Got task <start>
+2019-04-19 12:12:21,141 - Agent.Galil - DEBUG - Write: SHA;BGA
+
+2019-04-19 12:12:21,166 - Agent.Galil - DEBUG - Read: sim
+2019-04-19 12:12:23,194 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:25,223 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:27,251 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:29,275 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:31,304 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:33,328 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:35,358 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:37,387 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:39,413 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:41,440 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:43,466 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:45,495 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:47,521 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:49,551 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:51,579 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:53,606 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:55,632 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:57,656 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:12:59,686 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:01,713 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:03,743 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:05,773 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:07,802 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:09,826 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:11,855 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:13,879 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:15,907 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:17,932 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:19,960 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:21,988 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:24,016 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:26,045 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:26,611 - Interface.User - INFO - Exiting
+2019-04-19 12:13:27,504 - control.logger - INFO - Logging is set up
+2019-04-19 12:13:29,509 - Agent.Echo - DEBUG - Agent Echo - Handling Task <Do It>
+2019-04-19 12:13:32,605 - Interface.User - DEBUG - Got response <Echo: Doing Do It>
+2019-04-19 12:13:32,605 - Interface.User - DEBUG - Got response <Echo: Do It is done>
+2019-04-19 12:13:37,213 - Agent.Galil - DEBUG - Got task <help>
+2019-04-19 12:13:37,213 - Interface.User - DEBUG - Got response <Galil: Galil Agent: Communicates to Galil motor controller
+    exit - shuts down agent
+    open - (re)opens connection to galil with current config settings
+    close - closes connection to galil
+    conf - sends the config commands to the galil
+    init - initializes the motor (do this after config)
+    start - start motor movement
+    stop - stop motor movement
+    off - shuts motor off
+    any galil command is send to the controller>
+2019-04-19 12:13:44,748 - Agent.Galil - DEBUG - Got task <init>
+2019-04-19 12:13:44,749 - Interface.User - DEBUG - Got response <Galil: Unable to send command, no open connection>
+2019-04-19 12:13:50,471 - Agent.Galil - DEBUG - Got task <start>
+2019-04-19 12:13:50,472 - Interface.User - DEBUG - Got response <Galil: Unable to send command, no open connection>
+2019-04-19 12:13:55,712 - Agent.Galil - DEBUG - Got task <open>
+2019-04-19 12:13:55,713 - Interface.User - DEBUG - Got response <Galil: Simulated Galil connection open>
+2019-04-19 12:13:57,739 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:13:59,767 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:00,160 - Agent.Galil - DEBUG - Got task <starat>
+2019-04-19 12:14:00,160 - Agent.Galil - DEBUG - Write: starat
+
+2019-04-19 12:14:00,185 - Agent.Galil - DEBUG - Read: sim
+2019-04-19 12:14:00,186 - Interface.User - DEBUG - Got response <Galil: sim>
+2019-04-19 12:14:02,210 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:04,238 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:04,378 - Agent.Galil - DEBUG - Got task <start>
+2019-04-19 12:14:04,379 - Agent.Galil - DEBUG - Write: SHA;BGA
+
+2019-04-19 12:14:04,401 - Agent.Galil - DEBUG - Read: sim
+2019-04-19 12:14:04,401 - Interface.User - DEBUG - Got response <Galil: sim>
+2019-04-19 12:14:06,427 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:08,453 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:10,483 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:12,510 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:14,538 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:16,566 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:18,595 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:20,623 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:22,651 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:24,680 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:26,709 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:28,735 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:30,762 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:32,785 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:34,814 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:36,842 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:38,870 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:40,900 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:42,923 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:44,951 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:46,976 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:49,004 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:51,031 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:53,057 - Agent.Galil - DEBUG - Data: sim
+2019-04-19 12:14:54,605 - Interface.User - INFO - Exiting

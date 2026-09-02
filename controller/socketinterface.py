@@ -6,7 +6,6 @@
     
 """
 
-import sys
 import queue
 import socket
 from interparent import InterParent
@@ -26,37 +25,55 @@ class InterSocket(InterParent):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind(('localhost',port))
         sock.listen(5)
+        sock.settimeout(1.0)
         self.log.info("Listening on port %d" % port)
         # Receive loop
-        while not self.exit:
+        while not self.exit.is_set(): # outer: over all sessions
             # Get new connection
-            conn, addr = sock.accept()
+            # Runs every second to check if self.exit has been set
+            try:
+                conn, addr = sock.accept()
+            except socket.timeout:
+                continue
             self.log.debug('Conected with %s at address %s' % (addr[0],str(addr[1])))
-            # Get the command
-            command = conn.recv(1024)
-            command = command.decode()
-            self.log.debug('Got command: %s' % command )
-            # Deal with special commands
-            # Check if exit
-            if 'exit' in command.lower()[:5]:
-                self.exit = True
-                command = ''
-            # No special command -> send task to agents
-            if len(command):
-                # Send the command
-                self.sendtask(command)
-                # Wait for response
-                try:
-                    response = self.respqueue.get(timeout = 0.1)
-                except queue.Empty:
-                    response = ''
-                # Return response
-                if len(response):
-                    conn.sendall( response.encode())
-                    self.log.debug('Sending %s' % response)
-            # Close the connection
-            conn.close()
-            self.log.debug('Connection Closed')
+            try:
+                while not self.exit.is_set(): # inner: one session
+                    # Get the command
+                    command = conn.recv(1024)
+                    command = command.decode()
+                    self.log.debug('Got command: %s' % command )
+                    # Deal with special commands
+                    # Check if exit
+                    if 'exit' in command.lower()[:4]:
+                        self.exit.set()
+                        command = ''
+                    # No special command -> send task to agents
+                    if len(command):
+                        # Send the command
+                        self.sendtask(command)
+                        # Wait for response.
+                        fullresp = ''
+                        resp = ' '
+                        while len(resp): # Loop to get all responses
+                            try:
+                                resp = self.respqueue.get(timeout = 0.1)
+                            except queue.Empty:
+                                resp = ''
+                            if len(resp):
+                                fullresp += resp
+                        # Return response
+                        if len(fullresp):
+                            conn.sendall( fullresp.encode())
+                            self.log.debug('Sending %s' % fullresp)
+                    else:
+                        break
+            except (ConnectionResetError, BrokenPipeError, OSError):
+                self.log.warning(('Client connection lost'))
+            finally:
+                # Close the connection
+                conn.close()
+                self.log.debug('Connection Closed, waiting for new client')
+        self.log.debug('Exiting')
 
 """
 Simple send / receive code:

@@ -10,6 +10,7 @@ helpmsg = """Galil Agent: Communicates to Galil motor controller
     exit - shuts down agent
     open - (re)opens connection to galil with current config settings
     close - closes connection to galil
+    read - reads any pending response from the controller
     conf - sends the config commands to the galil
     init - initializes the motor (do this after config)
     start - start currently set motor movement
@@ -51,7 +52,7 @@ class GalilAgent(AgentParent):
         self.comqueue = queue.Queue() # Queue object for querries
         self.config = config # configuration
         self.log = logging.getLogger('Agent.'+self.name)
-        self.exit = False # Indicates that loop should exit
+        self.exit = None # threading.Event indicating exit
         self.comm = None # Variable for communication object (serial or Telnet)
                          # None if connection closed, 1 if open but simulgalil=1
         self.indextime = 0.0 # Unix timestamp of last index operation
@@ -154,7 +155,7 @@ class GalilAgent(AgentParent):
         self.cntperev = float(self.config['galil']['cntperev'])
         self.pos = 0
         ### Command loop
-        while not self.exit:
+        while not self.exit.is_set():
             # Look for task
             datainterval = float(self.config['galil']['datainterval']) # get value in case it changed
             try:
@@ -167,17 +168,14 @@ class GalilAgent(AgentParent):
             ### Handle task
             #print(repr(self.comm))
             retmsg = ''
-            # Exit
-            if 'exit' in task.lower():
-                self.exit = True
             # Help message
-            elif 'help' in task.lower():
+            if 'help' in task[:4].lower():
                 retmsg = helpmsg
             # Connect
-            elif 'open' in task.lower():
+            elif 'open' in task[:4].lower():
                 retmsg = self.open()
             # Disconnect
-            elif 'close' in task.lower():
+            elif 'close' in task[:5].lower():
                 if self.comm != None:
                     if self.comm != 1:
                         self.comm.close()
@@ -185,43 +183,49 @@ class GalilAgent(AgentParent):
                     retmsg = 'Connection closed'
                 else:
                     retmsg = 'Already closed'
+            # read pending response
+            elif 'read' in task[:4].lower():
+                if self.comm is not None:
+                    retmsg = self.read()
+                else:
+                    retmsg = "No open connection"
             # configure
-            elif 'conf' in task.lower():
+            elif 'conf' in task[:4].lower():
                 retmsg = self.command('RS')
                 time.sleep(0.5)
                 retmsg += self.command(self.config['galil']['confcomm'])
             # initialize
-            elif 'init' in task.lower():
+            elif 'init' in task[:4].lower():
                 retmsg = self.command(self.config['galil']['initcomm'])
             # start
-            elif 'start' in task.lower():
+            elif 'start' in task[:5].lower():
                 retmsg = self.command(self.config['galil']['startcomm'])
             # stop
-            elif 'stop' in task.lower():
+            elif 'stop' in task[:4].lower():
                 retmsg = self.command(self.config['galil']['stopcomm'])
             # stop
-            elif 'off' in task.lower():
+            elif 'off' in task[:3].lower():
                 retmsg = self.command(self.config['galil']['offcomm'])
             # abort
-            elif 'abort' in task.lower():
+            elif 'abort' in task[:5].lower():
                 retmsg = self.command(self.config['galil']['abortcomm'])
             # index
-            elif 'index' in task.lower():
+            elif 'index' in task[:5].lower():
                 retmsg = self.command(self.config['galil']['indexcomm'])
                 self.indextime = time.time()
             # rotate by Hz
-            elif 'rotate' in task.lower():
+            elif 'rotate' in task[:6].lower():
                 print(task)
                 freq = float(task[6:].strip())*self.cntperev
                 comm = 'JGA=%d' % math.floor(freq)
                 retmsg = self.command(comm)
             # move by angle
-            elif 'move' in task.lower():
+            elif 'move' in task[:5].lower():
                 distance = float(task[5:].strip())*self.cntperev/360.0
                 comm = 'PRA=%d' % math.floor(distance)
                 retmsg = self.command(comm)
             # goto angle
-            elif 'goto' in task.lower():
+            elif 'goto' in task[:4].lower():
                 # check if reasonably recent index time is available
                 if time.time() - self.indextime < 10*3600:
                     # get angle and get angle to travel
@@ -237,7 +241,7 @@ class GalilAgent(AgentParent):
                 else:
                     retmsg = "Error: Outdated Index time, INDEX the rotator before GOTO"
             # Status
-            elif 'status' in task.lower():
+            elif 'status' in task[:6].lower():
                 if self.comm != None:
                     retmsg = 'Connected to the controller'
                     retmsg += '\n       Position = %.0f counts  = %.3f deg' % (self.pos, self.pos*360/self.cntperev)
@@ -310,5 +314,6 @@ class GalilAgent(AgentParent):
             if len(retmsg):
                 respqueue.put("%s: %s" % (self.name, retmsg))
         ### On exit close connection
-        self.comm.close()
-        
+        if self.comm and self.comm!=1:
+            self.comm.close()
+        self.log.debug('Exiting')

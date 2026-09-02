@@ -37,14 +37,14 @@ class InterParent():
         self.config = config # configuration
         self.agents = {} # dictionary for agent queues (use addagent)
         self.log = logging.getLogger('Interface.'+self.name)
-        self.exit = False # Indicates if loop should exit
+        self.exit = None # threading.Event indicating exit
         
     def __call__(self):
         """ Object call: Runs a loop that runs forever and generates
             tasks for agents.
         """
         # Loop
-        while not self.exit:
+        while not self.exit.is_set():
             # get response (try again every 10s)
             try:
                 resp = self.respqueue.get(timeout=3)
@@ -52,13 +52,14 @@ class InterParent():
             except queue.Empty:
                 resp = ''
             if 'exit' in resp.lower():
-                self.exit = True
+                self.exit.set()
             if random.random() < 0.3 and len(resp) == 0 :
                 for a in self.agents:
                     self.log.debug('Telling %s to work' % a)
                     self.sendtask(a+' Work!')
             if random.random() < 0.1 and len(resp) == 0 :
                 self.sendtask('Noone Do Something!')
+        self.log.debug('Exiting')
     
     def addagent(self, agent):
         """ AddAgent: registers an agent with the interface

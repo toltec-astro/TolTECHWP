@@ -38,7 +38,7 @@ class ReadoutAgent(AgentParent):
         self.comqueue = queue.Queue() # Queue object for querries
         self.config = config # configuration
         self.log = logging.getLogger('Agent.' + self.name)
-        self.exit = False # Indicates that loop should exit
+        self.exit = None # threading.Event indicating exit
         self.comm = None # Variable for communication object (serial or Telnet)
                          # None if connection closed, 1 if open but simulgalil=1
         self.readout_running = False
@@ -72,7 +72,7 @@ class ReadoutAgent(AgentParent):
         """
 
         # endless loop
-        while not self.exit:
+        while not self.exit.is_set():
 
 
             # wait for commmand/task, otherwise empty task var
@@ -85,10 +85,9 @@ class ReadoutAgent(AgentParent):
             if len(task):
                 self.log.debug('Got task <%s>' % task)
 
-
             retmsg = ''
             # starts the data collection
-            if 'start' in task.lower():
+            if 'start' in task[:5].lower():
                 response = self.start()
                 self.readout_thread = threading.Thread(target=hwpreadout, args=(self.config,))
                 self.readout_thread.start()
@@ -96,21 +95,21 @@ class ReadoutAgent(AgentParent):
                 
                 retmsg = response
             # ends the data collection
-            elif 'stop' in task.lower():
+            elif 'stop' in task[:4].lower():
                 response = self.stop()
                 self.readout_thread.join()
                 retmsg = response
                 self.readout_running = False
 
             # exit
-            elif 'exit' in task.lower():
+            elif 'exit' in task[:4].lower():
                 if self.readout_running is True:
                     retmsg = "can't stop. readout running."
                 else:
                     retmsg = "readout not running, by this agent lives forever."
-#                   self.exit = True
+#                   self.exit.set() = True
             # help
-            elif 'help' in task.lower():
+            elif 'help' in task[:4].lower():
                 retmsg = helpmsg
             if len(retmsg):
                 respqueue.put("%s: %s" % (self.name, retmsg))

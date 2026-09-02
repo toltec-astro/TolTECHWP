@@ -25,20 +25,29 @@
     * Standard way to handle agents which take long time to respond?
 
     2DO:
-    ./ Review: 
-      ./ Look at new simonsobs code for good ideas
-    * Cleanup
-      ./ Clean out ideas for later <-> DONE below
-      ./ comment out watchdog operator 
-    * Update userinterface
-      ./ Remove doit - done
-      ./ Use prompt_toolkit and patch_stdout
-      ./ Fix problem with logger and patch_toolkit by writing custom loghandler
-      o Spawn separate thread for getting and printing answers (remove need to get all answers)
-    * Galil interface
-      ./ Update command to use splitting as in my SimonsObs code
-      ./ Get data / improve handling of missing data due to busy controller (set all data to 0)
-      ./ Convert and print data into file
+
+    * Galil / General updates
+      ./ Add read command in the galil
+      ./ In galilagent and readoutagent, make sure correct commands are sent by
+         only checking required number characters of new command.
+    * Socket interface update
+      # Requirements: persisent connection, answer every request < 0.1s
+      # Setup: builtin socket library, no authentication, single connection at a time
+        * Make sure 'exit' command works through socket interface
+      ./ Plan with LLM for consisten socket, single communication channel
+        --> Implement it
+      ./ Single command test (use nc)
+      ./ Common Exit
+        Add exitEv = threading.Event() to controll.py then pass it to every object
+          interfaces can set the event and all objects close when it's set
+          then use exitEv.wait() instead of UserInterface.join() and wait 5s after that
+        ./ Update galil program to close connection if exit is called and connection is open
+      * Tests
+        ./ Test single command, disconnect,
+        ./ Test multiple commands, disconnect, reconnect, more commands,
+        ./ Test single command, cut just after sending, see if new reestablish works
+        * Test read (set up sim command with index that delays answer)
+        ./ Test exit with userinterface or socketinterface make sure both work
     
     Ideas for LATER:
     * Watchdog: (there is currently no interface to get pressure and temperatures)
@@ -50,6 +59,7 @@
       * Set up for getting info from galil (if connected and motor is moving or not)
         * What do I need from galil? Know if it works, know if error, MOA and speed
         * Possible to get error flags from galil and respond to them?
+      * Option to shut down gracefully: stop rotation, turn off, disconnect
     * Galil:
       * Error handling, reconnect: 
         * Error message if a '?' is returned
@@ -59,6 +69,8 @@
       * Add initialization check and regular comcheck (with warning if lost signal)
       * Regularly set galil internal variable for galil watchdog to ABort after
         set time.
+      * Add internal state machine for galil to check when executing commands
+        * Have internal string variable configured -> initialized -> moving / stopped
     * Telecscope Control System ???
       * Make list of commands
       * Add interface for telescope control system
@@ -132,11 +144,12 @@ def hwpcontrol(confilename):
         insock.addagent(agent)
         inweb.addagent(agent)
         #opwat.addagent(agent)
-        insock.addagent(agent)
 
     # Run items as threads (as daemons such that they shut down on exit)
     threads = {}
+    exitEv = threading.Event()
     for item in [logctrl, aggal, agconf, inusr, insock, inweb, readou ]: #, opwat]:
+        item.exit = exitEv
         thread = threading.Thread(target = item)
         thread.daemon = True
         thread.start()
@@ -144,8 +157,9 @@ def hwpcontrol(confilename):
     # Wait and do some stuff
     time.sleep(2)
     #agresp.comqueue.put(('Do It',inusr.respqueue))
-    # Join with User Interface thread
-    threads['User'].join()
+    # Wait until exit Event is set then wait 2s for everyone to exit
+    exitEv.wait()
+    time.sleep(2)
 
 if __name__ == '__main__':
     """ Main function for calling command line. Passes the configuration file
@@ -197,5 +211,20 @@ where
       * Set up variable, then status, on and off commands
       * Set up communication with galil (check MOA)
     * Socket interface
+
+    For writing log file for the galil 2026-May
+    ./ Review: 
+      ./ Look at new simonsobs code for good ideas
+    ./ Cleanup
+      ./ Clean out ideas for later <-> DONE below
+      ./ comment out watchdog operator 
+    ./ Update userinterface
+      ./ Remove doit - done
+      ./ Use prompt_toolkit and patch_stdout
+      ./ Fix problem with logger and patch_toolkit by writing custom loghandler
+    ./ Galil interface
+      ./ Update command to use splitting as in my SimonsObs code
+      ./ Get data / improve handling of missing data due to busy controller (set all data to 0)
+      ./ Convert and print data into file
 
 """
