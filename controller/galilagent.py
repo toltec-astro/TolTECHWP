@@ -297,7 +297,7 @@ class GalilAgent(AgentParent):
                     datafnew = not os.path.exists(datafile)
                     with open(datafile,'at') as outf:
                         if datafnew:
-                            outf.write('Data,Time,Pos_deg,Speed_rps,Motoroff,PosErr_deg,Torque_Volts\n')
+                            outf.write('Date,Time,Pos_deg,Speed_rps,Motoroff,PosErr_deg,Torque_Volts\n')
                         outstr = time.strftime('%y-%m-%d,%H:%M:%S')
                         outstr += f',{360.0*(self.pos % self.cntperev) / self.cntperev:.3f}'
                         outstr += f',{self.speed/self.cntperev:.5f}'
