@@ -3,6 +3,11 @@
     
     This interface object is the socket
     interface. It is a child object of interface.
+
+    Connect to it on the port specified in the configuration.
+
+    Each query (inlcuding an empty string) receives all messages
+    on the response queue.
     
 """
 
@@ -49,8 +54,9 @@ class InterSocket(InterParent):
                         command = ''
                     # No special command -> send task to agents
                     if len(command):
-                        # Send the command
-                        self.sendtask(command)
+                        # Send the command unless it's an empty string
+                        if len(command.strip()):
+                            self.sendtask(command)
                         # Wait for response.
                         fullresp = ''
                         resp = ' '
@@ -60,7 +66,7 @@ class InterSocket(InterParent):
                             except queue.Empty:
                                 resp = ''
                             if len(resp):
-                                fullresp += resp
+                                fullresp += resp+'\n'
                         # Return response
                         if len(fullresp):
                             conn.sendall( fullresp.encode())

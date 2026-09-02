@@ -211,8 +211,12 @@ class GalilAgent(AgentParent):
                 retmsg = self.command(self.config['galil']['abortcomm'])
             # index
             elif 'index' in task[:5].lower():
-                retmsg = self.command(self.config['galil']['indexcomm'])
-                self.indextime = time.time()
+                if self.comm == 1:
+                    time.sleep(10.0)
+                    retmsg = 'Simulator Indexed'
+                else:
+                    retmsg = self.command(self.config['galil']['indexcomm'])
+                    self.indextime = time.time()
             # rotate by Hz
             elif 'rotate' in task[:6].lower():
                 print(task)
