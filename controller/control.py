@@ -30,7 +30,7 @@
       ./ Add read command in the galil
       ./ In galilagent and readoutagent, make sure correct commands are sent by
          only checking required number characters of new command.
-    * Socket interface update
+    ./ Socket interface update
       # Requirements: persisent connection, answer every request < 0.1s
       # Setup: builtin socket library, no authentication, single connection at a time
         * Make sure 'exit' command works through socket interface
@@ -42,11 +42,11 @@
           interfaces can set the event and all objects close when it's set
           then use exitEv.wait() instead of UserInterface.join() and wait 5s after that
         ./ Update galil program to close connection if exit is called and connection is open
-      * Tests
+      ./ Tests
         ./ Test single command, disconnect,
         ./ Test multiple commands, disconnect, reconnect, more commands,
         ./ Test single command, cut just after sending, see if new reestablish works
-        * Test read (set up sim command with index that delays answer)
+        ./ Test read (set up sim command with index that delays answer)
         ./ Test exit with userinterface or socketinterface make sure both work
     
     Ideas for LATER:
